@@ -24,7 +24,7 @@
 <meta property="og:description" content="现代CPU性能分析性能测量理解应用程序性能的第一步是学会对它进行测量，基准测试每次运行的结果都不尽相同，因为在性能测量中存在误差，性能分析通常需要通过统计方法进行处理。设计性能测试和配置测试环境都是性能评估工作的重要组成部分。 现代系统中的噪声以动态频率调节（DFS）为例，它是一个在短时间内提升CPU频率让其运行速度明显加快的特性。但是，CPU不能长时间处于“超频”状态，稍后它会降低到基本值。DF">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2024-05-06T14:16:57.000Z">
-<meta property="article:modified_time" content="2024-05-06T15:28:05.673Z">
+<meta property="article:modified_time" content="2025-08-10T23:13:02.126Z">
 <meta property="article:author" content="Zodiac">
 <meta name="twitter:card" content="summary_large_image">
   
@@ -265,7 +265,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          863 字
+          880 字
         
       </span>
     
@@ -328,8 +328,7 @@
                 
                 <h2 id="现代CPU性能分析"><a href="#现代CPU性能分析" class="headerlink" title="现代CPU性能分析"></a>现代CPU性能分析</h2><h3 id="性能测量"><a href="#性能测量" class="headerlink" title="性能测量"></a>性能测量</h3><p>理解应用程序性能的第一步是学会对它进行测量，基准测试每次运行的结果都不尽相同，因为在性能测量中存在误差，性能分析通常需要通过统计方法进行处理。<br>设计性能测试和配置测试环境都是性能评估工作的重要组成部分。</p>
 <h4 id="现代系统中的噪声"><a href="#现代系统中的噪声" class="headerlink" title="现代系统中的噪声"></a>现代系统中的噪声</h4><p>以动态频率调节（DFS）为例，它是一个在短时间内提升CPU频率让其运行速度明显加快的特性。但是，CPU不能长时间处于“超频”状态，稍后它会降低到基本值。DFS很大程度上由CPU核的温度决定，因此很难预测其对实验结果的影响。</p>
-<p>经验：即使运行任务管理工具-例如TOP指令，也会影响测量结果，因为某些CPU核会被激活并分配给该工具的进程，这可能会影响运行实际基准测试程序的CPU核频率。</p>
-<p>通过设置测试环境以确保低方差的基准测试结果的工具-temci:<a target="_blank" rel="noopener" href="https://github.com/parttimenerd/temci">https://github.com/parttimenerd/temci</a></p>
+<p>经验：即使运行任务管理工具-例如TOP指令，也会影响测量结果，因为某些CPU核会被激活并分配给该工具的进程，这可能会影响运                                                                                        </p>
 <h4 id="手动性能测试"><a href="#手动性能测试" class="headerlink" title="手动性能测试"></a>手动性能测试</h4><p>正常提交变更代码时，我们需要确保性能没有退化，一般通过以下三步完成：<br>1、测量基线性能；<br>2、测量修改后程序的性能；<br>3、对两者进行比较；</p>
 <h4 id="软件计时器和硬件计时器"><a href="#软件计时器和硬件计时器" class="headerlink" title="软件计时器和硬件计时器"></a>软件计时器和硬件计时器</h4><p>1、系统级高分辨率计时器：系统计时器，通过统计自某任意时间起开始流逝的滴答数而实现。在Linux操作系统下，可通过clock_gettime系统调用访问系统计时器；在C++语言中，标准的做法是使用std::chrono访问系统计时器。<br>2、时间戳计时器（TSC），这是一个通过硬件寄存器实现的硬件计时器。TSC也是单调递增的，并且以固定的速率增长，也就是说它与频率无关。TSC的值可以使用编译器的内置函数__rdtsc查询。</p>
 <p>CppPerformanceBenchmarks：<a target="_blank" rel="noopener" href="https://gitlab.com/chriscox/CppPerformanceBenchmarks">https://gitlab.com/chriscox/CppPerformanceBenchmarks</a> 介绍了不同平台下使用不同API调用计时器的性能比较。</p>
@@ -337,7 +336,7 @@
 <p>写基准测试程序时，重要的是确保测试场景在微基准测试程序运行时执行。优化编译器可能会消除使实验变得无用的代码（编译器优化掉）。防止编译器优化重要代码的一种常用手段是，使用类似 DoNotoptimize的辅助函数，这些辅助函数可以在幕后完成必要的内联汇编优化。</p>
 <p>检验这件事的方式：审视一下基准测试的性能剖析文件，看看关注的代码是否凸显微热点。</p>
 <p>性能数据分布之间的统计可以通过假设检验方法来识别和发现。一旦确定性能差异在统计上是显著的，那么性能加速比可以通过算术平均或几何平均来计算。</p>
-<h3 id="CPU微架构"><a href="#CPU微架构" class="headerlink" title="CPU微架构"></a>CPU微架构</h3>
+<h3 id="CPU微架构"><a href="#CPU微架构" class="headerlink" title="CPU微架构"></a>CPU微架构</h3><h3 id="性能分析中的术语和指标"><a href="#性能分析中的术语和指标" class="headerlink" title="性能分析中的术语和指标"></a>性能分析中的术语和指标</h3><h3 id="性能分析方法"><a href="#性能分析方法" class="headerlink" title="性能分析方法"></a>性能分析方法</h3><h3 id="性能分析相关的CPU特性"><a href="#性能分析相关的CPU特性" class="headerlink" title="性能分析相关的CPU特性"></a>性能分析相关的CPU特性</h3><h2 id="基于源代码的CPU调优"><a href="#基于源代码的CPU调优" class="headerlink" title="基于源代码的CPU调优"></a>基于源代码的CPU调优</h2><h3 id="CPU前端优化"><a href="#CPU前端优化" class="headerlink" title="CPU前端优化"></a>CPU前端优化</h3><h3 id="CPU后端优化"><a href="#CPU后端优化" class="headerlink" title="CPU后端优化"></a>CPU后端优化</h3><h3 id="优化错误投机"><a href="#优化错误投机" class="headerlink" title="优化错误投机"></a>优化错误投机</h3><h3 id="其他调优"><a href="#其他调优" class="headerlink" title="其他调优"></a>其他调优</h3><h3 id="优化多线程应用程序"><a href="#优化多线程应用程序" class="headerlink" title="优化多线程应用程序"></a>优化多线程应用程序</h3>
                 
               </div>
             
