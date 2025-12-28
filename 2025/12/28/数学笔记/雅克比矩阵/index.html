@@ -1,0 +1,916 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Zodiac">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="雅可比矩阵（Jacobian Matrix）摘要本文介绍雅可比矩阵的定义、基本性质，并重点讨论其在机械臂学与机器学习中的常见应用。文末给出一个使用 Eigen 库计算雅可比矩阵的 C++ 示例，并提供运行说明。 1. 数学定义与作用设 $\mathbf{f}:\mathbb{R}^n\to\mathbb{R}^m$，$\mathbf{f}(\mathbf{x})&#x3D;[f_1(\mathbf">
+<meta property="og:type" content="article">
+<meta property="og:title" content="雅克比矩阵">
+<meta property="og:url" content="http://example.com/2025/12/28/%E6%95%B0%E5%AD%A6%E7%AC%94%E8%AE%B0/%E9%9B%85%E5%85%8B%E6%AF%94%E7%9F%A9%E9%98%B5/index.html">
+<meta property="og:site_name" content="Zodiac">
+<meta property="og:description" content="雅可比矩阵（Jacobian Matrix）摘要本文介绍雅可比矩阵的定义、基本性质，并重点讨论其在机械臂学与机器学习中的常见应用。文末给出一个使用 Eigen 库计算雅可比矩阵的 C++ 示例，并提供运行说明。 1. 数学定义与作用设 $\mathbf{f}:\mathbb{R}^n\to\mathbb{R}^m$，$\mathbf{f}(\mathbf{x})&#x3D;[f_1(\mathbf">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-12-28T06:07:04.579Z">
+<meta property="article:modified_time" content="2025-12-28T06:53:47.538Z">
+<meta property="article:author" content="Zodiac">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>雅克比矩阵 - Zodiac</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"dObx69LE1sm93aoQB13ScbBq-gzGzoHsz","app_key":"JnhrPYhVUEB8Aj0aNiSvLmEg","server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Zodiac&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="雅克比矩阵"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Zodiac
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-12-28 14:07" pubdate>
+          2025年12月28日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          35 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">雅克比矩阵</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="雅可比矩阵（Jacobian-Matrix）"><a href="#雅可比矩阵（Jacobian-Matrix）" class="headerlink" title="雅可比矩阵（Jacobian Matrix）"></a>雅可比矩阵（Jacobian Matrix）</h1><h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>本文介绍雅可比矩阵的定义、基本性质，并重点讨论其在机械臂学与机器学习中的常见应用。文末给出一个使用 Eigen 库计算雅可比矩阵的 C++ 示例，并提供运行说明。</p>
+<h2 id="1-数学定义与作用"><a href="#1-数学定义与作用" class="headerlink" title="1. 数学定义与作用"></a>1. 数学定义与作用</h2><p>设 $\mathbf{f}:\mathbb{R}^n\to\mathbb{R}^m$，$\mathbf{f}(\mathbf{x})&#x3D;[f_1(\mathbf{x}),\dots,f_m(\mathbf{x})]^T$，$\mathbf{x}&#x3D;[x_1,\dots,x_n]^T$。雅可比矩阵定义为：</p>
+<p>$$<br>J(\mathbf{x})&#x3D;\frac{\partial\mathbf{f}}{\partial\mathbf{x}}&#x3D;\begin{bmatrix}<br>\dfrac{\partial f_1}{\partial x_1} &amp; \cdots &amp; \dfrac{\partial f_1}{\partial x_n} \<br>\vdots &amp; \ddots &amp; \vdots \<br>\dfrac{\partial f_m}{\partial x_1} &amp; \cdots &amp; \dfrac{\partial f_m}{\partial x_n}<br>\end{bmatrix}.<br>$$</p>
+<p>雅可比矩阵是局部线性近似的核心：当 $\Delta\mathbf{x}$ 足够小时，</p>
+<p>$$<br>\mathbf{f}(\mathbf{x}+\Delta\mathbf{x})\approx \mathbf{f}(\mathbf{x}) + J(\mathbf{x}),\Delta\mathbf{x}.<br>$$</p>
+<p>常见用途：坐标变换的微分、非线性方程求解（牛顿法）、最优化（构造 Gauss–Newton 的近似 Hessian）、灵敏度分析与不确定性传播等。</p>
+<h2 id="1-1-几何直观解释"><a href="#1-1-几何直观解释" class="headerlink" title="1.1 几何直观解释"></a>1.1 几何直观解释</h2><p>雅可比矩阵可以被视为非线性变换的局部”变形率”矩阵，提供了从输入空间到输出空间的线性近似映射。从几何角度理解：</p>
+<ul>
+<li><strong>向量变换</strong>：雅可比矩阵的列向量代表输入空间中标准基向量（坐标轴方向）在输出空间中的拉伸&#x2F;旋转方向。</li>
+<li><strong>面积&#x2F;体积变化</strong>：雅可比行列式（对于方阵）表示输入空间中微小区域在经过非线性变换后，其面积&#x2F;体积的缩放因子。</li>
+<li><strong>方向导数</strong>：雅可比矩阵与一个方向向量点积，给出函数在该方向上的方向导数。</li>
+</ul>
+<p>举个简单例子：考虑极坐标到直角坐标的变换 $(x,y)&#x3D;f(r,\theta)&#x3D;(r\cos\theta, r\sin\theta)$，其雅可比矩阵为：</p>
+<p>$$<br>J(r,\theta)&#x3D;\begin{bmatrix}<br>\cos\theta &amp; -r\sin\theta \<br>\sin\theta &amp; r\cos\theta<br>\end{bmatrix}<br>$$</p>
+<p>这里第一列表示半径方向微小变化 $dr$ 在 $x$ 和 $y$ 方向的投影，第二列表示角度方向微小变化 $d\theta$ 在 $x$ 和 $y$ 方向的切线投影。雅可比行列式为 $r$，表示极坐标下的微小面积元 $dr d\theta$ 变换为直角坐标系下的面积元 $r dr d\theta$，这与极坐标积分中的面积元一致。</p>
+<h2 id="1-2-雅可比行列式"><a href="#1-2-雅可比行列式" class="headerlink" title="1.2 雅可比行列式"></a>1.2 雅可比行列式</h2><p>当雅可比矩阵为方阵（即 $m&#x3D;n$）时，其行列式称为<strong>雅可比行列式</strong>（Jacobian Determinant），记为 $\det J(\mathbf{x})$ 或 $\frac{\partial(f_1,\ldots,f_n)}{\partial(x_1,\ldots,x_n)}$。雅可比行列式具有重要的几何和物理意义：</p>
+<ul>
+<li><p><strong>体积缩放因子</strong>：如前所述，对于输入空间中的微小区域，雅可比行列式的绝对值表示该区域在非线性变换后的体积缩放比例。</p>
+</li>
+<li><p><strong>可逆性条件</strong>：根据逆函数定理，若 $J(\mathbf{x_0})\neq 0$，则函数 $\mathbf{f}$ 在点 $\mathbf{x_0}$ 的邻域内是局部可逆的。</p>
+</li>
+<li><p><strong>坐标变换</strong>：在多重积分中，雅可比行列式用于变量替换：</p>
+<p>$$\int_{f(U)} g(\mathbf{y}) d\mathbf{y} &#x3D; \int_U g(\mathbf{f}(\mathbf{x})) \left|\det J(\mathbf{x})\right| d\mathbf{x}$$</p>
+<p>其中 $U$ 是输入空间中的区域，$f(U)$ 是其在输出空间中的像。</p>
+</li>
+<li><p><strong>物理应用</strong>：在流体力学中，雅可比行列式与流体的压缩性相关；在热力学中，用于描述状态变量之间的关系。</p>
+</li>
+</ul>
+<h2 id="2-在机械臂中的作用"><a href="#2-在机械臂中的作用" class="headerlink" title="2. 在机械臂中的作用"></a>2. 在机械臂中的作用</h2><p>机械臂的正运动学映射常写为 $\mathbf{x}&#x3D;\mathbf{f}(\mathbf{q})$，其中 $\mathbf{q}\in\mathbb{R}^n$ 为关节变量，$\mathbf{x}\in\mathbb{R}^m$ 为末端位姿（位置与姿态）。雅可比矩阵在机器人学中具有下列重要作用：</p>
+<ul>
+<li><p>速度映射：</p>
+<p>  $$\dot{\mathbf{x}} &#x3D; J(\mathbf{q}),\dot{\mathbf{q}}$$</p>
+<p>  表示关节速度到末端速度的线性关系，便于轨迹跟踪与速度规划。</p>
+</li>
+<li><p>力&#x2F;力矩变换（虚功守恒）：</p>
+<p>  $$\boldsymbol{\tau} &#x3D; J(\mathbf{q})^T,\mathbf{F}$$</p>
+<p>  将末端受力映射到关节力矩，用于力控制和阻抗控制设计。</p>
+</li>
+<li><p>奇异性分析：若 $J$ 在某配置处秩减少（例如行列式为 0），机器人在该配置可能失去某些方向的运动能力或需要无限大的关节速度来实现某方向的末端速度。奇异点检测与规避对运动规划与控制至关重要。</p>
+</li>
+<li><p>逆运动学的增量求解：基于线性化可用伪逆更新关节变量：</p>
+<p>  $$\Delta\mathbf{q} &#x3D; J(\mathbf{q})^+,\Delta\mathbf{x}$$</p>
+<p>  这里 $J^+$ 是 Moore–Penrose 伪逆，适用于冗余或欠定&#x2F;超定情况。</p>
+</li>
+</ul>
+<h3 id="2-1-示例：平面-2-link-机械臂雅可比（推导）"><a href="#2-1-示例：平面-2-link-机械臂雅可比（推导）" class="headerlink" title="2.1 示例：平面 2-link 机械臂雅可比（推导）"></a>2.1 示例：平面 2-link 机械臂雅可比（推导）</h3><p>考虑长度分别为 $l_1,l_2$，关节角为 $\theta_1,\theta_2$ 的平面机械臂，末端位置为：</p>
+<p>$$<br>x &#x3D; l_1\cos\theta_1 + l_2\cos(\theta_1+\theta_2),\<br>y &#x3D; l_1\sin\theta_1 + l_2\sin(\theta_1+\theta_2).<br>$$</p>
+<p>则位置部分的雅可比为：</p>
+<p>$$<br>J_p(\theta)&#x3D;\begin{bmatrix}<br>-l_1\sin\theta_1 - l_2\sin(\theta_1+\theta_2) &amp; -l_2\sin(\theta_1+\theta_2) \<br>l_1\cos\theta_1 + l_2\cos(\theta_1+\theta_2) &amp; l_2\cos(\theta_1+\theta_2)<br>\end{bmatrix}.<br>$$</p>
+<p>该矩阵用于把关节速度映射为末端线速度，并可据此分析奇异配置（例如当两连杆伸直或折叠时）。</p>
+<h3 id="2-2-姿态雅可比与完整雅可比矩阵"><a href="#2-2-姿态雅可比与完整雅可比矩阵" class="headerlink" title="2.2 姿态雅可比与完整雅可比矩阵"></a>2.2 姿态雅可比与完整雅可比矩阵</h3><p>在机器人学中，机械臂的末端位姿包括位置和姿态两部分，因此完整的雅可比矩阵也包含位置雅可比和姿态雅可比两个部分：</p>
+<p>$$<br>J(\mathbf{q}) &#x3D; \begin{bmatrix}<br>J_p(\mathbf{q}) \<br>J_o(\mathbf{q})<br>\end{bmatrix}<br>$$</p>
+<p>其中：</p>
+<ul>
+<li>$J_p(\mathbf{q}) \in \mathbb{R}^{3\times n}$ 是位置雅可比，将关节速度映射到末端执行器的线速度；</li>
+<li>$J_o(\mathbf{q}) \in \mathbb{R}^{3\times n}$ 是姿态雅可比，将关节速度映射到末端执行器的角速度。</li>
+</ul>
+<p>对于平面机械臂，姿态通常由单个角度 $\phi$ 表示，因此姿态雅可比为 $J_o(\mathbf{q}) \in \mathbb{R}^{1\times n}$。以平面2-link机械臂为例，末端姿态角 $\phi &#x3D; \theta_1 + \theta_2$，其姿态雅可比为：</p>
+<p>$$<br>J_o(\theta) &#x3D; \begin{bmatrix} 1 &amp; 1 \end{bmatrix}<br>$$</p>
+<p>这表示两个关节的角速度都会直接影响末端的姿态角速度，且影响系数均为1。</p>
+<p>完整的平面2-link机械臂雅可比矩阵为：</p>
+<p>$$<br>J(\theta) &#x3D; \begin{bmatrix}<br>J_p(\theta) \<br>J_o(\theta)<br>\end{bmatrix} &#x3D; \begin{bmatrix}<br>-l_1\sin\theta_1 - l_2\sin(\theta_1+\theta_2) &amp; -l_2\sin(\theta_1+\theta_2) \<br>l_1\cos\theta_1 + l_2\cos(\theta_1+\theta_2) &amp; l_2\cos(\theta_1+\theta_2) \<br>1 &amp; 1<br>\end{bmatrix}<br>$$</p>
+<h3 id="2-3-雅可比矩阵的计算方法（机器人学）"><a href="#2-3-雅可比矩阵的计算方法（机器人学）" class="headerlink" title="2.3 雅可比矩阵的计算方法（机器人学）"></a>2.3 雅可比矩阵的计算方法（机器人学）</h3><p>机器人学中计算雅可比矩阵主要有两种方法：</p>
+<ol>
+<li><p><strong>几何法（矢量法）</strong>：基于刚体运动学，通过分析每个关节运动对末端位姿的影响来构建雅可比矩阵。对于旋转关节 $i$，其对末端位置的贡献是一个切向量，对姿态的贡献是旋转轴方向；对于移动关节，其对末端位置的贡献是关节轴线方向，对姿态无贡献。</p>
+</li>
+<li><p><strong>微分变换法</strong>：基于齐次变换矩阵的微分，通过对正运动学的齐次变换矩阵求导来计算雅可比矩阵。这种方法更系统，便于计算机实现。</p>
+</li>
+</ol>
+<p>两种方法各有优缺点：几何法直观易懂，适合简单机器人；微分变换法更通用，适合复杂机器人结构的自动计算。</p>
+<h2 id="3-在机器学习中的作用"><a href="#3-在机器学习中的作用" class="headerlink" title="3. 在机器学习中的作用"></a>3. 在机器学习中的作用</h2><p>雅可比矩阵在机器学习中的应用很广：</p>
+<ul>
+<li><p>反向传播（Backpropagation）：神经网络层的局部映射可用雅可比来表征，实际计算中经常需要 Jacobian-向量积或向量-Jacobian 积以避免构造完整矩阵。</p>
+</li>
+<li><p>灵敏度分析与对抗样本：评估输入微小扰动对输出（或损失）的影响，雅可比能给出每个输入维度的局部敏感度。</p>
+</li>
+<li><p>可逆模型与概率密度变换：可逆变换模型（如 normalizing flows）需要快速计算变换的雅可比行列式以便进行概率密度变换：</p>
+<p>  $$p_X(\mathbf{x}) &#x3D; p_Z(\mathbf{z}) \left|\det\frac{\partial\mathbf{z}}{\partial\mathbf{x}}\right|$$</p>
+<p>  设计可高效计算行列式的层（如三角雅可比）是流模型的关键。</p>
+</li>
+<li><p>二阶优化与 Gauss–Newton：最小二乘问题中常构造 $J^T J$ 作为近似 Hessian，用于求解参数更新方向。</p>
+</li>
+</ul>
+<h3 id="3-1-机器学习中的具体应用案例"><a href="#3-1-机器学习中的具体应用案例" class="headerlink" title="3.1 机器学习中的具体应用案例"></a>3.1 机器学习中的具体应用案例</h3><h4 id="3-1-1-生成对抗网络（GAN）的稳定性分析"><a href="#3-1-1-生成对抗网络（GAN）的稳定性分析" class="headerlink" title="3.1.1 生成对抗网络（GAN）的稳定性分析"></a>3.1.1 生成对抗网络（GAN）的稳定性分析</h4><p>在生成对抗网络中，生成器和判别器的训练过程是一个极小极大博弈问题。雅可比矩阵用于分析训练过程的稳定性：</p>
+<ul>
+<li><strong>谱归一化</strong>：通过计算生成器权重矩阵的最大奇异值（雅可比矩阵的谱范数）来正则化模型，防止梯度爆炸，提高训练稳定性。</li>
+<li><strong>梯度惩罚</strong>：Wasserstein GAN (WGAN-GP) 中，通过计算判别器在真实样本和生成样本之间的梯度范数，并加入惩罚项，确保判别器满足 Lipschitz 条件。</li>
+</ul>
+<h4 id="3-1-2-强化学习中的策略梯度"><a href="#3-1-2-强化学习中的策略梯度" class="headerlink" title="3.1.2 强化学习中的策略梯度"></a>3.1.2 强化学习中的策略梯度</h4><p>在强化学习中，策略梯度方法需要计算价值函数或优势函数对策略参数的梯度：</p>
+<ul>
+<li><strong>策略梯度定理</strong>：雅可比矩阵用于将轨迹的奖励信号反向传播到策略参数，计算参数更新方向。</li>
+<li><strong>信赖域策略优化（TRPO）</strong>：通过限制策略更新的 KL 散度（可通过雅可比矩阵计算），确保策略更新不会过大，提高学习稳定性。</li>
+</ul>
+<h4 id="3-1-3-动态系统建模与控制"><a href="#3-1-3-动态系统建模与控制" class="headerlink" title="3.1.3 动态系统建模与控制"></a>3.1.3 动态系统建模与控制</h4><p>机器学习中的动态系统建模（如神经ODE）大量使用雅可比矩阵：</p>
+<ul>
+<li><strong>神经ODE</strong>：使用雅可比矩阵计算伴随状态，实现高效的反向传播。雅可比矩阵的迹（对于对角雅可比）用于计算系统的复杂度和稳定性指标。</li>
+<li><strong>模型预测控制（MPC）</strong>：基于学习的动态模型，雅可比矩阵用于线性化非线性系统，求解最优控制序列。</li>
+</ul>
+<h4 id="3-1-4-计算机视觉中的应用"><a href="#3-1-4-计算机视觉中的应用" class="headerlink" title="3.1.4 计算机视觉中的应用"></a>3.1.4 计算机视觉中的应用</h4><ul>
+<li><strong>图像变形</strong>：图像变换的雅可比矩阵用于分析像素位置的变化率，在图像配准、光流估计等任务中发挥重要作用。</li>
+<li><strong>特征提取</strong>：卷积神经网络中的卷积核可以看作是局部特征提取的雅可比矩阵，用于捕捉图像的局部结构信息。</li>
+</ul>
+<h2 id="4-雅可比矩阵的计算方法比较"><a href="#4-雅可比矩阵的计算方法比较" class="headerlink" title="4. 雅可比矩阵的计算方法比较"></a>4. 雅可比矩阵的计算方法比较</h2><p>雅可比矩阵的计算方法主要有三种：</p>
+<h3 id="4-1-解析计算"><a href="#4-1-解析计算" class="headerlink" title="4.1 解析计算"></a>4.1 解析计算</h3><p>通过数学推导直接得到雅可比矩阵的解析表达式。</p>
+<ul>
+<li><strong>优点</strong>：计算效率高，精度最高，无数值误差。</li>
+<li><strong>缺点</strong>：对于复杂函数，推导过程繁琐且容易出错；难以自动化，不适合大规模系统。</li>
+<li><strong>适用场景</strong>：简单函数、已知数学形式的系统（如机器人学中的正运动学）。</li>
+</ul>
+<h3 id="4-2-数值微分"><a href="#4-2-数值微分" class="headerlink" title="4.2 数值微分"></a>4.2 数值微分</h3><p>通过有限差分法近似计算偏导数：</p>
+<p>$$\frac{\partial f_i}{\partial x_j} \approx \frac{f_i(x_j + h) - f_i(x_j - h)}{2h}$$（中心差分）</p>
+<ul>
+<li><strong>优点</strong>：实现简单，无需了解函数的数学形式；易于并行计算。</li>
+<li><strong>缺点</strong>：存在截断误差（与 $h^2$ 成正比）和舍入误差；计算成本高（需要 $n \times m$ 次函数评估）。</li>
+<li><strong>适用场景</strong>：函数形式未知、难以推导解析表达式的系统。</li>
+</ul>
+<h3 id="4-3-自动微分"><a href="#4-3-自动微分" class="headerlink" title="4.3 自动微分"></a>4.3 自动微分</h3><p>通过跟踪计算图，自动应用链式法则计算导数。分为前向模式和反向模式：</p>
+<ul>
+<li><p><strong>前向模式</strong>：对于每个输入维度，计算所有输出对该输入的导数。计算复杂度与输入维度成正比。</p>
+</li>
+<li><p><strong>反向模式</strong>：对于每个输出维度，计算该输出对所有输入的导数。计算复杂度与输出维度成正比，是深度学习中反向传播的基础。</p>
+</li>
+<li><p><strong>优点</strong>：结合了解析计算的精度和数值微分的通用性；计算效率高，误差可控制。</p>
+</li>
+<li><p><strong>缺点</strong>：需要特殊的编程框架支持（如 TensorFlow、PyTorch、JAX）；对于某些操作，实现复杂度较高。</p>
+</li>
+<li><p><strong>适用场景</strong>：大规模机器学习模型、复杂非线性系统的导数计算。</p>
+</li>
+</ul>
+<h2 id="5-Eigen-示例计算（C-）"><a href="#5-Eigen-示例计算（C-）" class="headerlink" title="5. Eigen 示例计算（C++）"></a>5. Eigen 示例计算（C++）</h2><p>下面给出一个使用 Eigen 的完整示例：计算函数</p>
+<p>$$<br>f_1(x,y)&#x3D;\sin(x) + x y,\qquad f_2(x,y)&#x3D;e^{y} - x^2<br>$$</p>
+<p>在给定点的雅可比矩阵，并演示线性近似与 $J^T J$ 的计算。</p>
+<p>保存为 <code>jacobian_example.cpp</code>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;Eigen/Dense&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;cmath&gt;</span></span><br><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> Eigen;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br>		<span class="hljs-type">double</span> x = <span class="hljs-number">0.5</span>;<br>		<span class="hljs-type">double</span> y = <span class="hljs-number">-0.2</span>;<br><br>		Matrix2d J;<br>		<span class="hljs-built_in">J</span>(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>) = std::<span class="hljs-built_in">cos</span>(x) + y; <span class="hljs-comment">// df1/dx</span><br>		<span class="hljs-built_in">J</span>(<span class="hljs-number">0</span>,<span class="hljs-number">1</span>) = x;              <span class="hljs-comment">// df1/dy</span><br>		<span class="hljs-built_in">J</span>(<span class="hljs-number">1</span>,<span class="hljs-number">0</span>) = <span class="hljs-number">-2.0</span>*x;         <span class="hljs-comment">// df2/dx</span><br>		<span class="hljs-built_in">J</span>(<span class="hljs-number">1</span>,<span class="hljs-number">1</span>) = std::<span class="hljs-built_in">exp</span>(y);    <span class="hljs-comment">// df2/dy</span><br><br>		std::cout &lt;&lt; <span class="hljs-string">&quot;Jacobian at (&quot;</span>&lt;&lt;x&lt;&lt;<span class="hljs-string">&quot;,&quot;</span>&lt;&lt;y&lt;&lt;<span class="hljs-string">&quot;):\n&quot;</span>&lt;&lt; J &lt;&lt; std::endl;<br><br>		<span class="hljs-comment">// 线性近似示例</span><br>		<span class="hljs-function">Vector2d <span class="hljs-title">dx</span><span class="hljs-params">(<span class="hljs-number">1e-3</span>, <span class="hljs-number">-2e-3</span>)</span></span>;<br>		Vector2d df = J * dx;<br>		std::cout &lt;&lt; <span class="hljs-string">&quot;Linear approx df:\n&quot;</span>&lt;&lt; df &lt;&lt; std::endl;<br><br>		<span class="hljs-comment">// 计算 J^T * J</span><br>		Matrix2d JTJ = J.<span class="hljs-built_in">transpose</span>() * J;<br>		std::cout &lt;&lt; <span class="hljs-string">&quot;J^T * J:\n&quot;</span>&lt;&lt; JTJ &lt;&lt; std::endl;<br><br>		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>编译与运行（示例命令）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">g++ -std=c++17 jacobian_example.cpp -I /path/to/eigen -O2 -o jacobian_example<br>./jacobian_example<br></code></pre></td></tr></table></figure>
+
+<p>输出将显示在指定点处的雅可比矩阵、线性近似的输出增量以及 $J^T J$ 的值。</p>
+<h2 id="6-雅可比矩阵在其他领域的应用"><a href="#6-雅可比矩阵在其他领域的应用" class="headerlink" title="6. 雅可比矩阵在其他领域的应用"></a>6. 雅可比矩阵在其他领域的应用</h2><p>雅可比矩阵的应用远不止机器人学和机器学习，它在科学和工程的许多领域都发挥着重要作用：</p>
+<h3 id="6-1-流体力学"><a href="#6-1-流体力学" class="headerlink" title="6.1 流体力学"></a>6.1 流体力学</h3><p>在流体力学中，雅可比矩阵用于描述流体的变形率张量和应变率张量：</p>
+<ul>
+<li><strong>变形率张量</strong>：速度场的雅可比矩阵可以分解为对称的应变率张量和反对称的旋转张量。</li>
+<li><strong>不可压缩流体</strong>：对于不可压缩流体，速度场的雅可比矩阵的迹为零（$\nabla \cdot \mathbf{u} &#x3D; 0$）。</li>
+<li><strong>湍流模型</strong>：雅可比矩阵的特征值用于分析流体的局部稳定性和湍流生成机制。</li>
+</ul>
+<h3 id="6-2-电磁学"><a href="#6-2-电磁学" class="headerlink" title="6.2 电磁学"></a>6.2 电磁学</h3><ul>
+<li><strong>Maxwell方程组的数值求解</strong>：在有限元法和有限差分法中，雅可比矩阵用于构建非线性方程组的迭代求解器。</li>
+<li><strong>电磁参数反演</strong>：通过雅可比矩阵将测量数据与模型参数联系起来，用于地球物理勘探和材料特性评估。</li>
+</ul>
+<h3 id="6-3-计算机图形学"><a href="#6-3-计算机图形学" class="headerlink" title="6.3 计算机图形学"></a>6.3 计算机图形学</h3><ul>
+<li><strong>动画与变形</strong>：角色动画中，雅可比矩阵用于控制骨骼动画的皮肤变形，确保变形的平滑性和物理合理性。</li>
+<li><strong>碰撞检测</strong>：通过计算物体表面的雅可比矩阵，快速判断物体之间的碰撞和接触点。</li>
+<li><strong>纹理映射</strong>：纹理坐标变换的雅可比矩阵用于调整纹理的缩放和扭曲，避免纹理拉伸。</li>
+</ul>
+<h3 id="6-4-生物医学工程"><a href="#6-4-生物医学工程" class="headerlink" title="6.4 生物医学工程"></a>6.4 生物医学工程</h3><ul>
+<li><strong>医学成像</strong>：医学图像配准算法中，雅可比矩阵用于计算图像变换的变形率，评估配准的准确性。</li>
+<li><strong>生物力学建模</strong>：人体骨骼和软组织的力学模型中，雅可比矩阵用于分析应力和应变的分布。</li>
+</ul>
+<h3 id="6-5-经济学与金融学"><a href="#6-5-经济学与金融学" class="headerlink" title="6.5 经济学与金融学"></a>6.5 经济学与金融学</h3><ul>
+<li><strong>一般均衡理论</strong>：雅可比矩阵用于分析经济系统的稳定性和均衡点的存在性。</li>
+<li><strong>风险管理</strong>：金融衍生品定价模型中，雅可比矩阵用于计算希腊字母（如Delta、Gamma），评估风险暴露。</li>
+</ul>
+<hr>
+<h2 id="7-总结"><a href="#7-总结" class="headerlink" title="7. 总结"></a>7. 总结</h2><p>雅可比矩阵是数学分析中一个强大的工具，它将非线性变换线性化，提供了局部近似的视角。从几何直观到实际应用，雅可比矩阵在机器人学、机器学习、流体力学、计算机图形学等众多领域都发挥着关键作用。</p>
+<p>雅可比行列式作为雅可比矩阵的重要性质，提供了关于非线性变换的体积缩放信息，在积分变换、概率密度计算等方面具有广泛应用。</p>
+<p>随着计算技术的发展，自动微分等高效计算方法的出现，使得雅可比矩阵在大规模系统中的应用变得更加可行。无论是理论研究还是工程实践，深入理解雅可比矩阵的概念和应用都将为解决复杂问题提供有力的数学工具。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%95%B0%E5%AD%A6%E7%AC%94%E8%AE%B0/" class="category-chain-item">数学笔记</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>雅克比矩阵</div>
+      <div>http://example.com/2025/12/28/数学笔记/雅克比矩阵/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Zodiac</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年12月28日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/12/28/%E6%95%B0%E5%AD%A6%E7%AC%94%E8%AE%B0/%E6%B5%B7%E6%A3%AE%E7%9F%A9%E9%98%B5/" title="海森矩阵">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">海森矩阵</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/12/27/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/Linux%20%E8%AE%A1%E7%AE%97%E8%BF%87%E5%AF%B9%E6%AF%94%E5%8F%8A%E4%BC%98%E5%8C%96%E8%BF%87%E7%A8%8B/" title="Linux 计算过对比及优化过程">
+                        <span class="hidden-mobile">Linux 计算过对比及优化过程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"dObx69LE1sm93aoQB13ScbBq-gzGzoHsz","appKey":"JnhrPYhVUEB8Aj0aNiSvLmEg","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
