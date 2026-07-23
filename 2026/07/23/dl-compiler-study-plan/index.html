@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="深度学习编译器学习计划 — 从基础到精通 编者：模型部署工程师视角目标：理解深度学习编译器的工作原理，掌握 TVM &#x2F; MLIR &#x2F; Triton 三款主流开源编译器，      能够自主完成”模型→图优化→代码生成→调优”全流程，最终有能力向推理引擎中      集成编译优化能力。 前置要求：C++ 基础、熟悉 CNN 模型结构、了解 CUDA 编程模型你的参考项目：ncnn">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深度学习编译器学习计划">
+<meta property="og:url" content="http://192.168.1.3:4000/2026/07/23/dl-compiler-study-plan/index.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="深度学习编译器学习计划 — 从基础到精通 编者：模型部署工程师视角目标：理解深度学习编译器的工作原理，掌握 TVM &#x2F; MLIR &#x2F; Triton 三款主流开源编译器，      能够自主完成”模型→图优化→代码生成→调优”全流程，最终有能力向推理引擎中      集成编译优化能力。 前置要求：C++ 基础、熟悉 CNN 模型结构、了解 CUDA 编程模型你的参考项目：ncnn">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-23T03:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T03:00:00.000Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="学习计划">
+<meta property="article:tag" content="编译器">
+<meta property="article:tag" content="TVM">
+<meta property="article:tag" content="MLIR">
+<meta property="article:tag" content="Triton">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/2026/07/23/dl-compiler-study-plan/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/2026/07/23/dl-compiler-study-plan/","path":"2026/07/23/dl-compiler-study-plan/","title":"深度学习编译器学习计划"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>深度学习编译器学习计划 | 学习笔记</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%BC%96%E8%AF%91%E5%99%A8%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92-%E2%80%94-%E4%BB%8E%E5%9F%BA%E7%A1%80%E5%88%B0%E7%B2%BE%E9%80%9A"><span class="nav-number">1.</span> <span class="nav-text">深度学习编译器学习计划 — 从基础到精通</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%AE%E5%BD%95"><span class="nav-number">1.1.</span> <span class="nav-text">目录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%BC%96%E8%AF%91%E5%99%A8%E6%A6%82%E8%A7%88"><span class="nav-number">1.2.</span> <span class="nav-text">一、深度学习编译器概览</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%BC%96%E8%AF%91%E5%99%A8%EF%BC%9F"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.1 为什么需要深度学习编译器？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E4%B8%89%E6%AC%BE%E7%BC%96%E8%AF%91%E5%99%A8%E5%AE%9A%E4%BD%8D"><span class="nav-number">1.2.2.</span> <span class="nav-text">1.2 三款编译器定位</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E4%B8%8E%E4%BC%A0%E7%BB%9F%E7%BC%96%E8%AF%91%E5%99%A8%E7%9A%84%E7%B1%BB%E6%AF%94"><span class="nav-number">1.2.3.</span> <span class="nav-text">1.3 与传统编译器的类比</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Phase-1%EF%BC%9A%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86%E5%9F%BA%E7%A1%80%EF%BC%882-%E5%91%A8%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">Phase 1：编译原理基础（2 周）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87"><span class="nav-number">1.3.1.</span> <span class="nav-text">目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-LLVM-%E5%9F%BA%E7%A1%80-%E2%80%94-DL-%E7%BC%96%E8%AF%91%E5%99%A8%E7%9A%84%E2%80%9D%E5%90%8E%E7%AB%AF%E5%B7%A5%E5%8E%82%E2%80%9D"><span class="nav-number">1.3.2.</span> <span class="nav-text">1.1 LLVM 基础 — DL 编译器的”后端工厂”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5%E9%80%9F%E6%9F%A5"><span class="nav-number">1.3.3.</span> <span class="nav-text">1.2 核心概念速查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E5%9B%BE%E8%AE%A1%E7%AE%97%E5%9F%BA%E7%A1%80"><span class="nav-number">1.3.4.</span> <span class="nav-text">1.3 图计算基础</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%83%E4%B9%A0%EF%BC%88Phase-1%EF%BC%89"><span class="nav-number">1.3.5.</span> <span class="nav-text">练习（Phase 1）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Phase-2%EF%BC%9ATVM-%E5%85%A5%E9%97%A8%E4%B8%8E%E5%AE%9E%E6%88%98%EF%BC%884-%E5%91%A8%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">Phase 2：TVM 入门与实战（4 周）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-TVM-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="nav-number">1.4.1.</span> <span class="nav-text">2.1 TVM 整体架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E7%AC%AC%E4%B8%80%E5%91%A8%EF%BC%9A%E5%AE%89%E8%A3%85%E4%B8%8E-Hello-World"><span class="nav-number">1.4.2.</span> <span class="nav-text">2.2 第一周：安装与 Hello World</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E7%AC%AC%E4%BA%8C%E5%91%A8%EF%BC%9A%E5%AF%BC%E5%85%A5%E7%9C%9F%E5%AE%9E%E6%A8%A1%E5%9E%8B-%E2%80%94-CIFAR-10-CNN"><span class="nav-number">1.4.3.</span> <span class="nav-text">2.3 第二周：导入真实模型 — CIFAR-10 CNN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E7%AC%AC%E4%B8%89%E5%91%A8%EF%BC%9ATVM-%E6%A0%B8%E5%BF%83-%E2%80%94-compute-schedule-%E5%88%86%E7%A6%BB"><span class="nav-number">1.4.4.</span> <span class="nav-text">2.4 第三周：TVM 核心 — compute&#x2F;schedule 分离</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-%E7%AC%AC%E5%9B%9B%E5%91%A8%EF%BC%9AAutoTVM-%E4%B8%8E-Ansor-%E8%87%AA%E5%8A%A8%E8%B0%83%E4%BC%98"><span class="nav-number">1.4.5.</span> <span class="nav-text">2.5 第四周：AutoTVM 与 Ansor 自动调优</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%A5%E5%85%85%EF%BC%9ATVM-%E7%9A%84%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90%E5%90%8E%E7%AB%AF"><span class="nav-number">1.4.6.</span> <span class="nav-text">补充：TVM 的代码生成后端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%83%E4%B9%A0%E9%A1%B9%E7%9B%AE%EF%BC%88Phase-2-%E7%BB%93%E6%9D%9F%E6%97%B6%EF%BC%89"><span class="nav-number">1.4.7.</span> <span class="nav-text">练习项目（Phase 2 结束时）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Phase-3%EF%BC%9AMLIR-%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%AE%9E%E6%88%98%EF%BC%884-%E5%91%A8%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">Phase 3：MLIR 基础与实战（4 周）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-MLIR%EF%BC%9F"><span class="nav-number">1.5.1.</span> <span class="nav-text">3.1 为什么需要 MLIR？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E7%AC%AC%E4%B8%80%E5%91%A8%EF%BC%9AMLIR-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E4%B8%8E%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="nav-number">1.5.2.</span> <span class="nav-text">3.2 第一周：MLIR 环境搭建与基础概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E7%AC%AC%E4%BA%8C%E5%91%A8%EF%BC%9A%E7%BC%96%E5%86%99%E4%BD%A0%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA-MLIR-Pass"><span class="nav-number">1.5.3.</span> <span class="nav-text">3.3 第二周：编写你的第一个 MLIR Pass</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-%E7%AC%AC%E4%B8%89%E5%91%A8%EF%BC%9ATorch-MLIR-%E2%80%94-%E4%BB%8E-PyTorch-%E5%88%B0-MLIR"><span class="nav-number">1.5.4.</span> <span class="nav-text">3.4 第三周：Torch-MLIR — 从 PyTorch 到 MLIR</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-%E7%AC%AC%E5%9B%9B%E5%91%A8%EF%BC%9A%E4%BD%BF%E7%94%A8-CIRCT-CIRCT-%E7%9A%84-C-Dialect-%E8%87%AA%E5%AE%9A%E4%B9%89"><span class="nav-number">1.5.5.</span> <span class="nav-text">3.5 第四周：使用 CIRCT &#x2F; CIRCT 的 C++ Dialect 自定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%83%E4%B9%A0%E9%A1%B9%E7%9B%AE%EF%BC%88Phase-3-%E7%BB%93%E6%9D%9F%E6%97%B6%EF%BC%89"><span class="nav-number">1.5.6.</span> <span class="nav-text">练习项目（Phase 3 结束时）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Phase-4%EF%BC%9ATriton-DSL-%E4%B8%8E-Kernel-%E7%BC%96%E8%AF%91%E5%99%A8%EF%BC%882-%E5%91%A8%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">Phase 4：Triton DSL 与 Kernel 编译器（2 周）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-Triton-%E5%AE%9A%E4%BD%8D"><span class="nav-number">1.6.1.</span> <span class="nav-text">4.1 Triton 定位</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E7%AC%AC%E4%B8%80%E5%91%A8%EF%BC%9ATriton-%E5%9F%BA%E7%A1%80"><span class="nav-number">1.6.2.</span> <span class="nav-text">4.2 第一周：Triton 基础</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-Triton-%E7%9F%A9%E9%98%B5%E4%B9%98%E6%B3%95"><span class="nav-number">1.6.3.</span> <span class="nav-text">4.3 Triton 矩阵乘法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-%E7%AC%AC%E4%BA%8C%E5%91%A8%EF%BC%9A%E7%94%A8-Triton-%E6%9B%BF%E4%BB%A3%E4%BD%A0%E7%9A%84-manual-cuda-%E5%8D%B7%E7%A7%AF"><span class="nav-number">1.6.4.</span> <span class="nav-text">4.4 第二周：用 Triton 替代你的 manual_cuda 卷积</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%83%E4%B9%A0%E9%A1%B9%E7%9B%AE%EF%BC%88Phase-4-%E7%BB%93%E6%9D%9F%E6%97%B6%EF%BC%89"><span class="nav-number">1.6.5.</span> <span class="nav-text">练习项目（Phase 4 结束时）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Phase-5%EF%BC%9A%E7%BC%96%E8%AF%91%E5%99%A8%E4%B8%8E%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E%E9%9B%86%E6%88%90%EF%BC%882-%E5%91%A8%EF%BC%89"><span class="nav-number">1.7.</span> <span class="nav-text">Phase 5：编译器与推理引擎集成（2 周）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E7%BC%96%E8%AF%91%E5%99%A8%E5%A6%82%E4%BD%95%E8%9E%8D%E5%85%A5%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E"><span class="nav-number">1.7.1.</span> <span class="nav-text">5.1 编译器如何融入推理引擎</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E5%AE%9E%E6%88%98%EF%BC%9A%E5%B0%86-TVM-%E7%94%9F%E6%88%90%E7%9A%84%E4%BB%A3%E7%A0%81%E9%9B%86%E6%88%90%E5%88%B0%E4%BD%A0%E7%9A%84%E6%8E%A8%E7%90%86%E7%AE%A1%E9%81%93"><span class="nav-number">1.7.2.</span> <span class="nav-text">5.2 实战：将 TVM 生成的代码集成到你的推理管道</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E5%9C%A8%E4%BD%A0%E7%9A%84-st-nndeploy-%E4%B8%AD%E6%B7%BB%E5%8A%A0-TVM-backend"><span class="nav-number">1.7.3.</span> <span class="nav-text">5.3 在你的 st_nndeploy 中添加 TVM backend</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-%E7%BC%96%E8%AF%91%E5%99%A8%E7%94%9F%E6%88%90%E7%9A%84%E4%BB%A3%E7%A0%81-vs-%E6%89%8B%E5%86%99%E4%BB%A3%E7%A0%81%E7%9A%84%E5%93%B2%E5%AD%A6%E5%B7%AE%E5%BC%82"><span class="nav-number">1.7.4.</span> <span class="nav-text">5.4 编译器生成的代码 vs 手写代码的哲学差异</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%83%E4%B9%A0%E9%A1%B9%E7%9B%AE%EF%BC%88Phase-5%EF%BC%89"><span class="nav-number">1.7.5.</span> <span class="nav-text">练习项目（Phase 5）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Phase-6%EF%BC%9A%E7%B2%BE%E9%80%9A%E4%B9%8B%E8%B7%AF%EF%BC%88%E9%95%BF%E6%9C%9F%EF%BC%89"><span class="nav-number">1.8.</span> <span class="nav-text">Phase 6：精通之路（长期）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E6%B7%B1%E5%85%A5%E5%AD%A6%E4%B9%A0%E6%96%B9%E5%90%91"><span class="nav-number">1.8.1.</span> <span class="nav-text">6.1 深入学习方向</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-%E6%8E%A8%E8%8D%90%E8%BF%9B%E9%98%B6%E9%A1%B9%E7%9B%AE"><span class="nav-number">1.8.2.</span> <span class="nav-text">6.2 推荐进阶项目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E5%9B%BE%E6%80%BB%E8%A7%88"><span class="nav-number">1.8.3.</span> <span class="nav-text">学习路线图总览</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E4%B8%89%E6%AC%BE%E7%BC%96%E8%AF%91%E5%99%A8%E5%AF%B9%E6%AF%94%E6%80%BB%E7%BB%93"><span class="nav-number">1.9.</span> <span class="nav-text">八、三款编译器对比总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%89%E8%80%85%E7%9A%84%E4%BA%92%E8%A1%A5%E5%85%B3%E7%B3%BB"><span class="nav-number">1.9.1.</span> <span class="nav-text">三者的互补关系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B9%9D%E3%80%81%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%BA%90%E6%80%BB%E8%A1%A8"><span class="nav-number">1.10.</span> <span class="nav-text">九、学习资源总表</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3"><span class="nav-number">1.10.1.</span> <span class="nav-text">官方文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BA%E6%96%87"><span class="nav-number">1.10.2.</span> <span class="nav-text">论文</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B9%A6%E7%B1%8D"><span class="nav-number">1.10.3.</span> <span class="nav-text">书籍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE%E6%BA%90%E7%A0%81%E5%8F%82%E8%80%83"><span class="nav-number">1.10.4.</span> <span class="nav-text">开源项目源码参考</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%81%E3%80%81%E4%B8%8E%E4%BD%A0%E7%9A%84%E9%A1%B9%E7%9B%AE%E7%9A%84%E5%85%B3%E8%81%94"><span class="nav-number">1.11.</span> <span class="nav-text">十、与你的项目的关联</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%B0%E6%9C%89%E9%A1%B9%E7%9B%AE%E7%9A%84%E7%BC%96%E8%AF%91%E5%99%A8%E6%8E%A5%E5%85%A5%E7%82%B9"><span class="nav-number">1.11.1.</span> <span class="nav-text">现有项目的编译器接入点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%A0%E5%AF%B9%E7%BC%96%E8%AF%91%E5%99%A8%E7%9A%84%E7%8B%AC%E7%89%B9%E4%BC%98%E5%8A%BF"><span class="nav-number">1.11.2.</span> <span class="nav-text">你对编译器的独特优势</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%99%84%E5%BD%95%EF%BC%9A%E5%BF%AB%E9%80%9F%E5%85%A5%E6%89%8B%E5%91%BD%E4%BB%A4%E6%B1%87%E6%80%BB"><span class="nav-number">1.11.3.</span> <span class="nav-text">附录：快速入手命令汇总</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://192.168.1.3:4000/2026/07/23/dl-compiler-study-plan/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zodiac">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="学习笔记">
+      <meta itemprop="description" content="个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="深度学习编译器学习计划 | 学习笔记">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          深度学习编译器学习计划
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-23 11:00:00" itemprop="dateCreated datePublished" datetime="2026-07-23T11:00:00+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/" itemprop="url" rel="index"><span itemprop="name">学习计划</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="深度学习编译器学习计划-—-从基础到精通"><a href="#深度学习编译器学习计划-—-从基础到精通" class="headerlink" title="深度学习编译器学习计划 — 从基础到精通"></a>深度学习编译器学习计划 — 从基础到精通</h1><blockquote>
+<p>编者：模型部署工程师视角<br>目标：理解深度学习编译器的工作原理，掌握 TVM &#x2F; MLIR &#x2F; Triton 三款主流开源编译器，<br>      能够自主完成”模型→图优化→代码生成→调优”全流程，最终有能力向推理引擎中<br>      集成编译优化能力。</p>
+<p>前置要求：C++ 基础、熟悉 CNN 模型结构、了解 CUDA 编程模型<br>你的参考项目：ncnn_deploy（六路推理对比）、st_nndeploy（多引擎统一封装）<br>总周期：建议 <strong>14~18 周</strong>（每个编译器 4-6 周 + 综合实战）</p>
+</blockquote>
+<hr>
+<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><ol>
+<li><a href="#%E4%B8%80%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%BC%96%E8%AF%91%E5%99%A8%E6%A6%82%E8%A7%88">深度学习编译器概览</a></li>
+<li><a href="#phase-1%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86%E5%9F%BA%E7%A1%802-%E5%91%A8">Phase 1：编译原理基础（2 周）</a></li>
+<li><a href="#phase-2tvm-%E5%85%A5%E9%97%A8%E4%B8%8E%E5%AE%9E%E6%88%984-%E5%91%A8">Phase 2：TVM 入门与实战（4 周）</a></li>
+<li><a href="#phase-3mlir-%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%AE%9E%E6%88%984-%E5%91%A8">Phase 3：MLIR 基础与实战（4 周）</a></li>
+<li><a href="#phase-4triton-dsl-%E4%B8%8E-kernel-%E7%BC%96%E8%AF%91%E5%99%A82-%E5%91%A8">Phase 4：Triton DSL 与 Kernel 编译器（2 周）</a></li>
+<li><a href="#phase-5%E7%BC%96%E8%AF%91%E5%99%A8%E4%B8%8E%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E%E9%9B%86%E6%88%902-%E5%91%A8">Phase 5：编译器与推理引擎集成（2 周）</a></li>
+<li><a href="#phase-6%E7%B2%BE%E9%80%9A%E4%B9%8B%E8%B7%AF%E9%95%BF%E6%9C%9F">Phase 6：精通之路（长期）</a></li>
+<li><a href="#%E5%85%AB%E4%B8%89%E6%AC%BE%E7%BC%96%E8%AF%91%E5%99%A8%E5%AF%B9%E6%AF%94%E6%80%BB%E7%BB%93">三款编译器对比总结</a></li>
+<li><a href="#%E4%B9%9D%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%BA%90%E6%80%BB%E8%A1%A8">学习资源总表</a></li>
+<li><a href="#%E5%8D%81%E4%B8%8E%E4%BD%A0%E7%9A%84%E9%A1%B9%E7%9B%AE%E7%9A%84%E5%85%B3%E8%81%94">与你的项目的关联</a></li>
+</ol>
+<hr>
+<h2 id="一、深度学习编译器概览"><a href="#一、深度学习编译器概览" class="headerlink" title="一、深度学习编译器概览"></a>一、深度学习编译器概览</h2><h3 id="1-1-为什么需要深度学习编译器？"><a href="#1-1-为什么需要深度学习编译器？" class="headerlink" title="1.1 为什么需要深度学习编译器？"></a>1.1 为什么需要深度学习编译器？</h3><p>推理引擎（ncnn &#x2F; MNN &#x2F; ONNX Runtime &#x2F; TensorRT）能加速模型部署，但它们有一个根本限制：<br><strong>每个引擎手动实现了固定算子的优化</strong>。当出现新算子、新硬件、新模型结构时，手动优化跟不上。</p>
+<p>深度学习编译器解决了这个问题：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">传统方式:</span><br><span class="line">  模型 → 手动算子实现 → 手动调优 → 推理引擎</span><br><span class="line">         ↑ 每新增一个硬件/算子就要重新手动实现</span><br><span class="line"></span><br><span class="line">编译器方式:</span><br><span class="line">  模型 → 编译器前端 → 中间表示(IR) → 自动优化 → 代码生成 → 可执行代码</span><br><span class="line">                        ↑ 抽象了硬件差异，一次优化到处生成</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-三款编译器定位"><a href="#1-2-三款编译器定位" class="headerlink" title="1.2 三款编译器定位"></a>1.2 三款编译器定位</h3><table>
+<thead>
+<tr>
+<th align="left">编译器</th>
+<th align="left">定位</th>
+<th align="center">抽象层级</th>
+<th align="left">适合用途</th>
+<th align="center">学习难度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>TVM</strong></td>
+<td align="left">端到端 DL 编译器</td>
+<td align="center">模型 → 图 → 张量 → 循环</td>
+<td align="left">快速部署新模型到新硬件</td>
+<td align="center">⭐⭐⭐</td>
+</tr>
+<tr>
+<td align="left"><strong>MLIR</strong></td>
+<td align="left">编译器基础设施</td>
+<td align="center">多级 IR 转换框架</td>
+<td align="left">构建自己的编译器、算子 dialect</td>
+<td align="center">⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td align="left"><strong>Triton</strong></td>
+<td align="left">GPU Kernel DSL</td>
+<td align="center">手写高效 kernel 的语言</td>
+<td align="left">替代手写 CUDA kernel</td>
+<td align="center">⭐⭐</td>
+</tr>
+</tbody></table>
+<h3 id="1-3-与传统编译器的类比"><a href="#1-3-与传统编译器的类比" class="headerlink" title="1.3 与传统编译器的类比"></a>1.3 与传统编译器的类比</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">传统编译器 (GCC/LLVM)          深度学习编译器</span><br><span class="line">─────────────────             ─────────────────</span><br><span class="line">C/C++ 源码                     PyTorch/TF 模型图</span><br><span class="line">        ↓                              ↓</span><br><span class="line">词法/语法/语义分析              图优化（算子融合、常量折叠）</span><br><span class="line">        ↓                              ↓</span><br><span class="line">LLVM IR（中间表示）              Relay IR / StableHLO / Linalg</span><br><span class="line">        ↓                              ↓</span><br><span class="line">优化 passes                     AutoTVM / Ansor / AutoSchedule</span><br><span class="line">        ↓                              ↓</span><br><span class="line">机器码生成（x86/ARM/GPU）       代码生成（LLVM/CUDA/Vulkan）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Phase-1：编译原理基础（2-周）"><a href="#Phase-1：编译原理基础（2-周）" class="headerlink" title="Phase 1：编译原理基础（2 周）"></a>Phase 1：编译原理基础（2 周）</h2><h3 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h3><p>虽然不需要成为编译器专家，但理解编译器的<strong>核心抽象</strong>能让后续学习高效 10 倍。</p>
+<h3 id="1-1-LLVM-基础-—-DL-编译器的”后端工厂”"><a href="#1-1-LLVM-基础-—-DL-编译器的”后端工厂”" class="headerlink" title="1.1 LLVM 基础 — DL 编译器的”后端工厂”"></a>1.1 LLVM 基础 — DL 编译器的”后端工厂”</h3><p>大多数 DL 编译器最终通过 LLVM 生成 CPU 代码。理解 LLVM 的 IR 是理解 TVM&#x2F;MLIR 的前置。</p>
+<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">; LLVM IR 示例：一个简单的向量加法</span></span><br><span class="line"><span class="keyword">define</span> <span class="type">void</span> <span class="title">@vec_add</span>(<span class="type">float</span>* <span class="keyword">nocapture</span> <span class="variable">%a</span><span class="punctuation">,</span> <span class="type">float</span>* <span class="keyword">nocapture</span> <span class="variable">%b</span><span class="punctuation">,</span> <span class="type">float</span>* <span class="keyword">nocapture</span> <span class="variable">%c</span><span class="punctuation">,</span> <span class="type">i64</span> <span class="variable">%n</span>) &#123;</span><br><span class="line"><span class="symbol">entry:</span></span><br><span class="line">  <span class="variable">%cmp</span> <span class="operator">=</span> <span class="keyword">icmp</span> <span class="keyword">sgt</span> <span class="type">i64</span> <span class="variable">%n</span><span class="punctuation">,</span> <span class="number">0</span></span><br><span class="line">  <span class="keyword">br</span> <span class="type">i1</span> <span class="variable">%cmp</span><span class="punctuation">,</span> <span class="type">label</span> <span class="variable">%loop</span><span class="punctuation">,</span> <span class="type">label</span> <span class="variable">%exit</span></span><br><span class="line"><span class="symbol"></span></span><br><span class="line"><span class="symbol">loop:</span></span><br><span class="line">  <span class="variable">%i</span> <span class="operator">=</span> <span class="keyword">phi</span> <span class="type">i64</span> [ <span class="number">0</span><span class="punctuation">,</span> <span class="variable">%entry</span> ]<span class="punctuation">,</span> [ <span class="variable">%next</span><span class="punctuation">,</span> <span class="variable">%loop</span> ]</span><br><span class="line">  <span class="variable">%pa</span> <span class="operator">=</span> <span class="keyword">getelementptr</span> <span class="type">float</span><span class="punctuation">,</span> <span class="type">float</span>* <span class="variable">%a</span><span class="punctuation">,</span> <span class="type">i64</span> <span class="variable">%i</span></span><br><span class="line">  <span class="variable">%pb</span> <span class="operator">=</span> <span class="keyword">getelementptr</span> <span class="type">float</span><span class="punctuation">,</span> <span class="type">float</span>* <span class="variable">%b</span><span class="punctuation">,</span> <span class="type">i64</span> <span class="variable">%i</span></span><br><span class="line">  <span class="variable">%pc</span> <span class="operator">=</span> <span class="keyword">getelementptr</span> <span class="type">float</span><span class="punctuation">,</span> <span class="type">float</span>* <span class="variable">%c</span><span class="punctuation">,</span> <span class="type">i64</span> <span class="variable">%i</span></span><br><span class="line">  <span class="variable">%va</span> <span class="operator">=</span> <span class="keyword">load</span> <span class="type">float</span><span class="punctuation">,</span> <span class="type">float</span>* <span class="variable">%pa</span></span><br><span class="line">  <span class="variable">%vb</span> <span class="operator">=</span> <span class="keyword">load</span> <span class="type">float</span><span class="punctuation">,</span> <span class="type">float</span>* <span class="variable">%pb</span></span><br><span class="line">  <span class="variable">%vc</span> <span class="operator">=</span> <span class="keyword">fadd</span> <span class="type">float</span> <span class="variable">%va</span><span class="punctuation">,</span> <span class="variable">%vb</span></span><br><span class="line">  <span class="keyword">store</span> <span class="type">float</span> <span class="variable">%vc</span><span class="punctuation">,</span> <span class="type">float</span>* <span class="variable">%pc</span></span><br><span class="line">  <span class="variable">%next</span> <span class="operator">=</span> <span class="keyword">add</span> <span class="keyword">nsw</span> <span class="type">i64</span> <span class="variable">%i</span><span class="punctuation">,</span> <span class="number">1</span></span><br><span class="line">  <span class="variable">%done</span> <span class="operator">=</span> <span class="keyword">icmp</span> <span class="keyword">eq</span> <span class="type">i64</span> <span class="variable">%next</span><span class="punctuation">,</span> <span class="variable">%n</span></span><br><span class="line">  <span class="keyword">br</span> <span class="type">i1</span> <span class="variable">%done</span><span class="punctuation">,</span> <span class="type">label</span> <span class="variable">%exit</span><span class="punctuation">,</span> <span class="type">label</span> <span class="variable">%loop</span></span><br><span class="line"><span class="symbol"></span></span><br><span class="line"><span class="symbol">exit:</span></span><br><span class="line">  <span class="keyword">ret</span> <span class="type">void</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>关键理解：</strong> IR 是编译器内部的语言，它在”源码的便利性”和”机器码的高效性”之间架起桥梁。你不需要手写 LLVM IR，但需要理解这个概念，因为 TVM 的 Relay IR 和 MLIR 的各层 dialect 遵循同样的哲学。</p>
+<h3 id="1-2-核心概念速查"><a href="#1-2-核心概念速查" class="headerlink" title="1.2 核心概念速查"></a>1.2 核心概念速查</h3><table>
+<thead>
+<tr>
+<th align="left">概念</th>
+<th align="left">传统编译器（LLVM）</th>
+<th align="left">TVM</th>
+<th align="left">MLIR</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>IR</strong></td>
+<td align="left">LLVM IR</td>
+<td align="left">Relay IR &#x2F; TIR</td>
+<td align="left">多级 dialect</td>
+</tr>
+<tr>
+<td align="left"><strong>Pass</strong></td>
+<td align="left">优化转换</td>
+<td align="left">Relay Pass &#x2F; TIR Pass</td>
+<td align="left">Pass Pipeline</td>
+</tr>
+<tr>
+<td align="left"><strong>Target</strong></td>
+<td align="left">x86 &#x2F; ARM &#x2F; NVPTX</td>
+<td align="left">LLVM &#x2F; CUDA &#x2F; OpenCL</td>
+<td align="left">LLVM &#x2F; SPIR-V &#x2F; NVVM</td>
+</tr>
+<tr>
+<td align="left"><strong>调度</strong></td>
+<td align="left">指令调度</td>
+<td align="left">Tensor 调度（compute&#x2F;schedule）</td>
+<td align="left">转换（transform）</td>
+</tr>
+<tr>
+<td align="left"><strong>Dialect</strong></td>
+<td align="left">—</td>
+<td align="left">Relay &#x2F; TensorIR</td>
+<td align="left">Linalg &#x2F; SCF &#x2F; Affine</td>
+</tr>
+</tbody></table>
+<h3 id="1-3-图计算基础"><a href="#1-3-图计算基础" class="headerlink" title="1.3 图计算基础"></a>1.3 图计算基础</h3><p>DL 编译器处理的是<strong>计算图</strong>（有向无环图，DAG），而非传统编译器的控制流图。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 一个简单的计算图：Conv → ReLU → Add</span></span><br><span class="line"><span class="comment"># 在 PyTorch 中：</span></span><br><span class="line">x = torch.randn(<span class="number">1</span>, <span class="number">3</span>, <span class="number">32</span>, <span class="number">32</span>)</span><br><span class="line">w = torch.randn(<span class="number">32</span>, <span class="number">3</span>, <span class="number">3</span>, <span class="number">3</span>)</span><br><span class="line">b = torch.randn(<span class="number">32</span>)</span><br><span class="line">y = torch.nn.functional.conv2d(x, w, b, padding=<span class="number">1</span>)</span><br><span class="line">z = torch.relu(y)</span><br><span class="line">out = z + <span class="number">1.0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 编译器看到的图：</span></span><br><span class="line"><span class="comment">#   Input(x)     Weight(w)   Bias(b)</span></span><br><span class="line"><span class="comment">#       \           |          /</span></span><br><span class="line"><span class="comment">#        \          |         /</span></span><br><span class="line"><span class="comment">#         \      Conv2d(3→32, 3×3)</span></span><br><span class="line"><span class="comment">#          \         |</span></span><br><span class="line"><span class="comment">#           \       ReLU     Const(1.0)</span></span><br><span class="line"><span class="comment">#            \       |        /</span></span><br><span class="line"><span class="comment">#             \      |       /</span></span><br><span class="line"><span class="comment">#                 ElementWiseAdd</span></span><br><span class="line"><span class="comment">#                      |</span></span><br><span class="line"><span class="comment">#                    Output</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="练习（Phase-1）"><a href="#练习（Phase-1）" class="headerlink" title="练习（Phase 1）"></a>练习（Phase 1）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> -p /home/zodiac/03disk/02hermes/learn_cpp/05_compiler/phase1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 练习1: 阅读 LLVM IR 的语法（20 行即可）</span></span><br><span class="line"><span class="comment"># 练习2: 用 torch.fx 或 torch.jit.trace 导出计算图</span></span><br><span class="line">python3 -c <span class="string">&quot;</span></span><br><span class="line"><span class="string">import torch, torch.nn as nn</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">class SimpleNet(nn.Module):</span></span><br><span class="line"><span class="string">    def __init__(self):</span></span><br><span class="line"><span class="string">        super().__init__()</span></span><br><span class="line"><span class="string">        self.conv = nn.Conv2d(3, 32, 3, padding=1)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    def forward(self, x):</span></span><br><span class="line"><span class="string">        x = self.conv(x)</span></span><br><span class="line"><span class="string">        x = torch.relu(x)</span></span><br><span class="line"><span class="string">        return x + 1.0</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">model = SimpleNet().eval()</span></span><br><span class="line"><span class="string">dummy = torch.randn(1, 3, 32, 32)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"># TorchScript 图</span></span><br><span class="line"><span class="string">traced = torch.jit.trace(model, dummy)</span></span><br><span class="line"><span class="string">print(traced.graph)  # 看这个输出</span></span><br><span class="line"><span class="string">&quot;</span></span><br><span class="line"><span class="comment"># 练习3: 理解 ncnn 的 .param 文件与计算图的关系</span></span><br><span class="line"><span class="built_in">cat</span> /home/zodiac/03disk/02hermes/ncnn_deploy/model/cifar10_cnn.ncnn.param | <span class="built_in">head</span> -15</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Phase-2：TVM-入门与实战（4-周）"><a href="#Phase-2：TVM-入门与实战（4-周）" class="headerlink" title="Phase 2：TVM 入门与实战（4 周）"></a>Phase 2：TVM 入门与实战（4 周）</h2><h3 id="2-1-TVM-整体架构"><a href="#2-1-TVM-整体架构" class="headerlink" title="2.1 TVM 整体架构"></a>2.1 TVM 整体架构</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">PyTorch / ONNX / TF 模型</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">┌─────────────────────────────────┐</span><br><span class="line">│  TVM 前端（Frontend）             │</span><br><span class="line">│  from_pytorch / from_onnx       │</span><br><span class="line">│  将模型导入为 Relay IR           │</span><br><span class="line">└────────────────┬────────────────┘</span><br><span class="line">                 │</span><br><span class="line">                 ▼</span><br><span class="line">┌─────────────────────────────────┐</span><br><span class="line">│  Relay IR（图级别 IR）            │</span><br><span class="line">│  图优化 Pass：                   │</span><br><span class="line">│  ● FuseOps（算子融合）            │</span><br><span class="line">│  ● FoldConstant（常量折叠）       │</span><br><span class="line">│  ● EliminateCommonSubexpr       │</span><br><span class="line">└────────────────┬────────────────┘</span><br><span class="line">                 │</span><br><span class="line">                 ▼</span><br><span class="line">┌─────────────────────────────────┐</span><br><span class="line">│  TensorIR（张量级别 IR）          │</span><br><span class="line">│  TE（Tensor Expression）：       │</span><br><span class="line">│  compute / schedule 分离         │</span><br><span class="line">│  → auto_schedule (Ansor)         │</span><br><span class="line">└────────────────┬────────────────┘</span><br><span class="line">                 │</span><br><span class="line">                 ▼</span><br><span class="line">┌─────────────────────────────────┐</span><br><span class="line">│  TIR Pass 优化                   │</span><br><span class="line">│  ● Vectorize（向量化）            │</span><br><span class="line">│  ● Unroll（循环展开）             │</span><br><span class="line">│  ● StorageRewrite（内存复用）      │</span><br><span class="line">│  ● InjectPrefetch（预取注入）      │</span><br><span class="line">└────────────────┬────────────────┘</span><br><span class="line">                 │</span><br><span class="line">                 ▼</span><br><span class="line">┌─────────────────────────────────┐</span><br><span class="line">│  后端代码生成（Codegen）          │</span><br><span class="line">│  target=&quot;llvm&quot; → LLVM IR → 机器码 │</span><br><span class="line">│  target=&quot;cuda&quot; → CUDA source    │</span><br><span class="line">│  target=&quot;opencl&quot; → OpenCL C     │</span><br><span class="line">│  target=&quot;vulkan&quot; → SPIR-V       │</span><br><span class="line">└─────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-第一周：安装与-Hello-World"><a href="#2-2-第一周：安装与-Hello-World" class="headerlink" title="2.2 第一周：安装与 Hello World"></a>2.2 第一周：安装与 Hello World</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># TVM 安装（从源码编译，与你 build ncnn/MNN 同理）</span></span><br><span class="line">git <span class="built_in">clone</span> --recursive https://github.com/apache/tvm tvm</span><br><span class="line"><span class="built_in">cd</span> tvm</span><br><span class="line"><span class="built_in">mkdir</span> build &amp;&amp; <span class="built_in">cp</span> cmake/config.cmake build/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 编辑 build/config.cmake 开启关键选项：</span></span><br><span class="line"><span class="comment"># set(USE_LLVM ON)</span></span><br><span class="line"><span class="comment"># set(USE_CUDA ON)</span></span><br><span class="line"><span class="comment"># set(USE_CUDNN ON)</span></span><br><span class="line"><span class="comment"># set(USE_CUBLAS ON)</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">cd</span> build</span><br><span class="line">cmake .. -DCMAKE_BUILD_TYPE=Release</span><br><span class="line">make -j$(<span class="built_in">nproc</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Python 包</span></span><br><span class="line"><span class="built_in">cd</span> ../python</span><br><span class="line">pip install -e .</span><br></pre></td></tr></table></figure>
+
+<p><strong>第一个 TVM 程序：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tvm</span><br><span class="line"><span class="keyword">from</span> tvm <span class="keyword">import</span> relay</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 构建一个简单的计算图：z = x + y</span></span><br><span class="line">x = relay.var(<span class="string">&quot;x&quot;</span>, shape=(<span class="number">4</span>,), dtype=<span class="string">&quot;float32&quot;</span>)</span><br><span class="line">y = relay.var(<span class="string">&quot;y&quot;</span>, shape=(<span class="number">4</span>,), dtype=<span class="string">&quot;float32&quot;</span>)</span><br><span class="line">z = relay.add(x, y)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 创建 IR 模块</span></span><br><span class="line">mod = tvm.IRModule.from_expr(z)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 编译到 LLVM 目标</span></span><br><span class="line">target = <span class="string">&quot;llvm&quot;</span>  <span class="comment"># CPU</span></span><br><span class="line"><span class="keyword">with</span> tvm.transform.PassContext(opt_level=<span class="number">3</span>):</span><br><span class="line">    lib = relay.build(mod, target=target)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 运行</span></span><br><span class="line">ctx = tvm.cpu()</span><br><span class="line">m = tvm.contrib.graph_executor.GraphModule(lib[<span class="string">&quot;default&quot;</span>](ctx))</span><br><span class="line"></span><br><span class="line">m.set_input(<span class="string">&quot;x&quot;</span>, np.array([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>], dtype=np.float32))</span><br><span class="line">m.set_input(<span class="string">&quot;y&quot;</span>, np.array([<span class="number">10</span>, <span class="number">20</span>, <span class="number">30</span>, <span class="number">40</span>], dtype=np.float32))</span><br><span class="line">m.run()</span><br><span class="line"><span class="built_in">print</span>(m.get_output(<span class="number">0</span>).numpy())  <span class="comment"># [11, 22, 33, 44]</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>关键理解：</strong> TVM 的工作流只有四个步骤：<strong>定义→编译→加载→运行</strong>。这和你的 ncnn_deploy 思路一致（定义计算图→加载模型→推理运行），只不过 TVM 将”模型编译”这一步变成了真正的编译，而不是简单地加载预计算参数。</p>
+<h3 id="2-3-第二周：导入真实模型-—-CIFAR-10-CNN"><a href="#2-3-第二周：导入真实模型-—-CIFAR-10-CNN" class="headerlink" title="2.3 第二周：导入真实模型 — CIFAR-10 CNN"></a>2.3 第二周：导入真实模型 — CIFAR-10 CNN</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> tvm</span><br><span class="line"><span class="keyword">from</span> tvm <span class="keyword">import</span> relay</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. PyTorch 模型定义（与你的 learn_nn 一致）</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">CIFAR10_CNN</span>(torch.nn.Module):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__()</span><br><span class="line">        <span class="variable language_">self</span>.conv1 = torch.nn.Sequential(</span><br><span class="line">            torch.nn.Conv2d(<span class="number">3</span>, <span class="number">32</span>, <span class="number">3</span>, padding=<span class="number">1</span>),</span><br><span class="line">            torch.nn.BatchNorm2d(<span class="number">32</span>),</span><br><span class="line">            torch.nn.ReLU(inplace=<span class="literal">True</span>),</span><br><span class="line">            torch.nn.MaxPool2d(<span class="number">2</span>),</span><br><span class="line">        )</span><br><span class="line">        <span class="variable language_">self</span>.conv2 = torch.nn.Sequential(</span><br><span class="line">            torch.nn.Conv2d(<span class="number">32</span>, <span class="number">64</span>, <span class="number">3</span>, padding=<span class="number">1</span>),</span><br><span class="line">            torch.nn.BatchNorm2d(<span class="number">64</span>),</span><br><span class="line">            torch.nn.ReLU(inplace=<span class="literal">True</span>),</span><br><span class="line">            torch.nn.MaxPool2d(<span class="number">2</span>),</span><br><span class="line">        )</span><br><span class="line">        <span class="variable language_">self</span>.conv3 = torch.nn.Sequential(</span><br><span class="line">            torch.nn.Conv2d(<span class="number">64</span>, <span class="number">128</span>, <span class="number">3</span>, padding=<span class="number">1</span>),</span><br><span class="line">            torch.nn.BatchNorm2d(<span class="number">128</span>),</span><br><span class="line">            torch.nn.ReLU(inplace=<span class="literal">True</span>),</span><br><span class="line">            torch.nn.MaxPool2d(<span class="number">2</span>),</span><br><span class="line">        )</span><br><span class="line">        <span class="variable language_">self</span>.classifier = torch.nn.Sequential(</span><br><span class="line">            torch.nn.Dropout(<span class="number">0.5</span>),</span><br><span class="line">            torch.nn.Linear(<span class="number">128</span> * <span class="number">4</span> * <span class="number">4</span>, <span class="number">256</span>),</span><br><span class="line">            torch.nn.ReLU(inplace=<span class="literal">True</span>),</span><br><span class="line">            torch.nn.Linear(<span class="number">256</span>, <span class="number">10</span>),</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, x</span>):</span><br><span class="line">        x = <span class="variable language_">self</span>.conv1(x); x = <span class="variable language_">self</span>.conv2(x); x = <span class="variable language_">self</span>.conv3(x)</span><br><span class="line">        x = x.view(x.size(<span class="number">0</span>), -<span class="number">1</span>)</span><br><span class="line">        x = <span class="variable language_">self</span>.classifier(x)</span><br><span class="line">        <span class="keyword">return</span> x</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 加载权重</span></span><br><span class="line">model = CIFAR10_CNN()</span><br><span class="line">model.load_state_dict(</span><br><span class="line">    torch.load(<span class="string">&quot;/home/zodiac/03disk/02hermes/learn_nn/output/best_model.pth&quot;</span>,</span><br><span class="line">               weights_only=<span class="literal">True</span>))</span><br><span class="line">model.<span class="built_in">eval</span>()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 导入到 TVM Relay IR</span></span><br><span class="line">dummy = torch.randn(<span class="number">1</span>, <span class="number">3</span>, <span class="number">32</span>, <span class="number">32</span>)</span><br><span class="line">input_name = <span class="string">&quot;input0&quot;</span></span><br><span class="line">trace = torch.jit.trace(model, dummy)</span><br><span class="line">mod, params = relay.frontend.from_pytorch(trace,</span><br><span class="line">    [(<span class="string">&quot;input0&quot;</span>, (<span class="number">1</span>, <span class="number">3</span>, <span class="number">32</span>, <span class="number">32</span>))])</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Relay IR:&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(mod)  <span class="comment"># 查看图结构</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 编译</span></span><br><span class="line">target = <span class="string">&quot;llvm&quot;</span></span><br><span class="line"><span class="keyword">with</span> tvm.transform.PassContext(opt_level=<span class="number">3</span>):</span><br><span class="line">    <span class="comment"># opt_level 0-4，越高越激进的优化</span></span><br><span class="line">    lib = relay.build(mod, target=target, params=params)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 推理</span></span><br><span class="line">ctx = tvm.cpu()</span><br><span class="line">m = tvm.contrib.graph_executor.GraphModule(lib[<span class="string">&quot;default&quot;</span>](ctx))</span><br><span class="line">m.set_input(input_name, dummy.numpy())</span><br><span class="line">m.run()</span><br><span class="line">tvm_output = m.get_output(<span class="number">0</span>).numpy()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. 对比 PyTorch 结果</span></span><br><span class="line"><span class="keyword">with</span> torch.no_grad():</span><br><span class="line">    pt_output = model(dummy).numpy()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;TVM  vs PyTorch MAE: <span class="subst">&#123;np.<span class="built_in">max</span>(np.<span class="built_in">abs</span>(tvm_output - pt_output)):<span class="number">.6</span>f&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;TVM 预测: <span class="subst">&#123;np.argmax(tvm_output)&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;PyTorch预测: <span class="subst">&#123;np.argmax(pt_output)&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>与你的 ncnn_deploy 对比：</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">步骤</th>
+<th align="left">ncnn 方案</th>
+<th align="left">TVM 方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">模型导入</td>
+<td align="left">PNNX 转换 ncnn param&#x2F;bin</td>
+<td align="left"><code>relay.frontend.from_pytorch</code></td>
+</tr>
+<tr>
+<td align="left">图优化</td>
+<td align="left">ncnn 内部做算子融合</td>
+<td align="left">Relay Pass（FuseOps, FoldConstant）</td>
+</tr>
+<tr>
+<td align="left">代码生成</td>
+<td align="left">ncnn 调用预编译算子</td>
+<td align="left">TVM 生成 LLVM IR 并编译为机器码</td>
+</tr>
+<tr>
+<td align="left">调度优化</td>
+<td align="left">ncnn 固定 Winograd&#x2F;sgemm</td>
+<td align="left">AutoTVM &#x2F; Ansor 自动搜索最优 schedule</td>
+</tr>
+<tr>
+<td align="left">推理运行</td>
+<td align="left"><code>ex.extract(&quot;out0&quot;, out)</code></td>
+<td align="left"><code>m.run()</code> 执行生成的代码</td>
+</tr>
+</tbody></table>
+<h3 id="2-4-第三周：TVM-核心-—-compute-schedule-分离"><a href="#2-4-第三周：TVM-核心-—-compute-schedule-分离" class="headerlink" title="2.4 第三周：TVM 核心 — compute&#x2F;schedule 分离"></a>2.4 第三周：TVM 核心 — compute&#x2F;schedule 分离</h3><p>TVM 最核心的设计哲学是 <strong>compute 与 schedule 的分离</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tvm</span><br><span class="line"><span class="keyword">from</span> tvm <span class="keyword">import</span> te</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== compute ==========</span></span><br><span class="line"><span class="comment"># 描述&quot;做什么&quot;——纯数学语义，不涉及任何硬件细节</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 矩阵乘法 C = A @ B（A: M×K, B: K×N）</span></span><br><span class="line">M, K, N = <span class="number">1024</span>, <span class="number">1024</span>, <span class="number">1024</span></span><br><span class="line">k = te.reduce_axis((<span class="number">0</span>, K), name=<span class="string">&quot;k&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># compute：声明计算规则（数学表达式）</span></span><br><span class="line">A = te.placeholder((M, K), name=<span class="string">&quot;A&quot;</span>)</span><br><span class="line">B = te.placeholder((K, N), name=<span class="string">&quot;B&quot;</span>)</span><br><span class="line">C = te.compute(</span><br><span class="line">    (M, N),</span><br><span class="line">    <span class="keyword">lambda</span> i, j: te.<span class="built_in">sum</span>(A[i, k] * B[k, j], axis=k),</span><br><span class="line">    name=<span class="string">&quot;C&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ========== schedule ==========</span></span><br><span class="line"><span class="comment"># 描述&quot;怎么做&quot;——指定计算顺序、并行、向量化等硬件细节</span></span><br><span class="line">s = te.create_schedule(C.op)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 默认 schedule：按行遍历 M→N→K</span></span><br><span class="line"><span class="comment">#    → 元素级顺序计算，无缓存优化</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 增加分块（tiling）</span></span><br><span class="line">yo, yi = s[C].split(C.op.axis[<span class="number">0</span>], factor=<span class="number">32</span>)  <span class="comment"># 行分块 32</span></span><br><span class="line">xo, xi = s[C].split(C.op.axis[<span class="number">1</span>], factor=<span class="number">32</span>)  <span class="comment"># 列分块 32</span></span><br><span class="line">s[C].reorder(yo, xo, yi, xi)                  <span class="comment"># 重排为块顺序</span></span><br><span class="line"><span class="comment"># 现在顺序：遍历 32×32 块 → 块内逐元素</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 绑定到线程（OpenMP 并行）</span></span><br><span class="line">s[C].parallel(yo)  <span class="comment"># 外层块循环并行</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 向量化内层</span></span><br><span class="line">s[C].vectorize(xi)  <span class="comment"># SIMD 向量化</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 在 K 维也做分块（cache tiling）</span></span><br><span class="line">ko, ki = s[C].split(k, factor=<span class="number">128</span>)</span><br><span class="line">s[C].reorder(ko, yo, xo, ki, yi, xi)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查最终 schedule</span></span><br><span class="line"><span class="built_in">print</span>(tvm.lower(s, [A, B, C], simple_mode=<span class="literal">True</span>))</span><br></pre></td></tr></table></figure>
+
+<p><strong>输出对比（默认 vs 优化后的循环结构）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"># 默认（朴素 3 层循环）:</span><br><span class="line">for i in [0, M):</span><br><span class="line">    for j in [0, N):</span><br><span class="line">        C[i][j] = sum over k: A[i][k] * B[k][j]</span><br><span class="line"></span><br><span class="line"># 优化后（分块+并行+向量化）:</span><br><span class="line">parallel for yo in [0, M/32):       ← OpenMP 并行</span><br><span class="line">    for xo in [0, N/32):</span><br><span class="line">        for ko in [0, K/128):       ← cache tiling</span><br><span class="line">            for yi in [0, 32):</span><br><span class="line">                vectorize xi in [0, 32):  ← SIMD 向量化</span><br><span class="line">                    // 32×32 块的局部累加</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-5-第四周：AutoTVM-与-Ansor-自动调优"><a href="#2-5-第四周：AutoTVM-与-Ansor-自动调优" class="headerlink" title="2.5 第四周：AutoTVM 与 Ansor 自动调优"></a>2.5 第四周：AutoTVM 与 Ansor 自动调优</h3><p>手工写 schedule 需要专家知识。TVM 提供了<strong>自动调优</strong>机制。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tvm</span><br><span class="line"><span class="keyword">from</span> tvm <span class="keyword">import</span> relay, auto_scheduler</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 导入模型</span></span><br><span class="line">mod, params = relay.frontend.from_pytorch(...)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 提取搜索任务</span></span><br><span class="line">tasks, task_weights = auto_scheduler.extract_tasks(</span><br><span class="line">    mod[<span class="string">&quot;main&quot;</span>], params, target=<span class="string">&quot;llvm&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;提取了 <span class="subst">&#123;<span class="built_in">len</span>(tasks)&#125;</span> 个搜索任务:&quot;</span>)</span><br><span class="line"><span class="keyword">for</span> task <span class="keyword">in</span> tasks:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;  <span class="subst">&#123;task.desc&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 自动搜索（可能数小时，取决于搜索空间）</span></span><br><span class="line">log_file = <span class="string">&quot;cifar10_autotune.json&quot;</span></span><br><span class="line">tuner = auto_scheduler.TaskScheduler(tasks, task_weights)</span><br><span class="line">tune_option = auto_scheduler.TuningOptions(</span><br><span class="line">    num_measure_trials=<span class="number">1000</span>,      <span class="comment"># 尝试 1000 种 schedule 变体</span></span><br><span class="line">    builder=auto_scheduler.LocalBuilder(),</span><br><span class="line">    runner=auto_scheduler.LocalRunner(repeat=<span class="number">3</span>, enable_cpu_cache_flush=<span class="literal">True</span>),</span><br><span class="line">    measure_callbacks=[auto_scheduler.RecordToFile(log_file)],</span><br><span class="line">)</span><br><span class="line">tuner.tune(tune_option, search_policy=<span class="string">&quot;sketch.random&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 使用搜索到的 schedule 编译</span></span><br><span class="line"><span class="keyword">with</span> auto_scheduler.ApplyHistoryBest(log_file):</span><br><span class="line">    <span class="keyword">with</span> tvm.transform.PassContext(opt_level=<span class="number">3</span>):</span><br><span class="line">        lib = relay.build(mod, target=target, params=params)</span><br></pre></td></tr></table></figure>
+
+<p><strong>AutoTVM &#x2F; Ansor 的工作流程：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1. 分析计算图 → 提取所有&quot;张量计算子图&quot;</span><br><span class="line">2. 对每个子图，枚举可能的 schedule 变体</span><br><span class="line">3. 在目标硬件上实际运行测量性能</span><br><span class="line">4. 用机器学习模型（XGBoost）预测未尝试的变体的性能</span><br><span class="line">5. 迭代搜索 → 输出最优 schedule</span><br></pre></td></tr></table></figure>
+
+<h3 id="补充：TVM-的代码生成后端"><a href="#补充：TVM-的代码生成后端" class="headerlink" title="补充：TVM 的代码生成后端"></a>补充：TVM 的代码生成后端</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># TVM 支持多个 target</span></span><br><span class="line">targets = &#123;</span><br><span class="line">    <span class="string">&quot;cpu&quot;</span>:   <span class="string">&quot;llvm -mcpu=skylake-avx512&quot;</span>,      <span class="comment"># CPU + AVX512</span></span><br><span class="line">    <span class="string">&quot;gpu&quot;</span>:   <span class="string">&quot;cuda -arch=sm_75&quot;</span>,                 <span class="comment"># 你的 RTX 2070</span></span><br><span class="line">    <span class="string">&quot;mobile&quot;</span>: <span class="string">&quot;llvm -mtriple=aarch64-linux-gnu&quot;</span>, <span class="comment"># ARM 交叉编译</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 对 GPU 推理：</span></span><br><span class="line">target = <span class="string">&quot;cuda&quot;</span></span><br><span class="line"><span class="keyword">with</span> tvm.transform.PassContext(opt_level=<span class="number">3</span>):</span><br><span class="line">    lib = relay.build(mod, target=target, params=params)</span><br><span class="line"></span><br><span class="line">ctx = tvm.cuda()</span><br><span class="line">m = tvm.contrib.graph_executor.GraphModule(lib[<span class="string">&quot;default&quot;</span>](ctx))</span><br><span class="line">m.run()</span><br></pre></td></tr></table></figure>
+
+<h3 id="练习项目（Phase-2-结束时）"><a href="#练习项目（Phase-2-结束时）" class="headerlink" title="练习项目（Phase 2 结束时）"></a>练习项目（Phase 2 结束时）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /home/zodiac/03disk/02hermes/learn_cpp/05_compiler/tvm</span><br><span class="line"></span><br><span class="line"><span class="comment"># 练习1: 用 TVM 部署 CIFAR-10 CNN（CPU 和 CUDA）</span></span><br><span class="line"><span class="comment">#         对比 TVM vs ncnn vs manual_cuda 的延迟</span></span><br><span class="line"><span class="comment"># 练习2: 手写 compute/schedule 实现 conv2d</span></span><br><span class="line"><span class="comment">#         模仿 ncnn_deploy 的 Optimized（im2col+GEMM）版本</span></span><br><span class="line"><span class="comment"># 练习3: 在 CIFAR-10 CNN 上运行 AutoTVM 调优</span></span><br><span class="line"><span class="comment">#         对比&quot;手动 schedule&quot; vs &quot;自动调优&quot;的性能</span></span><br><span class="line"><span class="comment"># 练习4: 对比 TVM CUDA 代码生成 vs 你的 manual_cuda.cu 的 CUDA kernel</span></span><br><span class="line"><span class="comment">#         TVM 生成什么样的 CUDA 代码？有没有做我们不会做的优化？</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Phase-3：MLIR-基础与实战（4-周）"><a href="#Phase-3：MLIR-基础与实战（4-周）" class="headerlink" title="Phase 3：MLIR 基础与实战（4 周）"></a>Phase 3：MLIR 基础与实战（4 周）</h2><h3 id="3-1-为什么需要-MLIR？"><a href="#3-1-为什么需要-MLIR？" class="headerlink" title="3.1 为什么需要 MLIR？"></a>3.1 为什么需要 MLIR？</h3><p>TVM 解决了”从模型到代码”的问题，但它的 IR 是<strong>为深度学习定制的</strong>。当需要引入新的硬件（自定义 NPU）、新的计算模式（量化、稀疏计算）时，修改 TVM 的 IR 非常困难。</p>
+<p><strong>MLIR（Multi-Level Intermediate Representation）</strong> 是 LLVM 社区发起的编译器基础设施，核心理念是：</p>
+<ul>
+<li>不定义一种 IR，而是提供一个<strong>定义 IR 的框架</strong>（Dialect）</li>
+<li>不同抽象层次的 IR（dialect）可以在同一个编译流水线中共存、互相转换</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">MLIR 的 Dialect 生态系统:</span><br><span class="line">  Python 层面</span><br><span class="line">     │</span><br><span class="line">  ┌──▼─────────────────┐</span><br><span class="line">  │ StableHLO Dialect   │ ← Google 的 MLIR-based HLO（替代 XLA HLO）</span><br><span class="line">  │ Torch-MLIR Dialect  │ ← PyTorch 到 MLIR 的桥接</span><br><span class="line">  └────────┬───────────┘</span><br><span class="line">           │  ↓ 图级别优化</span><br><span class="line">  ┌────────▼───────────┐</span><br><span class="line">  │ Linalg Dialect      │ ← 线性代数算子（conv, matmul, dot）</span><br><span class="line">  └────────┬───────────┘</span><br><span class="line">           │  ↓ 循环级转换</span><br><span class="line">  ┌────────▼───────────┐</span><br><span class="line">  │ Affine / SCF Dialect│ ← 控制流、循环嵌套、内存访问</span><br><span class="line">  └────────┬───────────┘</span><br><span class="line">           │  ↓ 存储级优化</span><br><span class="line">  ┌────────▼───────────┐</span><br><span class="line">  │ MemRef Dialect      │ ← 内存分配、拷贝、view</span><br><span class="line">  └────────┬───────────┘</span><br><span class="line">           │  ↓ 最终代码生成</span><br><span class="line">  ┌────────▼───────────┐</span><br><span class="line">  │ LLVM Dialect         │ ← 对应 LLVM IR</span><br><span class="line">  └─────────────────────┘</span><br><span class="line">     │</span><br><span class="line">  LLVM / NVVM / SPIR-V</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-第一周：MLIR-环境搭建与基础概念"><a href="#3-2-第一周：MLIR-环境搭建与基础概念" class="headerlink" title="3.2 第一周：MLIR 环境搭建与基础概念"></a>3.2 第一周：MLIR 环境搭建与基础概念</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># MLIR 是 LLVM 项目的一部分</span></span><br><span class="line">git <span class="built_in">clone</span> --depth 1 https://github.com/llvm/llvm-project.git</span><br><span class="line"><span class="built_in">cd</span> llvm-project</span><br><span class="line"><span class="built_in">mkdir</span> build &amp;&amp; <span class="built_in">cd</span> build</span><br><span class="line"></span><br><span class="line">cmake -G Ninja ../llvm \</span><br><span class="line">  -DLLVM_ENABLE_PROJECTS=<span class="string">&quot;mlir&quot;</span> \</span><br><span class="line">  -DLLVM_BUILD_EXAMPLES=ON \</span><br><span class="line">  -DLLVM_TARGETS_TO_BUILD=<span class="string">&quot;X86;NVPTX;AArch64&quot;</span> \</span><br><span class="line">  -DCMAKE_BUILD_TYPE=Release</span><br><span class="line"></span><br><span class="line">ninja -j$(<span class="built_in">nproc</span>)</span><br><span class="line">ninja check-mlir</span><br><span class="line"></span><br><span class="line"><span class="comment"># 验证</span></span><br><span class="line">./bin/mlir-opt --version</span><br></pre></td></tr></table></figure>
+
+<p><strong>MLIR 的 3 个核心概念：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">// 1. Operation — 基本计算单元（类似 LLVM 指令）</span><br><span class="line">// 2. Dialect — 一系列相关的 Operations 的集合</span><br><span class="line">// 3. Region — 嵌套的代码块（类似 LLVM 的基本块）</span><br><span class="line"></span><br><span class="line">// 示例：用 MLIR 表示卷积+ReLU</span><br><span class="line">// 先看高层次的 Linalg dialect：</span><br><span class="line">func.func @conv_relu(%input: tensor&lt;1x3x32x32xf32&gt;,</span><br><span class="line">                     %weight: tensor&lt;32x3x3x3xf32&gt;,</span><br><span class="line">                     %bias: tensor&lt;32xf32&gt;)</span><br><span class="line">    -&gt; tensor&lt;1x32x32x32xf32&gt; &#123;</span><br><span class="line">  // Linalg 层次的卷积</span><br><span class="line">  %conv = linalg.conv_2d_nchw_fchw</span><br><span class="line">    &#123; dilations = dense&lt;1&gt; : vector&lt;2xi64&gt;,</span><br><span class="line">      strides = dense&lt;1&gt; : vector&lt;2xi64&gt;,</span><br><span class="line">      padding = dense&lt;1&gt; : vector&lt;2xi64&gt; &#125;</span><br><span class="line">    ins(%input, %weight : tensor&lt;1x3x32x32xf32&gt;, tensor&lt;32x3x3x3xf32&gt;)</span><br><span class="line">    outs(%bias : tensor&lt;32xf32&gt;)</span><br><span class="line">    -&gt; tensor&lt;1x32x32x32xf32&gt;</span><br><span class="line"></span><br><span class="line">  // 加偏置</span><br><span class="line">  %bcast = linalg.broadcast</span><br><span class="line">    ins(%bias : tensor&lt;32xf32&gt;)</span><br><span class="line">    outs(%conv : tensor&lt;1x32x32x32xf32&gt;)</span><br><span class="line">    dimensions = [0, 2, 3]</span><br><span class="line">  %add = linalg.add</span><br><span class="line">    ins(%conv, %bcast : tensor&lt;1x32x32x32xf32&gt;, tensor&lt;1x32x32x32xf32&gt;)</span><br><span class="line">    outs(%conv : tensor&lt;1x32x32x32xf32&gt;)</span><br><span class="line"></span><br><span class="line">  // ReLU</span><br><span class="line">  %relu = linalg.relu</span><br><span class="line">    ins(%add : tensor&lt;1x32x32x32xf32&gt;)</span><br><span class="line">    outs(%add : tensor&lt;1x32x32x32xf32&gt;)</span><br><span class="line">  return %relu : tensor&lt;1x32x32x32xf32&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-第二周：编写你的第一个-MLIR-Pass"><a href="#3-3-第二周：编写你的第一个-MLIR-Pass" class="headerlink" title="3.3 第二周：编写你的第一个 MLIR Pass"></a>3.3 第二周：编写你的第一个 MLIR Pass</h3><p>Pass 是 MLIR 中完成优化的基本单位。一个 pass 将 IR 从一种形式转换为另一种。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 一个简单的 MLIR Pass：将连续的 add + relu 融合</span></span><br><span class="line"><span class="comment">// 用 C++ 编写（MLIR 的主体是 C++）</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;mlir/Pass/Pass.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;mlir/Dialect/Linalg/IR/Linalg.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;mlir/Dialect/Arith/IR/Arith.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">FuseAddReluPass</span></span><br><span class="line">    : <span class="keyword">public</span> mlir::PassWrapper&lt;FuseAddReluPass,</span><br><span class="line">                               mlir::OperationPass&lt;mlir::func::FuncOp&gt;&gt; &#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">runOnOperation</span><span class="params">()</span> <span class="keyword">override</span> </span>&#123;</span><br><span class="line">        <span class="keyword">auto</span> func = <span class="built_in">getOperation</span>();</span><br><span class="line"></span><br><span class="line">        func.<span class="built_in">walk</span>([&amp;](mlir::linalg::AddOp add_op) &#123;</span><br><span class="line">            <span class="comment">// 检查 add_op 的 users 是否只有一个 relu</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">auto</span> user : add_op-&gt;<span class="built_in">getUsers</span>()) &#123;</span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">auto</span> relu_op = llvm::<span class="built_in">dyn_cast</span>&lt;mlir::linalg::ReluOp&gt;(user)) &#123;</span><br><span class="line">                    <span class="comment">// 跳过已经被融合过的</span></span><br><span class="line">                    <span class="keyword">if</span> (relu_op-&gt;<span class="built_in">hasAttr</span>(<span class="string">&quot;fused&quot;</span>)) <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">                    <span class="comment">// &quot;融合&quot; = 将 relu 的标记 merge 到 add 上</span></span><br><span class="line">                    add_op-&gt;<span class="built_in">setAttr</span>(<span class="string">&quot;fused_relu&quot;</span>,</span><br><span class="line">                        mlir::UnitAttr::<span class="built_in">get</span>(<span class="built_in">getContext</span>()));</span><br><span class="line">                    relu_op-&gt;<span class="built_in">erase</span>();  <span class="comment">// 删除独立的 relu</span></span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">mlir::StringRef <span class="title">getArgument</span><span class="params">()</span> <span class="type">const</span> <span class="keyword">final</span> </span>&#123; <span class="keyword">return</span> <span class="string">&quot;fuse-add-relu&quot;</span>; &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><strong>编译和运行你的 pass：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 注册 pass</span></span><br><span class="line">mlir-opt --fuse-add-relu input.mlir -o output.mlir</span><br></pre></td></tr></table></figure>
+
+<p><strong>MLIR 中的 Dialect 转换链示例（降级过程）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">linalg.conv_2d               ← 高层次卷积算子</span><br><span class="line">    │</span><br><span class="line">    ▼     --convert-linalg-to-affine-loops</span><br><span class="line">affine.for i, j, k            ← 显式循环嵌套</span><br><span class="line">    │</span><br><span class="line">    ▼     --lower-affine</span><br><span class="line">scf.for i, j, k               ← 标准控制流</span><br><span class="line">    │</span><br><span class="line">    ▼     --convert-scf-to-cf</span><br><span class="line">cf.br / cf.cond_br            ← 基本块跳转</span><br><span class="line">    │</span><br><span class="line">    ▼     --convert-cf-to-llvm</span><br><span class="line">llvm.br / llvm.alloca         ← LLVM IR 级别</span><br><span class="line">    │</span><br><span class="line">    ▼     llc</span><br><span class="line">x86 机器码                    ← 最终可执行</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-4-第三周：Torch-MLIR-—-从-PyTorch-到-MLIR"><a href="#3-4-第三周：Torch-MLIR-—-从-PyTorch-到-MLIR" class="headerlink" title="3.4 第三周：Torch-MLIR — 从 PyTorch 到 MLIR"></a>3.4 第三周：Torch-MLIR — 从 PyTorch 到 MLIR</h3><p>Torch-MLIR 是一个将 PyTorch 模型转换为 MLIR 的官方项目。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装 torch-mlir</span></span><br><span class="line"><span class="comment"># pip install torch-mlir 或从源码构建</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch_mlir</span><br><span class="line"></span><br><span class="line"><span class="comment"># 你的 CIFAR-10 模型</span></span><br><span class="line">model = CIFAR10_CNN()</span><br><span class="line">model.load_state_dict(torch.load(<span class="string">&quot;best_model.pth&quot;</span>, weights_only=<span class="literal">True</span>))</span><br><span class="line">model.<span class="built_in">eval</span>()</span><br><span class="line"></span><br><span class="line">example_input = torch.randn(<span class="number">1</span>, <span class="number">3</span>, <span class="number">32</span>, <span class="number">32</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 导出为 Torch-MLIR</span></span><br><span class="line">module = torch_mlir.<span class="built_in">compile</span>(</span><br><span class="line">    model, example_input,</span><br><span class="line">    output_type=torch_mlir.OutputType.LINALG_ON_TENSORS</span><br><span class="line">    <span class="comment"># 可选:</span></span><br><span class="line">    <span class="comment">#   TORCH        — 原始 Torch dialect</span></span><br><span class="line">    <span class="comment">#   TORCH_FUNC   — 函数级 Torch dialect</span></span><br><span class="line">    <span class="comment">#   LINALG_ON_TENSORS — 降到 Linalg（最常用）</span></span><br><span class="line">    <span class="comment">#   TOSA         — TOSA dialect（跨平台）</span></span><br><span class="line">    <span class="comment">#   STABLEHLO    — StableHLO（TensorFlow/JAX 生态）</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 保存为 MLIR 文件</span></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;cifar10_linalg.mlir&quot;</span>, <span class="string">&quot;w&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    f.write(<span class="built_in">str</span>(module))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看生成的 Linalg IR</span></span><br><span class="line"><span class="built_in">print</span>(module)</span><br></pre></td></tr></table></figure>
+
+<p><strong>MLIR 降级到可执行代码的完整流水线：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. Torch-MLIR → Linalg-on-Tensors</span></span><br><span class="line">torch-mlir-opt cifar10_torch.mlir \</span><br><span class="line">  --torch-backend-to-linalg-on-tensors-backend-pipeline \</span><br><span class="line">  &gt; cifar10_linalg.mlir</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. Linalg-on-Tensors 优化</span></span><br><span class="line">mlir-opt cifar10_linalg.mlir \</span><br><span class="line">  --linalg-fuse-elementwise-ops \</span><br><span class="line">  --linalg-bufferize \</span><br><span class="line">  --convert-linalg-to-loops \</span><br><span class="line">  &gt; cifar10_scf.mlir</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. SCF → LLVM</span></span><br><span class="line">mlir-opt cifar10_scf.mlir \</span><br><span class="line">  --convert-scf-to-cf \</span><br><span class="line">  --convert-cf-to-llvm \</span><br><span class="line">  &gt; cifar10_llvm.mlir</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. LLVM → 机器码</span></span><br><span class="line">mlir-translate cifar10_llvm.mlir --mlir-to-llvmir | llc -O3 -o output.s</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-5-第四周：使用-CIRCT-CIRCT-的-C-Dialect-自定义"><a href="#3-5-第四周：使用-CIRCT-CIRCT-的-C-Dialect-自定义" class="headerlink" title="3.5 第四周：使用 CIRCT &#x2F; CIRCT 的 C++ Dialect 自定义"></a>3.5 第四周：使用 CIRCT &#x2F; CIRCT 的 C++ Dialect 自定义</h3><p>MLIR 的真正强大之处在于<strong>自定义 Dialect</strong>。ncnn 的 <code>tools/mlir</code> 目录就是 ncnn 在 MLIR 中的 Dialect 定义。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 假设我们要为 ncnn 创建一个自定义 Dialect——NcnnOps</span></span><br><span class="line"><span class="comment">// 这可以让 MLIR 直接生成 ncnn 可以加载的模型</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 1. 定义 Dialect (NcnnOps.td - TableGen)</span></span><br><span class="line">def Ncnn_Dialect : Dialect &#123;</span><br><span class="line">    let name = <span class="string">&quot;ncnn&quot;</span>;</span><br><span class="line">    let summary = <span class="string">&quot;ncnn inference engine ops&quot;</span>;</span><br><span class="line">    let cppNamespace = <span class="string">&quot;::mlir::ncnn&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 定义算子</span></span><br><span class="line">def Ncnn_Conv2D : Ncnn_Op&lt;<span class="string">&quot;conv2d&quot;</span>&gt; &#123;</span><br><span class="line">    let summary = <span class="string">&quot;ncnn convolution operator&quot;</span>;</span><br><span class="line">    let arguments = (ins</span><br><span class="line">        AnyType:$input,</span><br><span class="line">        AnyType:$weight,</span><br><span class="line">        Optional&lt;AnyType&gt;:$bias,</span><br><span class="line">        I64Attr:$num_output,</span><br><span class="line">        I64ArrayAttr:$kernel_size,</span><br><span class="line">        I64ArrayAttr:$stride,</span><br><span class="line">        I64ArrayAttr:$pad,</span><br><span class="line">        DefaultValuedAttr&lt;I64Attr, <span class="string">&quot;1&quot;</span>&gt;:$activation_type</span><br><span class="line">    );</span><br><span class="line">    let results = (outs AnyType:$output);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3. 降级 pass: NcnnConv2D → ncnn 底层 ops</span></span><br><span class="line"><span class="comment">//    从 MLIR 转换到 ncnn 可以加载的格式</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>C++ 中加载并使用 MLIR：</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;mlir/IR/MLIRContext.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;mlir/IR/BuiltinOps.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;mlir/Parser/Parser.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;mlir/Pass/PassManager.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    mlir::MLIRContext context;</span><br><span class="line">    <span class="comment">// 注册需要的 dialect</span></span><br><span class="line">    context.<span class="built_in">getOrLoadDialect</span>&lt;mlir::linalg::LinalgDialect&gt;();</span><br><span class="line">    context.<span class="built_in">getOrLoadDialect</span>&lt;mlir::scf::SCFDialect&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 解析 MLIR 源文件</span></span><br><span class="line">    <span class="keyword">auto</span> <span class="keyword">module</span> = mlir::<span class="built_in">parseSourceFile</span>&lt;mlir::ModuleOp&gt;(<span class="string">&quot;cifar10.mlir&quot;</span>, &amp;context);</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">module</span>) &#123;</span><br><span class="line">        llvm::<span class="built_in">errs</span>() &lt;&lt; <span class="string">&quot;Failed to parse MLIR\n&quot;</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 运行 pass pipeline</span></span><br><span class="line">    <span class="function">mlir::PassManager <span class="title">pm</span><span class="params">(&amp;context)</span></span>;</span><br><span class="line">    pm.<span class="built_in">addPass</span>(mlir::<span class="built_in">createLinalgFuseElementwiseOpsPass</span>());</span><br><span class="line">    pm.<span class="built_in">addPass</span>(mlir::<span class="built_in">createConvertLinalgToLoopsPass</span>());</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">failed</span>(pm.<span class="built_in">run</span>(*<span class="keyword">module</span>))) &#123;</span><br><span class="line">        llvm::<span class="built_in">errs</span>() &lt;&lt; <span class="string">&quot;Pass pipeline failed\n&quot;</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 输出优化后的 IR</span></span><br><span class="line">    <span class="keyword">module</span>-&gt;<span class="built_in">print</span>(llvm::<span class="built_in">outs</span>());</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="练习项目（Phase-3-结束时）"><a href="#练习项目（Phase-3-结束时）" class="headerlink" title="练习项目（Phase 3 结束时）"></a>练习项目（Phase 3 结束时）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /home/zodiac/03disk/02hermes/learn_cpp/05_compiler/mlir</span><br><span class="line"></span><br><span class="line"><span class="comment"># 练习1: 用 Torch-MLIR 将 CIFAR-10 CNN 转为 Linalg dialect</span></span><br><span class="line"><span class="comment">#         跟踪完整的降级链直到 LLVM IR</span></span><br><span class="line"><span class="comment"># 练习2: 写一个 MLIR pass，将连续的 conv+relu+pool 标记为 fused</span></span><br><span class="line"><span class="comment"># 练习3: 分析 ncnn/tools/mlir 中的 ncnn dialect 定义</span></span><br><span class="line"><span class="comment"># 练习4: 对比 MLIR 生成的 LLVM IR vs 你的 manual_optimized 的汇编</span></span><br><span class="line"><span class="comment">#         编译器优化的代码和你手写的有何不同？</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Phase-4：Triton-DSL-与-Kernel-编译器（2-周）"><a href="#Phase-4：Triton-DSL-与-Kernel-编译器（2-周）" class="headerlink" title="Phase 4：Triton DSL 与 Kernel 编译器（2 周）"></a>Phase 4：Triton DSL 与 Kernel 编译器（2 周）</h2><h3 id="4-1-Triton-定位"><a href="#4-1-Triton-定位" class="headerlink" title="4.1 Triton 定位"></a>4.1 Triton 定位</h3><p>Triton 是 OpenAI 开发的一种<strong>类 Python 语言</strong>，用于编写高效的 GPU kernel。它填补了”手写 CUDA”和”TVM 自动生成”之间的空白：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">手写 CUDA kernel:  最大灵活性，但开发效率低，难以跨架构</span><br><span class="line">   ↓</span><br><span class="line">Triton DSL:        接近 Python 的语法，自动处理 tile 调度、</span><br><span class="line">                   共享内存分配、warp 级别并行</span><br><span class="line">   ↓</span><br><span class="line">TVM Ansor:         完全自动搜索 schedule，无需手写</span><br><span class="line">   ↓</span><br><span class="line">cuDNN / TensorRT:  性能封装的库调用</span><br></pre></td></tr></table></figure>
+
+<p><strong>Triton 的核心思想：</strong> 你用 Python 写按<strong>程序块（tile）</strong> 级别描述计算，Triton 编译器自动处理：</p>
+<ul>
+<li>tile 在 SM 间的分配</li>
+<li>共享内存分配与复用</li>
+<li>全局内存的合并访问</li>
+<li>warp 级别的指令调度</li>
+</ul>
+<h3 id="4-2-第一周：Triton-基础"><a href="#4-2-第一周：Triton-基础" class="headerlink" title="4.2 第一周：Triton 基础"></a>4.2 第一周：Triton 基础</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install triton  <span class="comment"># 直接 pip 安装</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>Hello World — Triton 向量加法：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> triton</span><br><span class="line"><span class="keyword">import</span> triton.language <span class="keyword">as</span> tl</span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"></span><br><span class="line"><span class="meta">@triton.jit</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">vec_add_kernel</span>(<span class="params"></span></span><br><span class="line"><span class="params">    x_ptr, y_ptr, output_ptr,</span></span><br><span class="line"><span class="params">    n_elements,</span></span><br><span class="line"><span class="params">    BLOCK_SIZE: tl.constexpr,</span></span><br><span class="line"><span class="params"></span>):</span><br><span class="line">    <span class="comment"># Triton 按&quot;程序块&quot;编程，一个 block 处理 BLOCK_SIZE 个元素</span></span><br><span class="line">    pid = tl.program_id(axis=<span class="number">0</span>)  <span class="comment"># 当前 block 的 ID</span></span><br><span class="line">    block_start = pid * BLOCK_SIZE</span><br><span class="line">    offsets = block_start + tl.arange(<span class="number">0</span>, BLOCK_SIZE)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 创建 mask 防止越界</span></span><br><span class="line">    mask = offsets &lt; n_elements</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 加载全局内存 → 寄存器（自动处理合并访问）</span></span><br><span class="line">    x = tl.load(x_ptr + offsets, mask=mask)</span><br><span class="line">    y = tl.load(y_ptr + offsets, mask=mask)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 计算（在寄存器中）</span></span><br><span class="line">    output = x + y</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 写回全局内存</span></span><br><span class="line">    tl.store(output_ptr + offsets, output, mask=mask)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 调用</span></span><br><span class="line">n = <span class="number">1024</span> * <span class="number">1024</span></span><br><span class="line">x = torch.randn(n, device=<span class="string">&#x27;cuda&#x27;</span>, dtype=torch.float32)</span><br><span class="line">y = torch.randn(n, device=<span class="string">&#x27;cuda&#x27;</span>, dtype=torch.float32)</span><br><span class="line">output = torch.empty(n, device=<span class="string">&#x27;cuda&#x27;</span>, dtype=torch.float32)</span><br><span class="line"></span><br><span class="line">grid = <span class="keyword">lambda</span> meta: (triton.cdiv(n, meta[<span class="string">&#x27;BLOCK_SIZE&#x27;</span>]),)</span><br><span class="line">vec_add_kernel[grid](x, y, output, n, BLOCK_SIZE=<span class="number">1024</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;MAE: <span class="subst">&#123;(output - (x + y)).<span class="built_in">abs</span>().<span class="built_in">max</span>().item():<span class="number">.6</span>f&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>关键理解：</strong> 对比 CUDA 版本和 Triton 版本：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// CUDA 版本（逐元素）</span></span><br><span class="line">__global__ <span class="type">void</span> <span class="title function_">vec_add</span><span class="params">(<span class="type">float</span> *x, <span class="type">float</span> *y, <span class="type">float</span> *out, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">    <span class="type">int</span> i = blockIdx.x * blockDim.x + threadIdx.x;</span><br><span class="line">    <span class="keyword">if</span> (i &lt; n) out[i] = x[i] + y[i];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># Triton 版本（按 tile）</span><br><span class="line">@triton.jit</span><br><span class="line">def <span class="title function_">vec_add_kernel</span><span class="params">(x_ptr, y_ptr, out_ptr, n, BLOCK_SIZE: tl.<span class="type">constexpr</span>)</span>:</span><br><span class="line">    pid = tl.program_id(<span class="number">0</span>)</span><br><span class="line">    offsets = pid * BLOCK_SIZE + tl.arange(<span class="number">0</span>, BLOCK_SIZE)</span><br><span class="line">    mask = offsets &lt; n</span><br><span class="line">    x = tl.load(x_ptr + offsets, mask=mask)</span><br><span class="line">    y = tl.load(y_ptr + offsets, mask=mask)</span><br><span class="line">    tl.store(out_ptr + offsets, x + y, mask=mask)</span><br></pre></td></tr></table></figure>
+
+<p><strong>差异：</strong> CUDA 描述的是”每个线程做什么”，Triton 描述的是”每个 tile 做什么”。Triton 自动决定如何将 tile 映射到线程和 warp。</p>
+<h3 id="4-3-Triton-矩阵乘法"><a href="#4-3-Triton-矩阵乘法" class="headerlink" title="4.3 Triton 矩阵乘法"></a>4.3 Triton 矩阵乘法</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@triton.jit</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">matmul_kernel</span>(<span class="params"></span></span><br><span class="line"><span class="params">    a_ptr, b_ptr, c_ptr,</span></span><br><span class="line"><span class="params">    M, N, K,</span></span><br><span class="line"><span class="params">    stride_am, stride_ak,  <span class="comment"># A 的 strides</span></span></span><br><span class="line"><span class="params">    stride_bk, stride_bn,  <span class="comment"># B 的 strides</span></span></span><br><span class="line"><span class="params">    stride_cm, stride_cn,  <span class="comment"># C 的 strides</span></span></span><br><span class="line"><span class="params">    BLOCK_M: tl.constexpr,  <span class="comment"># M 维度的 tile 大小</span></span></span><br><span class="line"><span class="params">    BLOCK_N: tl.constexpr,</span></span><br><span class="line"><span class="params">    BLOCK_K: tl.constexpr,</span></span><br><span class="line"><span class="params"></span>):</span><br><span class="line">    <span class="comment"># 当前 tile 的坐标</span></span><br><span class="line">    pid_m = tl.program_id(<span class="number">0</span>)</span><br><span class="line">    pid_n = tl.program_id(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 当前 tile 在 A/B/C 中的起始位置</span></span><br><span class="line">    offs_m = pid_m * BLOCK_M + tl.arange(<span class="number">0</span>, BLOCK_M)</span><br><span class="line">    offs_n = pid_n * BLOCK_N + tl.arange(<span class="number">0</span>, BLOCK_N)</span><br><span class="line">    offs_k = tl.arange(<span class="number">0</span>, BLOCK_K)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 累加器，初始化为 0</span></span><br><span class="line">    acc = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># K 维度的 tile 循环</span></span><br><span class="line">    <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, K, BLOCK_K):</span><br><span class="line">        <span class="comment"># 加载 A 的 tile: (BLOCK_M, BLOCK_K)</span></span><br><span class="line">        a = tl.load(a_ptr + offs_m[:, <span class="literal">None</span>] * stride_am + offs_k[<span class="literal">None</span>, :] * stride_ak)</span><br><span class="line">        <span class="comment"># 加载 B 的 tile: (BLOCK_K, BLOCK_N)</span></span><br><span class="line">        b = tl.load(b_ptr + offs_k[:, <span class="literal">None</span>] * stride_bk + offs_n[<span class="literal">None</span>, :] * stride_bn)</span><br><span class="line">        <span class="comment"># tile 级别的矩阵乘累加</span></span><br><span class="line">        acc += tl.dot(a, b)</span><br><span class="line">        offs_k += BLOCK_K</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 写回</span></span><br><span class="line">    c = c_ptr + offs_m[:, <span class="literal">None</span>] * stride_cm + offs_n[<span class="literal">None</span>, :] * stride_cn</span><br><span class="line">    tl.store(c, acc)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 调用</span></span><br><span class="line">M, N, K = <span class="number">1024</span>, <span class="number">1024</span>, <span class="number">1024</span></span><br><span class="line">a = torch.randn(M, K, device=<span class="string">&#x27;cuda&#x27;</span>)</span><br><span class="line">b = torch.randn(K, N, device=<span class="string">&#x27;cuda&#x27;</span>)</span><br><span class="line">c = torch.empty(M, N, device=<span class="string">&#x27;cuda&#x27;</span>)</span><br><span class="line"></span><br><span class="line">grid = (triton.cdiv(M, <span class="number">128</span>), triton.cdiv(N, <span class="number">128</span>))  <span class="comment"># 128×128 tile</span></span><br><span class="line">matmul_kernel[grid](</span><br><span class="line">    a, b, c,</span><br><span class="line">    M, N, K,</span><br><span class="line">    a.stride(<span class="number">0</span>), a.stride(<span class="number">1</span>),</span><br><span class="line">    b.stride(<span class="number">0</span>), b.stride(<span class="number">1</span>),</span><br><span class="line">    c.stride(<span class="number">0</span>), c.stride(<span class="number">1</span>),</span><br><span class="line">    BLOCK_M=<span class="number">128</span>, BLOCK_N=<span class="number">128</span>, BLOCK_K=<span class="number">32</span>,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 验证</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;MAE: <span class="subst">&#123;(c - a @ b).<span class="built_in">abs</span>().<span class="built_in">max</span>().item():<span class="number">.6</span>f&#125;</span>&quot;</span>)</span><br><span class="line"><span class="comment"># 性能对比</span></span><br><span class="line">%timeit a @ b  <span class="comment"># cuBLAS</span></span><br><span class="line">%timeit matmul_kernel[grid](...)  <span class="comment"># Triton</span></span><br><span class="line"><span class="comment"># 通常 Triton 能达到 cuBLAS 80-95% 的性能！</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-第二周：用-Triton-替代你的-manual-cuda-卷积"><a href="#4-4-第二周：用-Triton-替代你的-manual-cuda-卷积" class="headerlink" title="4.4 第二周：用 Triton 替代你的 manual_cuda 卷积"></a>4.4 第二周：用 Triton 替代你的 manual_cuda 卷积</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@triton.jit</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">conv2d_triton_kernel</span>(<span class="params"></span></span><br><span class="line"><span class="params">    input_ptr, weight_ptr, bias_ptr, output_ptr,</span></span><br><span class="line"><span class="params">    ic, ih, iw, oc, oh, ow, kh, kw, pad, stride,</span></span><br><span class="line"><span class="params">    stride_in_c, stride_in_h, stride_in_w,</span></span><br><span class="line"><span class="params">    stride_out_c, stride_out_h, stride_out_w,</span></span><br><span class="line"><span class="params">    BLOCK_OC: tl.constexpr,</span></span><br><span class="line"><span class="params">    BLOCK_OH: tl.constexpr,</span></span><br><span class="line"><span class="params">    BLOCK_OW: tl.constexpr,</span></span><br><span class="line"><span class="params"></span>):</span><br><span class="line">    <span class="comment"># 每个 program 处理 BLOCK_OC × BLOCK_OH × BLOCK_OW 的输出像素</span></span><br><span class="line">    pid_c = tl.program_id(<span class="number">0</span>)</span><br><span class="line">    pid_h = tl.program_id(<span class="number">1</span>)</span><br><span class="line">    pid_w = tl.program_id(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">    offs_oc = pid_c * BLOCK_OC + tl.arange(<span class="number">0</span>, BLOCK_OC)</span><br><span class="line">    offs_oh = pid_h * BLOCK_OH + tl.arange(<span class="number">0</span>, BLOCK_OH)</span><br><span class="line">    offs_ow = pid_w * BLOCK_OW + tl.arange(<span class="number">0</span>, BLOCK_OW)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 累加器</span></span><br><span class="line">    acc = tl.zeros((BLOCK_OC, BLOCK_OH, BLOCK_OW), dtype=tl.float32)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 对每个输入通道和核位置累加</span></span><br><span class="line">    <span class="keyword">for</span> ci <span class="keyword">in</span> <span class="built_in">range</span>(ic):</span><br><span class="line">        <span class="keyword">for</span> ky <span class="keyword">in</span> <span class="built_in">range</span>(kh):</span><br><span class="line">            <span class="keyword">for</span> kx <span class="keyword">in</span> <span class="built_in">range</span>(kw):</span><br><span class="line">                <span class="comment"># 计算输入坐标</span></span><br><span class="line">                iy = offs_oh * stride + ky - pad</span><br><span class="line">                ix = offs_ow * stride + kx - pad</span><br><span class="line">                <span class="comment"># 边界检查</span></span><br><span class="line">                valid = (iy &gt;= <span class="number">0</span>) &amp; (iy &lt; ih) &amp; (ix &gt;= <span class="number">0</span>) &amp; (ix &lt; iw)</span><br><span class="line"></span><br><span class="line">                <span class="comment"># 加载输入（shape: (1, BLOCK_OH, BLOCK_OW)）</span></span><br><span class="line">                inp_cost = tl.load(</span><br><span class="line">                    input_ptr + ci * stride_in_c + iy[:, <span class="literal">None</span>] * stride_in_h + ix[<span class="literal">None</span>, :] * stride_in_w,</span><br><span class="line">                    mask=valid[:, <span class="literal">None</span>],</span><br><span class="line">                    other=<span class="number">0.0</span></span><br><span class="line">                )</span><br><span class="line"></span><br><span class="line">                <span class="comment"># 加载权重（shape: (BLOCK_OC, 1, 1)）</span></span><br><span class="line">                w = tl.load(weight_ptr + offs_oc[:, <span class="literal">None</span>, <span class="literal">None</span>] * ic * kh * kw +</span><br><span class="line">                            ci * kh * kw + ky * kw + kx)</span><br><span class="line"></span><br><span class="line">                <span class="comment"># 累加</span></span><br><span class="line">                acc += inp_cost[<span class="literal">None</span>, :, :] * w[:, <span class="literal">None</span>, <span class="literal">None</span>]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 加偏置（shape: (BLOCK_OC, 1, 1)）</span></span><br><span class="line">    b = tl.load(bias_ptr + offs_oc)[:, <span class="literal">None</span>, <span class="literal">None</span>]</span><br><span class="line">    acc += b</span><br><span class="line"></span><br><span class="line">    <span class="comment"># ReLU</span></span><br><span class="line">    acc = tl.maximum(acc, <span class="number">0.0</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 写回</span></span><br><span class="line">    out_off = (offs_oc[:, <span class="literal">None</span>, <span class="literal">None</span>] * stride_out_c +</span><br><span class="line">               offs_oh[<span class="literal">None</span>, :, <span class="literal">None</span>] * stride_out_h +</span><br><span class="line">               offs_ow[<span class="literal">None</span>, <span class="literal">None</span>, :] * stride_out_w)</span><br><span class="line">    tl.store(output_ptr + out_off, acc)</span><br></pre></td></tr></table></figure>
+
+<h3 id="练习项目（Phase-4-结束时）"><a href="#练习项目（Phase-4-结束时）" class="headerlink" title="练习项目（Phase 4 结束时）"></a>练习项目（Phase 4 结束时）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /home/zodiac/03disk/02hermes/learn_cpp/05_compiler/triton</span><br><span class="line"></span><br><span class="line"><span class="comment"># 练习1: 用 Triton 实现 CIFAR-10 CNN 全部算子</span></span><br><span class="line"><span class="comment"># 练习2: 对比 Triton 卷积 vs 你的手工 CUDA 卷积的性能</span></span><br><span class="line"><span class="comment">#         哪个更快？为什么？</span></span><br><span class="line"><span class="comment"># 练习3: 将 Triton 集成到 ncnn_deploy 作为第 8 种方案</span></span><br><span class="line"><span class="comment"># 练习4: 试用 Triton 的 autotune 功能</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Phase-5：编译器与推理引擎集成（2-周）"><a href="#Phase-5：编译器与推理引擎集成（2-周）" class="headerlink" title="Phase 5：编译器与推理引擎集成（2 周）"></a>Phase 5：编译器与推理引擎集成（2 周）</h2><h3 id="5-1-编译器如何融入推理引擎"><a href="#5-1-编译器如何融入推理引擎" class="headerlink" title="5.1 编译器如何融入推理引擎"></a>5.1 编译器如何融入推理引擎</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">推理引擎中的编译器角色:</span><br><span class="line"></span><br><span class="line">┌─────────┐   ┌──────────┐   ┌─────────┐</span><br><span class="line">│ 模型加载 │──→│ 编译阶段  │──→│ 运行阶段 │</span><br><span class="line">│ .onnx   │   │ 图优化   │   │ 推理执行│</span><br><span class="line">│ .param  │   │ 代码生成 │   │ 可重复  │</span><br><span class="line">│ .mnn    │   │ 自动调优 │   │ 低延迟  │</span><br><span class="line">└─────────┘   └──────────┘   └─────────┘</span><br><span class="line">                  ↑</span><br><span class="line">           深度学习编译器</span><br><span class="line">           (TVM / MLIR / Triton)</span><br></pre></td></tr></table></figure>
+
+<p><strong>三种集成模式：</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">模式</th>
+<th align="left">示例</th>
+<th align="left">优点</th>
+<th align="left">缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>离线编译</strong></td>
+<td align="left">ncnn 的 PNNX 转换 → ncnn 加载</td>
+<td align="left">运行无编译开销</td>
+<td align="left">模型改后需重新编译</td>
+</tr>
+<tr>
+<td align="left"><strong>JIT 编译</strong></td>
+<td align="left">TVM runtime JIT</td>
+<td align="left">硬件自适应</td>
+<td align="left">首次推理慢</td>
+</tr>
+<tr>
+<td align="left"><strong>混合模式</strong></td>
+<td align="left">部分算子 JIT，部分预编译</td>
+<td align="left">平衡灵活性和性能</td>
+<td align="left">实现复杂</td>
+</tr>
+</tbody></table>
+<h3 id="5-2-实战：将-TVM-生成的代码集成到你的推理管道"><a href="#5-2-实战：将-TVM-生成的代码集成到你的推理管道" class="headerlink" title="5.2 实战：将 TVM 生成的代码集成到你的推理管道"></a>5.2 实战：将 TVM 生成的代码集成到你的推理管道</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 场景：使用 TVM 生成手写 kernel（对 ncnn 不支持的算子做 fallback）</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> tvm</span><br><span class="line"><span class="keyword">from</span> tvm <span class="keyword">import</span> relay</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># 假设 ncnn 不支持某个算子（如复杂的激活函数），</span></span><br><span class="line"><span class="comment"># 我们用 TVM 只编译这个算子</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 定义子图</span></span><br><span class="line">x = relay.var(<span class="string">&quot;x&quot;</span>, shape=(<span class="number">1</span>, <span class="number">32</span>, <span class="number">32</span>, <span class="number">32</span>), dtype=<span class="string">&quot;float32&quot;</span>)</span><br><span class="line"><span class="comment"># 自定义算子：x * sigmoid(x) — Swish 激活函数</span></span><br><span class="line">swish = relay.multiply(x, relay.sigmoid(x))</span><br><span class="line"></span><br><span class="line">mod = tvm.IRModule.from_expr(swish)</span><br><span class="line">target = <span class="string">&quot;llvm&quot;</span></span><br><span class="line"><span class="keyword">with</span> tvm.transform.PassContext(opt_level=<span class="number">3</span>):</span><br><span class="line">    lib = relay.build(mod, target=target)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 获取生成的函数指针</span></span><br><span class="line"><span class="comment"># TVM 编译后的 lib 中包含了可以调用的函数</span></span><br><span class="line"><span class="comment"># 可以通过 tvm.runtime.Module 的 get_function 获取</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 在 C++ 中加载 TVM 生成的 code</span></span><br><span class="line"><span class="comment"># 实际上，TVM 可以导出为共享库(.so)</span></span><br><span class="line"><span class="comment"># 你的 C++ 程序可以 dlopen 并直接调用</span></span><br><span class="line">lib.export_library(<span class="string">&quot;swish_kernel.so&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>C++ 端调用 TVM 生成的 kernel：</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;dlfcn.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;tvm/runtime/module.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;tvm/runtime/packed_func.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 加载 TVM 编译的共享库</span></span><br><span class="line">tvm::runtime::Module mod_dl =</span><br><span class="line">    tvm::runtime::Module::<span class="built_in">LoadFromFile</span>(<span class="string">&quot;swish_kernel.so&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取运行函数</span></span><br><span class="line">tvm::runtime::PackedFunc f = mod_dl.<span class="built_in">GetFunction</span>(<span class="string">&quot;default_function&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 准备输入输出</span></span><br><span class="line">DLTensor input, output;</span><br><span class="line"><span class="comment">// ... 设置 tensor 描述符和 data 指针 ...</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 调用（和调用 ncnn extract 类似）</span></span><br><span class="line"><span class="built_in">f</span>(&amp;input, &amp;output);</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-在你的-st-nndeploy-中添加-TVM-backend"><a href="#5-3-在你的-st-nndeploy-中添加-TVM-backend" class="headerlink" title="5.3 在你的 st_nndeploy 中添加 TVM backend"></a>5.3 在你的 st_nndeploy 中添加 TVM backend</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">st_nndeploy/</span><br><span class="line">├── backend/</span><br><span class="line">│   ├── ncnn_backend.cpp      ← 已有</span><br><span class="line">│   ├── mnn_backend.cpp       ← 已有</span><br><span class="line">│   ├── onnxruntime_backend   ← 已有</span><br><span class="line">│   └── tvm_backend.cpp       ← 新增：使用 TVM runtime</span><br><span class="line">│       1. relay.build() 将模型编译为 TVM module</span><br><span class="line">│       2. export_library(&quot;cifar10_tvm.so&quot;)</span><br><span class="line">│       3. tvm::runtime::Module::LoadFromFile</span><br><span class="line">│       4. SetInput → Run → GetOutput</span><br><span class="line">│       5. 对比与 ncnn/MNN 的性能差异</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-4-编译器生成的代码-vs-手写代码的哲学差异"><a href="#5-4-编译器生成的代码-vs-手写代码的哲学差异" class="headerlink" title="5.4 编译器生成的代码 vs 手写代码的哲学差异"></a>5.4 编译器生成的代码 vs 手写代码的哲学差异</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">手写代码（ncnn manual_simd）:</span><br><span class="line">  固定为特定架构/模型优化</span><br><span class="line">  优化是人工理解瓶颈后 applied</span><br><span class="line"></span><br><span class="line">编译器生成代码（TVM / MLIR）:</span><br><span class="line">  根据 cost model 搜索最优 schedule</span><br><span class="line">  优化是自动搜索 discovered</span><br><span class="line"></span><br><span class="line">互补关系:</span><br><span class="line">  编译器在探索阶段（新架构/新算子）更快</span><br><span class="line">  手写在极致调优（固定场景）可能更优</span><br><span class="line">  实际工程：ncnn 手写核心算子 + TVM 做 fallback</span><br></pre></td></tr></table></figure>
+
+<h3 id="练习项目（Phase-5）"><a href="#练习项目（Phase-5）" class="headerlink" title="练习项目（Phase 5）"></a>练习项目（Phase 5）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /home/zodiac/03disk/02hermes/learn_cpp/05_compiler/integration</span><br><span class="line"></span><br><span class="line"><span class="comment"># 练习1: 在你的 st_nndeploy 中添加 TVM backend</span></span><br><span class="line"><span class="comment">#         用 cifar10 模型测试</span></span><br><span class="line"><span class="comment"># 练习2: 将 Triton 编写的 kernel 集成到 st_nndeploy 中</span></span><br><span class="line"><span class="comment">#         作为手写 CUDA 的替代</span></span><br><span class="line"><span class="comment"># 练习3: 对比 TVM 自动调优 vs 你的 manual_optimized (im2col+GEMM)</span></span><br><span class="line"><span class="comment">#         在相同硬件上对比延迟</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Phase-6：精通之路（长期）"><a href="#Phase-6：精通之路（长期）" class="headerlink" title="Phase 6：精通之路（长期）"></a>Phase 6：精通之路（长期）</h2><h3 id="6-1-深入学习方向"><a href="#6-1-深入学习方向" class="headerlink" title="6.1 深入学习方向"></a>6.1 深入学习方向</h3><table>
+<thead>
+<tr>
+<th align="left">方向</th>
+<th align="left">学习内容</th>
+<th align="left">推荐项目</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>TVM 源码贡献</strong></td>
+<td align="left">添加新的 Relay Pass、新增硬件后端</td>
+<td align="left">为你的 GPU 添加 auto-schedule 规则</td>
+</tr>
+<tr>
+<td align="left"><strong>MLIR 自定义 Dialect</strong></td>
+<td align="left">为 ncnn &#x2F; MNN 创建 MLIR Dialect</td>
+<td align="left">让 MLIR 直接生成 ncnn 可加载的模型</td>
+</tr>
+<tr>
+<td align="left"><strong>Triton 扩展</strong></td>
+<td align="left">为 Triton 添加新后端（NPU）</td>
+<td align="left">学习 Triton 的中间表示 TIR</td>
+</tr>
+<tr>
+<td align="left"><strong>IREE 编译器</strong></td>
+<td align="left">Google 的 MLIR-based 编译器</td>
+<td align="left">部署到 Vulkan&#x2F;Metal&#x2F;CPU</td>
+</tr>
+<tr>
+<td align="left"><strong>XLA &#x2F; StableHLO</strong></td>
+<td align="left">Google 的编译堆栈</td>
+<td align="left">JAX 和 TensorFlow 的编译器</td>
+</tr>
+<tr>
+<td align="left"><strong>AutoSchedule 研究</strong></td>
+<td align="left">Ansor &#x2F; TIR &#x2F; MetaSchedule</td>
+<td align="left">理解搜索算法</td>
+</tr>
+</tbody></table>
+<h3 id="6-2-推荐进阶项目"><a href="#6-2-推荐进阶项目" class="headerlink" title="6.2 推荐进阶项目"></a>6.2 推荐进阶项目</h3><ol>
+<li><strong>Compiler Triathlon</strong>：用 TVM &#x2F; MLIR &#x2F; 手写三种方式实现同一个模型，对比<strong>开发时间</strong>和<strong>运行性能</strong></li>
+<li><strong>MLIR Dialect for ncnn</strong>：参考 <code>ncnn/tools/mlir</code>，创建一个完整的 MLIR ↔ ncnn 转换链</li>
+<li><strong>Triton 版的 ncnn_deploy</strong>：将所有 6 个方案的算子用 Triton 重写，对比开发效率和性能</li>
+<li><strong>混合推理引擎</strong>：将 ncnn（稳定高性能）和 TVM（灵活易扩展）组合，用 TVM 处理 ncnn 不支持的算子</li>
+</ol>
+<hr>
+<h3 id="学习路线图总览"><a href="#学习路线图总览" class="headerlink" title="学习路线图总览"></a>学习路线图总览</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">时间线      学习内容                             动手项目</span><br><span class="line">──────     ────────                             ────────</span><br><span class="line">第 1-2 周   编译原理基础、LLVM IR、计算图           torch.fx 导出计算图</span><br><span class="line">第 3 周     TVM 环境 + Hello World                TVM 部署 add/mul</span><br><span class="line">第 4 周     TVM 导入 CIFAR-10 CNN                 TVM vs ncnn 对比</span><br><span class="line">第 5 周     TVM compute/schedule 分离             手写 conv2d schedule</span><br><span class="line">第 6 周     AutoTVM / Ansor 自动调优               CIFAR-10 自动调优</span><br><span class="line">第 7 周     MLIR 概念、Dialect、Operation         阅读 MLIR 示例</span><br><span class="line">第 8 周     MLIR Pass 编写                        编写自定义 fusion pass</span><br><span class="line">第 9 周     Torch-MLIR                            导出 CIFAR-10 到 MLIR</span><br><span class="line">第 10 周    降级链分析                             跟踪完整 MLIR → LLVM IR</span><br><span class="line">第 11 周    Triton 入门                           向量加法、矩阵乘法</span><br><span class="line">第 12 周    Triton 卷积                           Triton 版 conv2d</span><br><span class="line">第 13 周    编译器集成                             TVM backend for st_nndeploy</span><br><span class="line">第 14 周    综合对比                               TVM vs MLIR vs Triton vs 手写</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="八、三款编译器对比总结"><a href="#八、三款编译器对比总结" class="headerlink" title="八、三款编译器对比总结"></a>八、三款编译器对比总结</h2><table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">TVM</th>
+<th align="left">MLIR</th>
+<th align="left">Triton</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>抽象层级</strong></td>
+<td align="left">图 + 张量</td>
+<td align="left">多级（任意 Dialect）</td>
+<td align="left">Kernel</td>
+</tr>
+<tr>
+<td align="left"><strong>学习曲线</strong></td>
+<td align="left">中等</td>
+<td align="left">陡峭</td>
+<td align="left">平缓</td>
+</tr>
+<tr>
+<td align="left"><strong>开发效率</strong></td>
+<td align="left">高（Python API）</td>
+<td align="left">低（C++ API）</td>
+<td align="left">中（Python DSL）</td>
+</tr>
+<tr>
+<td align="left"><strong>代码质量</strong></td>
+<td align="left">中（自动调优 vs cuDNN）</td>
+<td align="left">高（手写 Pass 可精确控制）</td>
+<td align="left">中高（接近手写 CUDA）</td>
+</tr>
+<tr>
+<td align="left"><strong>硬件支持</strong></td>
+<td align="left">CPU&#x2F;CUDA&#x2F;ROCm&#x2F;OpenCL&#x2F;Vulkan&#x2F;Metal</td>
+<td align="left">LLVM 后端所有目标</td>
+<td align="left">CUDA（官方），其他社区</td>
+</tr>
+<tr>
+<td align="left"><strong>集成难度</strong></td>
+<td align="left">中（TVM Runtime 轻量）</td>
+<td align="left">难（需要嵌入 MLIR 框架）</td>
+<td align="left">易（Python + PyTorch）</td>
+</tr>
+<tr>
+<td align="left"><strong>适合你做什么</strong></td>
+<td align="left">快速部署新模型到新硬件</td>
+<td align="left">构建自定义编译器</td>
+<td align="left">替代手写 CUDA kernel</td>
+</tr>
+<tr>
+<td align="left"><strong>在推理引擎中的角色</strong></td>
+<td align="left">Fallback&#x2F;新算子</td>
+<td align="left">算子生成&#x2F;Schedule 生成</td>
+<td align="left">自定义 Kernel 编写</td>
+</tr>
+</tbody></table>
+<h3 id="三者的互补关系"><a href="#三者的互补关系" class="headerlink" title="三者的互补关系"></a>三者的互补关系</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> 复杂模型，快速部署    ← TVM（最上层，自动化程度最高）</span><br><span class="line">       │</span><br><span class="line">自定义 Dialect 优化  ← MLIR（最中层，基础设施）</span><br><span class="line">       │</span><br><span class="line">手写高效 Kernel     ← Triton（最底层，GPU 专属）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="九、学习资源总表"><a href="#九、学习资源总表" class="headerlink" title="九、学习资源总表"></a>九、学习资源总表</h2><h3 id="官方文档"><a href="#官方文档" class="headerlink" title="官方文档"></a>官方文档</h3><table>
+<thead>
+<tr>
+<th align="left">资源</th>
+<th align="left">链接</th>
+<th align="center">优先级</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>TVM 文档</strong></td>
+<td align="left"><a target="_blank" rel="noopener" href="https://tvm.apache.org/docs/">https://tvm.apache.org/docs/</a></td>
+<td align="center">⭐⭐⭐</td>
+</tr>
+<tr>
+<td align="left"><strong>TVM 教程 — microTVM</strong></td>
+<td align="left"><a target="_blank" rel="noopener" href="https://tvm.apache.org/docs/topic/microtvm">https://tvm.apache.org/docs/topic/microtvm</a></td>
+<td align="center">⭐⭐</td>
+</tr>
+<tr>
+<td align="left"><strong>MLIR 官网</strong></td>
+<td align="left"><a target="_blank" rel="noopener" href="https://mlir.llvm.org/">https://mlir.llvm.org/</a></td>
+<td align="center">⭐⭐⭐</td>
+</tr>
+<tr>
+<td align="left"><strong>MLIR 教程</strong></td>
+<td align="left"><a target="_blank" rel="noopener" href="https://mlir.llvm.org/docs/Tutorials/">https://mlir.llvm.org/docs/Tutorials/</a></td>
+<td align="center">⭐⭐⭐</td>
+</tr>
+<tr>
+<td align="left"><strong>Triton 文档</strong></td>
+<td align="left"><a target="_blank" rel="noopener" href="https://triton-lang.org/">https://triton-lang.org/</a></td>
+<td align="center">⭐⭐⭐</td>
+</tr>
+<tr>
+<td align="left"><strong>Torch-MLIR</strong></td>
+<td align="left"><a target="_blank" rel="noopener" href="https://github.com/llvm/torch-mlir">https://github.com/llvm/torch-mlir</a></td>
+<td align="center">⭐⭐</td>
+</tr>
+<tr>
+<td align="left"><strong>CIRCT (CIR + MLIR)</strong></td>
+<td align="left"><a target="_blank" rel="noopener" href="https://circt.llvm.org/">https://circt.llvm.org/</a></td>
+<td align="center">⭐（进阶）</td>
+</tr>
+</tbody></table>
+<h3 id="论文"><a href="#论文" class="headerlink" title="论文"></a>论文</h3><table>
+<thead>
+<tr>
+<th align="left">论文</th>
+<th align="left">会议</th>
+<th align="left">核心内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>TVM: End-to-End Optimization Stack</strong></td>
+<td align="left">OSDI 2018</td>
+<td align="left">TVM 架构总览</td>
+</tr>
+<tr>
+<td align="left"><strong>Ansor: Generating High-Performance Tensor Programs</strong></td>
+<td align="left">OSDI 2020</td>
+<td align="left">TVM 自动搜索</td>
+</tr>
+<tr>
+<td align="left"><strong>Triton: An Intermediate Language and Compiler for Tiled Neural Network Computations</strong></td>
+<td align="left">PLDI 2019</td>
+<td align="left">Triton 论文</td>
+</tr>
+<tr>
+<td align="left"><strong>MLIR: A Compiler Infrastructure for the End of Moore’s Law</strong></td>
+<td align="left">CGO 2020</td>
+<td align="left">MLIR 论文</td>
+</tr>
+<tr>
+<td align="left"><strong>TensorComprehensions</strong></td>
+<td align="left">CGO 2018</td>
+<td align="left">Facebook 早期 DL 编译器</td>
+</tr>
+</tbody></table>
+<h3 id="书籍"><a href="#书籍" class="headerlink" title="书籍"></a>书籍</h3><table>
+<thead>
+<tr>
+<th align="left">书名</th>
+<th align="left">作者</th>
+<th align="left">覆盖内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Programming Massively Parallel Processors</strong></td>
+<td align="left">Kirk &amp; Hwu</td>
+<td align="left">GPU 编程基础（Triton 前置）</td>
+</tr>
+<tr>
+<td align="left"><strong>Engineering a Compiler</strong></td>
+<td align="left">Cooper &amp; Torczon</td>
+<td align="left">编译原理系统教材</td>
+</tr>
+<tr>
+<td align="left"><strong>LLVM Essentials</strong></td>
+<td align="left">Suyog Sarda</td>
+<td align="left">LLVM 基础（MLIR 前置）</td>
+</tr>
+</tbody></table>
+<h3 id="开源项目源码参考"><a href="#开源项目源码参考" class="headerlink" title="开源项目源码参考"></a>开源项目源码参考</h3><table>
+<thead>
+<tr>
+<th align="left">项目</th>
+<th align="left">仓库</th>
+<th align="left">学习目标</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>apache&#x2F;tvm</strong></td>
+<td align="left">GitHub</td>
+<td align="left">学习 end-to-end DL 编译流程</td>
+</tr>
+<tr>
+<td align="left"><strong>llvm&#x2F;llvm-project&#x2F;mlir</strong></td>
+<td align="left">GitHub</td>
+<td align="left">学习 Dialect 定义和 Pass</td>
+</tr>
+<tr>
+<td align="left"><strong>llvm&#x2F;torch-mlir</strong></td>
+<td align="left">GitHub</td>
+<td align="left">学习 PyTorch → MLIR 桥接</td>
+</tr>
+<tr>
+<td align="left"><strong>openai&#x2F;triton</strong></td>
+<td align="left">GitHub</td>
+<td align="left">学习 tile-based kernel 编译</td>
+</tr>
+<tr>
+<td align="left"><strong>iree-org&#x2F;iree</strong></td>
+<td align="left">GitHub</td>
+<td align="left">学习 MLIR-based 部署编译器</td>
+</tr>
+<tr>
+<td align="left"><strong>Tencent&#x2F;ncnn&#x2F;tools&#x2F;mlir</strong></td>
+<td align="left">本地 ncnn 目录</td>
+<td align="left">学习 ncnn 的 MLIR Dialect</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="十、与你的项目的关联"><a href="#十、与你的项目的关联" class="headerlink" title="十、与你的项目的关联"></a>十、与你的项目的关联</h2><h3 id="现有项目的编译器接入点"><a href="#现有项目的编译器接入点" class="headerlink" title="现有项目的编译器接入点"></a>现有项目的编译器接入点</h3><table>
+<thead>
+<tr>
+<th align="left">你的项目</th>
+<th align="left">可以接入的编译器技术</th>
+<th align="left">预期收益</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>ncnn_deploy</strong></td>
+<td align="left">TVM 自动调优 conv2d</td>
+<td align="left">对比 ncnn 手写 vs TVM 生成的 kernel</td>
+</tr>
+<tr>
+<td align="left"><strong>st_nndeploy</strong></td>
+<td align="left">TVM &#x2F; Triton backend</td>
+<td align="left">增加新后端，支持自定义算子 fallback</td>
+</tr>
+<tr>
+<td align="left"><strong>ncnn (上游)</strong></td>
+<td align="left">MLIR Dialect 已存在</td>
+<td align="left">理解 ncnn 如何用 MLIR 描述算子</td>
+</tr>
+<tr>
+<td align="left"><strong>manual_cuda.cu</strong></td>
+<td align="left">Triton 替代</td>
+<td align="left">更短代码实现同等性能</td>
+</tr>
+</tbody></table>
+<h3 id="你对编译器的独特优势"><a href="#你对编译器的独特优势" class="headerlink" title="你对编译器的独特优势"></a>你对编译器的独特优势</h3><p>作为已经手写实现过全部六种推理方案的人，你对编译器的理解会比纯算法工程师更深刻：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">你知道：</span><br><span class="line">  朴素 6 层循环卷积为什么慢       → 理解编译器为什么需要 loop tiling</span><br><span class="line">  im2col 为什么额外耗内存        → 理解编译器对访存优化的 tradeoff</span><br><span class="line">  SIMD 分散 store 为什么是瓶颈    → 理解编译器向量化时的寄存器分配</span><br><span class="line">  CUDA kernel launch为什么贵      → 理解编译器 kernel fusion 的必要性</span><br><span class="line">  手动调优 ncnn 0.37ms 有多难   → 理解 AutoTVM 的价值</span><br></pre></td></tr></table></figure>
+
+<p>这些<strong>手写经验</strong>是学习编译器最宝贵的资产——你不是在学”另一个框架”，而是在学”如何自动化你手头正在做的调优工作”。</p>
+<hr>
+<h3 id="附录：快速入手命令汇总"><a href="#附录：快速入手命令汇总" class="headerlink" title="附录：快速入手命令汇总"></a>附录：快速入手命令汇总</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ── TVM ──</span></span><br><span class="line">git <span class="built_in">clone</span> --recursive https://github.com/apache/tvm</span><br><span class="line"><span class="built_in">cd</span> tvm &amp;&amp; <span class="built_in">mkdir</span> build &amp;&amp; <span class="built_in">cd</span> build</span><br><span class="line"><span class="built_in">cp</span> ../cmake/config.cmake .</span><br><span class="line"><span class="comment"># 编辑 config.cmake: set(USE_LLVM ON) set(USE_CUDA ON)</span></span><br><span class="line">cmake .. &amp;&amp; make -j$(<span class="built_in">nproc</span>)</span><br><span class="line"><span class="built_in">cd</span> ../python &amp;&amp; pip install -e .</span><br><span class="line"></span><br><span class="line"><span class="comment"># ── MLIR（LLVM 自带）──</span></span><br><span class="line">git <span class="built_in">clone</span> --depth 1 https://github.com/llvm/llvm-project.git</span><br><span class="line"><span class="built_in">cd</span> llvm-project &amp;&amp; <span class="built_in">mkdir</span> build &amp;&amp; <span class="built_in">cd</span> build</span><br><span class="line">cmake -G Ninja ../llvm -DLLVM_ENABLE_PROJECTS=mlir -DLLVM_BUILD_EXAMPLES=ON</span><br><span class="line">ninja check-mlir</span><br><span class="line"></span><br><span class="line"><span class="comment"># ── Triton ──</span></span><br><span class="line">pip install triton</span><br><span class="line"></span><br><span class="line"><span class="comment"># ── Torch-MLIR ──</span></span><br><span class="line">pip install torch-mlir</span><br><span class="line"><span class="comment"># 或从源码：https://github.com/llvm/torch-mlir</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>最后的话：</strong> 深度学习编译器是这个领域里最”硬核”的方向之一。它需要编译原理、体系结构、深度学习三重知识。但不要被”编译器”三个字吓到——你现在手写 SIMD 卷积代码的过程，本质上就是在”编译”一个高效的 kernel。编译器只是把这个过程自动化、系统化了。你的 ncnn_deploy 项目已经证明了你对计算图的深刻理解，有了这个基础，进入编译器世界只是换个视角看同一件事。</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/" rel="tag"># 学习计划</a>
+              <a href="/tags/%E7%BC%96%E8%AF%91%E5%99%A8/" rel="tag"># 编译器</a>
+              <a href="/tags/TVM/" rel="tag"># TVM</a>
+              <a href="/tags/MLIR/" rel="tag"># MLIR</a>
+              <a href="/tags/Triton/" rel="tag"># Triton</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/23/cuda-study-plan/" rel="prev" title="CUDA 学习计划 — 从入门到精通">
+                  <i class="fa fa-angle-left"></i> CUDA 学习计划 — 从入门到精通
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/23/modern-cpp-complete-guide/" rel="next" title="现代 C++ 用法完全手册 — C++11 到 C++26">
+                  现代 C++ 用法完全手册 — C++11 到 C++26 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

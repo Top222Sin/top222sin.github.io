@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="高性能计算（含模型部署）学习计划 编者：模型部署工程师视角目标：从 C++ 基础到工业级推理引擎优化，学以致用 — 每个阶段都能直接在你的 ncnn_deploy &#x2F; st_nndeploy 项目中落地 前置：已有 C++ 基础（看过现代 C++ 教程、C++ High Performance），熟悉 PyTorch 训练流程总周期：建议 12~16 周（可并行&#x2F;加速）   目">
+<meta property="og:type" content="article">
+<meta property="og:title" content="高性能计算（含模型部署）学习计划">
+<meta property="og:url" content="http://192.168.1.3:4000/2026/07/23/hpc-study-plan/index.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="高性能计算（含模型部署）学习计划 编者：模型部署工程师视角目标：从 C++ 基础到工业级推理引擎优化，学以致用 — 每个阶段都能直接在你的 ncnn_deploy &#x2F; st_nndeploy 项目中落地 前置：已有 C++ 基础（看过现代 C++ 教程、C++ High Performance），熟悉 PyTorch 训练流程总周期：建议 12~16 周（可并行&#x2F;加速）   目">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-23T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-23T02:00:00.000Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="学习计划">
+<meta property="article:tag" content="高性能计算">
+<meta property="article:tag" content="模型部署">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/2026/07/23/hpc-study-plan/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/2026/07/23/hpc-study-plan/","path":"2026/07/23/hpc-study-plan/","title":"高性能计算（含模型部署）学习计划"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>高性能计算（含模型部署）学习计划 | 学习笔记</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%AB%98%E6%80%A7%E8%83%BD%E8%AE%A1%E7%AE%97%EF%BC%88%E5%90%AB%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2%EF%BC%89%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92"><span class="nav-number">1.</span> <span class="nav-text">高性能计算（含模型部署）学习计划</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%AE%E5%BD%95"><span class="nav-number">1.1.</span> <span class="nav-text">目录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E7%9F%A5%E8%AF%86%E4%BD%93%E7%B3%BB%E5%9C%B0%E5%9B%BE"><span class="nav-number">1.2.</span> <span class="nav-text">一、知识体系地图</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2%E8%A7%86%E8%A7%92%E7%9A%84-HPC-%E7%9F%A5%E8%AF%86%E5%88%86%E5%B1%82"><span class="nav-number">1.2.1.</span> <span class="nav-text">模型部署视角的 HPC 知识分层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AF%8F%E5%B1%82%E7%9A%84%E6%A0%B8%E5%BF%83%E6%8A%80%E8%83%BD-%E2%80%94-%E5%AF%B9%E4%BD%A0%E7%9A%84%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2%E5%B7%A5%E4%BD%9C%E7%9A%84%E7%9B%B4%E6%8E%A5%E5%BD%B1%E5%93%8D"><span class="nav-number">1.2.2.</span> <span class="nav-text">每层的核心技能 — 对你的模型部署工作的直接影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Phase-1%EF%BC%9AC-%E6%A0%B8%E5%BF%83%E5%86%85%E5%8A%9F%EF%BC%882-%E5%91%A8%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">Phase 1：C++ 核心内功（2 周）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87"><span class="nav-number">1.3.1.</span> <span class="nav-text">目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E5%86%85%E5%AE%B9"><span class="nav-number">1.3.2.</span> <span class="nav-text">学习内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E8%B5%84%E6%BA%90"><span class="nav-number">1.3.3.</span> <span class="nav-text">推荐资源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%83%E4%B9%A0%E9%A1%B9%E7%9B%AE"><span class="nav-number">1.3.4.</span> <span class="nav-text">练习项目</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Phase-2%EF%BC%9A%E5%86%85%E5%AD%98%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%B8%83%E5%B1%80%EF%BC%882-%E5%91%A8%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">Phase 2：内存与数据布局（2 周）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87-1"><span class="nav-number">1.4.1.</span> <span class="nav-text">目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E5%86%85%E5%AE%B9-1"><span class="nav-number">1.4.2.</span> <span class="nav-text">学习内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E5%AE%9E%E9%AA%8C%EF%BC%9A%E5%8A%A8%E6%89%8B%E8%B7%91%E9%80%9A%E7%BC%93%E5%AD%98%E5%88%86%E5%B1%82"><span class="nav-number">1.4.3.</span> <span class="nav-text">关键实验：动手跑通缓存分层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E8%B5%84%E6%BA%90-1"><span class="nav-number">1.4.4.</span> <span class="nav-text">推荐资源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%83%E4%B9%A0%E9%A1%B9%E7%9B%AE-1"><span class="nav-number">1.4.5.</span> <span class="nav-text">练习项目</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Phase-3%EF%BC%9A%E5%B9%B6%E8%A1%8C%E8%AE%A1%E7%AE%97-%E2%80%94-CPU%EF%BC%882-%E5%91%A8%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">Phase 3：并行计算 — CPU（2 周）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87-2"><span class="nav-number">1.5.1.</span> <span class="nav-text">目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E5%86%85%E5%AE%B9-2"><span class="nav-number">1.5.2.</span> <span class="nav-text">学习内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%81%9A%E7%84%A6%EF%BC%9ASIMD-%E5%AF%84%E5%AD%98%E5%99%A8%E5%88%86%E5%9D%97%EF%BC%88%E4%BB%8E%E4%BD%A0%E7%9A%84-manual-simd-%E5%88%B0-ncnn-%E7%9A%84%E6%B0%B4%E5%87%86%EF%BC%89"><span class="nav-number">1.5.3.</span> <span class="nav-text">聚焦：SIMD 寄存器分块（从你的 manual_simd 到 ncnn 的水准）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E8%B5%84%E6%BA%90-2"><span class="nav-number">1.5.4.</span> <span class="nav-text">推荐资源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%83%E4%B9%A0%E9%A1%B9%E7%9B%AE-2"><span class="nav-number">1.5.5.</span> <span class="nav-text">练习项目</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Phase-4%EF%BC%9A%E5%B9%B6%E8%A1%8C%E8%AE%A1%E7%AE%97-%E2%80%94-GPU%EF%BC%882-%E5%91%A8%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">Phase 4：并行计算 — GPU（2 周）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87-3"><span class="nav-number">1.6.1.</span> <span class="nav-text">目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E5%86%85%E5%AE%B9-3"><span class="nav-number">1.6.2.</span> <span class="nav-text">学习内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%81%9A%E7%84%A6%EF%BC%9A%E4%BC%98%E5%8C%96%E4%BD%A0%E7%9A%84-CUDA-%E6%96%B9%E6%A1%88"><span class="nav-number">1.6.3.</span> <span class="nav-text">聚焦：优化你的 CUDA 方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E8%B5%84%E6%BA%90-3"><span class="nav-number">1.6.4.</span> <span class="nav-text">推荐资源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%83%E4%B9%A0%E9%A1%B9%E7%9B%AE-3"><span class="nav-number">1.6.5.</span> <span class="nav-text">练习项目</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Phase-5%EF%BC%9A%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2%E5%AE%9E%E6%88%98%EF%BC%883-%E5%91%A8%EF%BC%89"><span class="nav-number">1.7.</span> <span class="nav-text">Phase 5：模型部署实战（3 周）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87-4"><span class="nav-number">1.7.1.</span> <span class="nav-text">目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E5%86%85%E5%AE%B9-4"><span class="nav-number">1.7.2.</span> <span class="nav-text">学习内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%81%9A%E7%84%A6%EF%BC%9Ast-nndeploy-%E7%9A%84%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90"><span class="nav-number">1.7.3.</span> <span class="nav-text">聚焦：st_nndeploy 的架构分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E8%B5%84%E6%BA%90-4"><span class="nav-number">1.7.4.</span> <span class="nav-text">推荐资源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%83%E4%B9%A0%E9%A1%B9%E7%9B%AE-4"><span class="nav-number">1.7.5.</span> <span class="nav-text">练习项目</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Phase-6%EF%BC%9A%E7%AE%97%E5%AD%90%E8%9E%8D%E5%90%88%E4%B8%8E%E6%9E%81%E8%87%B4%E8%B0%83%E4%BC%98%EF%BC%882-%E5%91%A8%EF%BC%89"><span class="nav-number">1.8.</span> <span class="nav-text">Phase 6：算子融合与极致调优（2 周）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87-5"><span class="nav-number">1.8.1.</span> <span class="nav-text">目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E5%86%85%E5%AE%B9-5"><span class="nav-number">1.8.2.</span> <span class="nav-text">学习内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%81%9A%E7%84%A6%EF%BC%9A%E6%89%8B%E5%8A%A8%E6%8E%A8%E5%AF%BC-Conv-BN-%E8%9E%8D%E5%90%88"><span class="nav-number">1.8.3.</span> <span class="nav-text">聚焦：手动推导 Conv+BN 融合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E8%B5%84%E6%BA%90-5"><span class="nav-number">1.8.4.</span> <span class="nav-text">推荐资源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%83%E4%B9%A0%E9%A1%B9%E7%9B%AE-5"><span class="nav-number">1.8.5.</span> <span class="nav-text">练习项目</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Phase-7%EF%BC%9A%E7%94%9F%E4%BA%A7%E7%BA%A7%E9%83%A8%E7%BD%B2%EF%BC%881-%E5%91%A8%EF%BC%89"><span class="nav-number">1.9.</span> <span class="nav-text">Phase 7：生产级部署（1 周）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87-6"><span class="nav-number">1.9.1.</span> <span class="nav-text">目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E5%86%85%E5%AE%B9-6"><span class="nav-number">1.9.2.</span> <span class="nav-text">学习内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%83%E4%B9%A0%E9%A1%B9%E7%9B%AE-6"><span class="nav-number">1.9.3.</span> <span class="nav-text">练习项目</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E6%80%BB%E7%BB%93%E6%80%A7%E8%83%BD%E5%8A%9B%E9%98%B6%E6%A2%AF"><span class="nav-number">1.10.</span> <span class="nav-text">八、总结性能力阶梯</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B9%9D%E3%80%81%E6%8E%A8%E8%8D%90%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%BA%90%E6%80%BB%E8%A1%A8"><span class="nav-number">1.11.</span> <span class="nav-text">九、推荐学习资源总表</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B9%A6%E7%B1%8D"><span class="nav-number">1.11.1.</span> <span class="nav-text">书籍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE%EF%BC%88%E5%AF%B9%E5%BA%94%E4%BD%A0%E7%9A%84%E5%B7%A5%E4%BD%9C%EF%BC%89"><span class="nav-number">1.11.2.</span> <span class="nav-text">开源项目（对应你的工作）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E6%A1%A3%E5%8F%82%E8%80%83"><span class="nav-number">1.11.3.</span> <span class="nav-text">文档参考</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%81%E3%80%81%E8%90%BD%E5%9C%B0%E9%A1%B9%E7%9B%AE%E5%AF%B9%E7%85%A7%E8%A1%A8"><span class="nav-number">1.12.</span> <span class="nav-text">十、落地项目对照表</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%A0%E7%9A%84%E9%A1%B9%E7%9B%AE%E8%BF%9B%E5%BA%A6%E4%B8%8E%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92%E6%98%A0%E5%B0%84"><span class="nav-number">1.12.1.</span> <span class="nav-text">你的项目进度与学习计划映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E4%B8%8B%E4%B8%80%E6%AD%A5%E5%8A%A8%E6%89%8B%E6%96%B9%E5%90%91"><span class="nav-number">1.12.2.</span> <span class="nav-text">推荐下一步动手方向</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://192.168.1.3:4000/2026/07/23/hpc-study-plan/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="zodiac">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="学习笔记">
+      <meta itemprop="description" content="个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="高性能计算（含模型部署）学习计划 | 学习笔记">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          高性能计算（含模型部署）学习计划
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-07-23 10:00:00" itemprop="dateCreated datePublished" datetime="2026-07-23T10:00:00+08:00">2026-07-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/" itemprop="url" rel="index"><span itemprop="name">学习计划</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="高性能计算（含模型部署）学习计划"><a href="#高性能计算（含模型部署）学习计划" class="headerlink" title="高性能计算（含模型部署）学习计划"></a>高性能计算（含模型部署）学习计划</h1><blockquote>
+<p>编者：模型部署工程师视角<br>目标：从 C++ 基础到工业级推理引擎优化，<strong>学以致用</strong> — 每个阶段都能直接在你的 ncnn_deploy &#x2F; st_nndeploy 项目中落地</p>
+<p>前置：已有 C++ 基础（看过现代 C++ 教程、C++ High Performance），熟悉 PyTorch 训练流程<br>总周期：建议 <strong>12~16 周</strong>（可并行&#x2F;加速）</p>
+</blockquote>
+<hr>
+<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><ol>
+<li><a href="#%E4%B8%80%E7%9F%A5%E8%AF%86%E4%BD%93%E7%B3%BB%E5%9C%B0%E5%9B%BE">知识体系地图</a></li>
+<li><a href="#phase-1c-%E6%A0%B8%E5%BF%83%E5%86%85%E5%8A%9F2-%E5%91%A8">Phase 1：C++ 核心内功（2 周）</a></li>
+<li><a href="#phase-2%E5%86%85%E5%AD%98%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%B8%83%E5%B1%802-%E5%91%A8">Phase 2：内存与数据布局（2 周）</a></li>
+<li><a href="#phase-3%E5%B9%B6%E8%A1%8C%E8%AE%A1%E7%AE%97--cpu2-%E5%91%A8">Phase 3：并行计算 — CPU（2 周）</a></li>
+<li><a href="#phase-4%E5%B9%B6%E8%A1%8C%E8%AE%A1%E7%AE%97--gpu2-%E5%91%A8">Phase 4：并行计算 — GPU（2 周）</a></li>
+<li><a href="#phase-5%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2%E5%AE%9E%E6%88%983-%E5%91%A8">Phase 5：模型部署实战（3 周）</a></li>
+<li><a href="#phase-6%E7%AE%97%E5%AD%90%E8%9E%8D%E5%90%88%E4%B8%8E%E6%9E%81%E8%87%B4%E8%B0%83%E4%BC%982-%E5%91%A8">Phase 6：算子融合与极致调优（2 周）</a></li>
+<li><a href="#phase-7%E7%94%9F%E4%BA%A7%E7%BA%A7%E9%83%A8%E7%BD%B21-%E5%91%A8">Phase 7：生产级部署（1 周）</a></li>
+<li><a href="#%E4%B9%9D%E6%8E%A8%E8%8D%90%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%BA%90%E6%80%BB%E8%A1%A8">推荐学习资源总表</a></li>
+<li><a href="#%E5%8D%81%E8%90%BD%E5%9C%B0%E9%A1%B9%E7%9B%AE%E5%AF%B9%E7%85%A7%E8%A1%A8">落地项目对照表</a></li>
+</ol>
+<hr>
+<h2 id="一、知识体系地图"><a href="#一、知识体系地图" class="headerlink" title="一、知识体系地图"></a>一、知识体系地图</h2><h3 id="模型部署视角的-HPC-知识分层"><a href="#模型部署视角的-HPC-知识分层" class="headerlink" title="模型部署视角的 HPC 知识分层"></a>模型部署视角的 HPC 知识分层</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">┌──────────────────────────────────────────────────────────────┐</span><br><span class="line">│  7. 生产级部署                                                │</span><br><span class="line">│     ONNX Runtime / TensorRT / Triton / Docker / CI          │</span><br><span class="line">├──────────────────────────────────────────────────────────────┤</span><br><span class="line">│  6. 算子融合与极致调优                                         │</span><br><span class="line">│     手写 kernel、Winograd、汇编微内核、nsight profiling        │</span><br><span class="line">├──────────────────────────────────────────────────────────────┤</span><br><span class="line">│  5. 模型部署实战 — 你的 ncnn_deploy / st_nndeploy 项目        │</span><br><span class="line">│     六路推理对比、引擎调用链分析、精度对齐                      │</span><br><span class="line">├──────────────────────────────────────────────────────────────┤</span><br><span class="line">│  4. 并行计算 — GPU                                            │</span><br><span class="line">│     CUDA kernel / 共享内存 / cuBLAS / cuDNN / TensorRT       │</span><br><span class="line">├──────────────────────────────────────────────────────────────┤</span><br><span class="line">│  3. 并行计算 — CPU                                            │</span><br><span class="line">│     线程 / OpenMP / SIMD (SSE→AVX) / 缓存优化 / NUMA        │</span><br><span class="line">├──────────────────────────────────────────────────────────────┤</span><br><span class="line">│  2. 内存与数据布局                                             │</span><br><span class="line">│     对齐 / 池化 / cache line / 预取 / 内存带宽 / 布局(NCHW↔NHWC)│</span><br><span class="line">├──────────────────────────────────────────────────────────────┤</span><br><span class="line">│  1. C++ 核心内功                                              │</span><br><span class="line">│     RAII / 移动语义 / 模板元 / constexpr / 编译期优化          │</span><br><span class="line">└──────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="每层的核心技能-—-对你的模型部署工作的直接影响"><a href="#每层的核心技能-—-对你的模型部署工作的直接影响" class="headerlink" title="每层的核心技能 — 对你的模型部署工作的直接影响"></a>每层的核心技能 — 对你的模型部署工作的直接影响</h3><table>
+<thead>
+<tr>
+<th align="left">层次</th>
+<th align="left">核心技能</th>
+<th align="left">直接落地到</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>C++ 内功</strong></td>
+<td align="left">RAII 管理 GPU 内存、模板减少重复 kernel、constexpr 编译期查表</td>
+<td align="left">manual_cuda.cu 的 cudaMalloc RAII 封装</td>
+</tr>
+<tr>
+<td align="left"><strong>内存布局</strong></td>
+<td align="left">cache line 对齐、NCHW vs NHWC 布局、池化分配器</td>
+<td align="left">ncnn::Mat 的 PoolAllocator、NC4HW4</td>
+</tr>
+<tr>
+<td align="left"><strong>CPU 并行</strong></td>
+<td align="left">OpenMP 多线程、AVX2&#x2F;FMA 向量化、缓存分块</td>
+<td align="left">manual_simd.cpp 的 8 通道打包</td>
+</tr>
+<tr>
+<td align="left"><strong>GPU 并行</strong></td>
+<td align="left">CUDA kernel 设计、共享内存、cuBLAS&#x2F;cuDNN</td>
+<td align="left">manual_cuda.cu 的 3D grid 卷积</td>
+</tr>
+<tr>
+<td align="left"><strong>模型部署</strong></td>
+<td align="left">ONNX 导出、PNNX 转换、引擎调用链、精度对齐</td>
+<td align="left">ncnn_deploy 的全部六路推理</td>
+</tr>
+<tr>
+<td align="left"><strong>极致调优</strong></td>
+<td align="left">Winograd 变换、卷积 kernel 融合、性能 profiling</td>
+<td align="left">ncnn 汇编级 sgemm 微内核</td>
+</tr>
+<tr>
+<td align="left"><strong>生产部署</strong></td>
+<td align="left">TensorRT 构建、服务化、流水线</td>
+<td align="left">大规模并发推理服务</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="Phase-1：C-核心内功（2-周）"><a href="#Phase-1：C-核心内功（2-周）" class="headerlink" title="Phase 1：C++ 核心内功（2 周）"></a>Phase 1：C++ 核心内功（2 周）</h2><h3 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h3><p>扎实的 C++ 是现代 HPC 的基石。此阶段重点：<strong>RAII、移动语义、模板元编程、编译期计算</strong>。</p>
+<h3 id="学习内容"><a href="#学习内容" class="headerlink" title="学习内容"></a>学习内容</h3><table>
+<thead>
+<tr>
+<th align="left">主题</th>
+<th align="left">关键知识点</th>
+<th align="left">对应模型部署场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>RAII 与智能指针</strong></td>
+<td align="left"><code>unique_ptr</code>&#x2F;<code>shared_ptr</code> 管理 GPU 内存、<code>std::vector</code> 做连续 buffer</td>
+<td align="left"><code>cuda_forward()</code> 中的 <code>static</code> 变量可改为 RAII 类</td>
+</tr>
+<tr>
+<td align="left"><strong>移动语义与完美转发</strong></td>
+<td align="left">减少中间 Tensor 拷贝、<code>std::move</code> 优化 pipeline</td>
+<td align="left"><code>manual_forward()</code> 传参时避免 Eigen::Tensor 拷贝</td>
+</tr>
+<tr>
+<td align="left"><strong>模板与 SFINAE</strong></td>
+<td align="left">类型萃取（<code>std::is_same</code>）、<code>enable_if</code> 选择 kernel</td>
+<td align="left">编译期选择 SSE4.1 &#x2F; AVX2 路径</td>
+</tr>
+<tr>
+<td align="left"><strong>constexpr &#x2F; if constexpr</strong></td>
+<td align="left">编译期查表（如 sigmoid LUT）、编译期分支</td>
+<td align="left"><code>conv2d_simd_impl</code> 的 <code>#if defined</code> 可改为 <code>if constexpr</code></td>
+</tr>
+<tr>
+<td align="left"><strong>Lambda 与函数对象</strong></td>
+<td align="left">自定义算子注册、<code>std::function</code> vs auto</td>
+<td align="left">ncnn 的 Layer 工厂注册模式</td>
+</tr>
+<tr>
+<td align="left"><strong>alignas &#x2F; alignof</strong></td>
+<td align="left">缓存行对齐（64B）、SIMD 对齐（32B）</td>
+<td align="left">ncnn::Mat 的 <code>align_malloc</code></td>
+</tr>
+</tbody></table>
+<h3 id="推荐资源"><a href="#推荐资源" class="headerlink" title="推荐资源"></a>推荐资源</h3><ul>
+<li><strong>《C++ High Performance》</strong>（已有 PDF） — 第 1-7 章</li>
+<li><strong>《现代 C++ 教程》</strong>（已有 PDF） — 快速回顾</li>
+<li><strong>cppreference.com</strong> — 随时查</li>
+<li><strong>代码实验</strong>：用 RAII 包装 manual_cuda.cu 的 <code>cudaMalloc</code>&#x2F;<code>cudaFree</code></li>
+</ul>
+<h3 id="练习项目"><a href="#练习项目" class="headerlink" title="练习项目"></a>练习项目</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 learn_cpp 中创建实验</span></span><br><span class="line"><span class="built_in">mkdir</span> -p /home/zodiac/03disk/02hermes/learn_cpp/00_cpp_basic/exercise</span><br><span class="line"></span><br><span class="line"><span class="comment"># 练习1: 手写一个简单的 PoolAllocator（类似 ncnn 的内存池）</span></span><br><span class="line"><span class="comment"># 练习2: 用模板实现 conv2d&lt;OC, IC, KH, KW&gt; 编译期展开</span></span><br><span class="line"><span class="comment"># 练习3: 用 RAII 封装 CUDA 指针，自动管理生命周期</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Phase-2：内存与数据布局（2-周）"><a href="#Phase-2：内存与数据布局（2-周）" class="headerlink" title="Phase 2：内存与数据布局（2 周）"></a>Phase 2：内存与数据布局（2 周）</h2><h3 id="目标-1"><a href="#目标-1" class="headerlink" title="目标"></a>目标</h3><p>理解现代 CPU&#x2F;GPU 的内存层次结构，学会<strong>以数据为中心的优化</strong>——这是模型部署性能调优最常忽略但效果最显著的一环。</p>
+<h3 id="学习内容-1"><a href="#学习内容-1" class="headerlink" title="学习内容"></a>学习内容</h3><table>
+<thead>
+<tr>
+<th align="left">主题</th>
+<th align="left">关键知识点</th>
+<th align="left">对应模型部署场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>缓存层次</strong></td>
+<td align="left">L1(32KB)&#x2F;L2(256KB)&#x2F;L3(8MB) 大小与延迟、cache line(64B)</td>
+<td align="left">im2col 的 col buffer(288KB) 超过 L2 的大小</td>
+</tr>
+<tr>
+<td align="left"><strong>内存带宽</strong></td>
+<td align="left">DDR4&#x2F;5 带宽 ~30-50 GB&#x2F;s、NUMA 架构</td>
+<td align="left">为什么 21M FLOPs 的小模型 CPU 瓶颈在内存带宽</td>
+</tr>
+<tr>
+<td align="left"><strong>数据布局</strong></td>
+<td align="left">NCHW vs NHWC vs CHWN、NC4HW4、tiling</td>
+<td align="left">ncnn 的 packing-aware 布局 vs MNN 的 NC4HW4</td>
+</tr>
+<tr>
+<td align="left"><strong>内存对齐</strong></td>
+<td align="left"><code>aligned_alloc(32)</code>、<code>__attribute__((aligned))</code></td>
+<td align="left">SIMD load&#x2F;store 需要 32B 对齐</td>
+</tr>
+<tr>
+<td align="left"><strong>预取</strong></td>
+<td align="left"><code>_mm_prefetch</code>、<code>__builtin_prefetch</code></td>
+<td align="left">SIMD 卷积的软件预取</td>
+</tr>
+<tr>
+<td align="left"><strong>内存池</strong></td>
+<td align="left">预分配复用、避免反复 malloc</td>
+<td align="left">ncnn PoolAllocator → manual_optimized 的 workspace</td>
+</tr>
+<tr>
+<td align="left"><strong>大页 (Huge Pages)</strong></td>
+<td align="left">HugeTLB、透明大页</td>
+<td align="left">TensorRT 和 ncnn 的大页优化选项</td>
+</tr>
+</tbody></table>
+<h3 id="关键实验：动手跑通缓存分层"><a href="#关键实验：动手跑通缓存分层" class="headerlink" title="关键实验：动手跑通缓存分层"></a>关键实验：动手跑通缓存分层</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 验证缓存层次的 benchmark — 在你的机器上实验！</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 按不同 stride 遍历数组，观察延迟跳变点</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">cache_bench</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="type">size_t</span> N = <span class="number">64</span> * <span class="number">1024</span> * <span class="number">1024</span>;  <span class="comment">// 256 MB</span></span><br><span class="line">    <span class="function">std::vector&lt;<span class="type">char</span>&gt; <span class="title">data</span><span class="params">(N, <span class="number">1</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> stride : &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">8</span>, <span class="number">16</span>, <span class="number">32</span>, <span class="number">64</span>, <span class="number">128</span>, <span class="number">256</span>, <span class="number">512</span>, <span class="number">1024</span>&#125;) &#123;</span><br><span class="line">        <span class="keyword">auto</span> t0 = std::chrono::steady_clock::<span class="built_in">now</span>();</span><br><span class="line">        <span class="keyword">volatile</span> <span class="type">char</span> sink;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">size_t</span> i = <span class="number">0</span>; i &lt; N; i += stride)</span><br><span class="line">            sink = data[i];</span><br><span class="line">        <span class="keyword">auto</span> t1 = std::chrono::steady_clock::<span class="built_in">now</span>();</span><br><span class="line">        <span class="keyword">auto</span> us = std::chrono::<span class="built_in">duration_cast</span>&lt;std::chrono::microseconds&gt;(t1 - t0).<span class="built_in">count</span>();</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;stride=&quot;</span> &lt;&lt; stride &lt;&lt; <span class="string">&quot; time=&quot;</span> &lt;&lt; us &lt;&lt; <span class="string">&quot; us\n&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 预期结果: stride 较小时 (cache line 内连续)，很快</span></span><br><span class="line"><span class="comment">// stride 变大后 (跨 cache line / 跨页) → 延迟跳变</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="推荐资源-1"><a href="#推荐资源-1" class="headerlink" title="推荐资源"></a>推荐资源</h3><ul>
+<li><strong>Computer Architecture: A Quantitative Approach (Hennessy &amp; Patterson)</strong> — 第 2 章内存层次</li>
+<li><strong>What Every Programmer Should Know About Memory (Ulrich Drepper)</strong> — 经典神文</li>
+<li><strong>ncnn 源码</strong>：<code>src/mat.h</code> 的 <code>PoolAllocator</code>、<code>src/layer/convolution.cpp</code> 的 padding 处理</li>
+</ul>
+<h3 id="练习项目-1"><a href="#练习项目-1" class="headerlink" title="练习项目"></a>练习项目</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 练习1: 写一个缓存感知的矩阵乘法（对比 naive vs 分块 tiling）</span></span><br><span class="line"><span class="comment"># 练习2: 分析 ncnn_deploy 中 im2col 的缓存行为</span></span><br><span class="line"><span class="comment"># 练习3: 对比 NCHW vs NHWC 布局下的卷积速度</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Phase-3：并行计算-—-CPU（2-周）"><a href="#Phase-3：并行计算-—-CPU（2-周）" class="headerlink" title="Phase 3：并行计算 — CPU（2 周）"></a>Phase 3：并行计算 — CPU（2 周）</h2><h3 id="目标-2"><a href="#目标-2" class="headerlink" title="目标"></a>目标</h3><p>从<strong>多线程</strong>到<strong>SIMD 向量化</strong>，再到<strong>两者结合</strong>——覆盖 CPU 模型部署所需的全部并行手段。</p>
+<h3 id="学习内容-2"><a href="#学习内容-2" class="headerlink" title="学习内容"></a>学习内容</h3><table>
+<thead>
+<tr>
+<th align="left">主题</th>
+<th align="left">关键知识点</th>
+<th align="left">对应模型部署场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>OpenMP 基础</strong></td>
+<td align="left"><code>#pragma omp parallel for</code>、<code>collapse</code>、<code>schedule</code>、<code>reduction</code></td>
+<td align="left">ncnn &#x2F; MNN 的多线程推理</td>
+</tr>
+<tr>
+<td align="left"><strong>OpenMP 进阶</strong></td>
+<td align="left"><code>#pragma omp simd</code>、<code>omp_get_num_threads</code>、任务并行</td>
+<td align="left"><code>ncnn::opt.num_threads = 4</code></td>
+</tr>
+<tr>
+<td align="left"><strong>SIMD 历史</strong></td>
+<td align="left">MMX → SSE → AVX → AVX-512 → AMX</td>
+<td align="left">CPU 兼容性决策</td>
+</tr>
+<tr>
+<td align="left"><strong>SSE&#x2F;AVX intrinsic</strong></td>
+<td align="left"><code>_mm_loadu_ps</code>&#x2F;<code>_mm256_fmadd_ps</code>&#x2F;<code>_mm256_max_ps</code>&#x2F;<code>_mm256_set1_ps</code></td>
+<td align="left">manual_simd.cpp 的 8 通道打包</td>
+</tr>
+<tr>
+<td align="left"><strong>SIMD 寄存器分块</strong></td>
+<td align="left">6×16 微内核、避免栈 spill</td>
+<td align="left">ncnn 的汇编级 sgemm</td>
+</tr>
+<tr>
+<td align="left"><strong>OpenMP + SIMD 混合</strong></td>
+<td align="left">外维开线程、内维 SIMD</td>
+<td align="left">生产级推理引擎的标准模式</td>
+</tr>
+<tr>
+<td align="left"><strong>循环展开</strong></td>
+<td align="left"><code>#pragma unroll</code>、手动 4×&#x2F;8× 展开</td>
+<td align="left">编译器不一定做好的地方</td>
+</tr>
+</tbody></table>
+<h3 id="聚焦：SIMD-寄存器分块（从你的-manual-simd-到-ncnn-的水准）"><a href="#聚焦：SIMD-寄存器分块（从你的-manual-simd-到-ncnn-的水准）" class="headerlink" title="聚焦：SIMD 寄存器分块（从你的 manual_simd 到 ncnn 的水准）"></a>聚焦：SIMD 寄存器分块（从你的 manual_simd 到 ncnn 的水准）</h3><p><strong>当前 manual_simd.cpp 的问题：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">每轮处理 8 个 OC（一个 ymm 寄存器）</span><br><span class="line">→ 分散 store 是瓶颈（8 次 store，8 个不同的 cache line）</span><br></pre></td></tr></table></figure>
+
+<p><strong>ncnn 的 6×16 微内核（src&#x2F;layer&#x2F;x86&#x2F;convolution_x86.cpp）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">同时处理 6 个 OC + 16 个像素 → 6×16 = 96 个累加器</span><br><span class="line">全部在 ymm 寄存器中（96 × 8 floats = 768 floats ≈ 24 个 ymm 寄存器）</span><br><span class="line">→ store 时是 16 个连续像素的连续写</span><br><span class="line">→ 无栈 spill，高效利用寄存器文件</span><br></pre></td></tr></table></figure>
+
+<p><strong>你的升级路径：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">manual_simd：  1 OC batch × 1 pixel        → 8 路 FMA，8 路分散 store</span><br><span class="line">↓</span><br><span class="line">寄存器分块：   1 OC batch × 4 pixel tile    → 32 路 FMA，4 次向量 store</span><br><span class="line">↓</span><br><span class="line">ncnn 水准：   6 OC × 16 pixel tile         → 96 路 FMA，1 次连续向量 store</span><br></pre></td></tr></table></figure>
+
+<h3 id="推荐资源-2"><a href="#推荐资源-2" class="headerlink" title="推荐资源"></a>推荐资源</h3><ul>
+<li><strong>Intel Intrinsics Guide</strong> — 查指令手册（网站 &#x2F; 本地）</li>
+<li><strong>《C++ High Performance》</strong> 第 10-11 章（并发与 SIMD）</li>
+<li><strong>Agner Fog’s Optimization Manuals</strong> — 微架构优化圣经</li>
+<li><strong>ncnn 源码</strong>：<code>src/layer/x86/convolution_x86.cpp</code></li>
+<li><strong>OpenMP 规范</strong>：<code>omp.org</code></li>
+</ul>
+<h3 id="练习项目-2"><a href="#练习项目-2" class="headerlink" title="练习项目"></a>练习项目</h3><ul>
+<li>改进 manual_simd.cpp：加入寄存器分块（4 pixel × 8 OC）</li>
+<li>写一个 OpenMP + SIMD 的矩阵乘法 benchmark</li>
+<li>对比 <code>collapse(2)</code> 与 <code>collapse(3)</code> 对卷积性能的影响</li>
+</ul>
+<hr>
+<h2 id="Phase-4：并行计算-—-GPU（2-周）"><a href="#Phase-4：并行计算-—-GPU（2-周）" class="headerlink" title="Phase 4：并行计算 — GPU（2 周）"></a>Phase 4：并行计算 — GPU（2 周）</h2><h3 id="目标-3"><a href="#目标-3" class="headerlink" title="目标"></a>目标</h3><p>从 CUDA 编程模型到 cuDNN&#x2F;TensorRT 高级 API——掌握 GPU 上的模型部署。</p>
+<h3 id="学习内容-3"><a href="#学习内容-3" class="headerlink" title="学习内容"></a>学习内容</h3><table>
+<thead>
+<tr>
+<th align="left">主题</th>
+<th align="left">关键知识点</th>
+<th align="left">对应模型部署场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>CUDA 编程模型</strong></td>
+<td align="left">Grid&#x2F;Block&#x2F;Thread、warp divergence、bank conflict</td>
+<td align="left">manual_cuda.cu 的 3D grid 卷积</td>
+</tr>
+<tr>
+<td align="left"><strong>内存层次</strong></td>
+<td align="left">Global&#x2F;Shared&#x2F;Local&#x2F;Texture&#x2F;Constant</td>
+<td align="left"><code>__ldg()</code> 只读缓存、<code>__shared__</code></td>
+</tr>
+<tr>
+<td align="left"><strong>共享内存</strong></td>
+<td align="left">2D block tiling、bank conflict 避免</td>
+<td align="left">卷积的输入 tile 放到共享内存</td>
+</tr>
+<tr>
+<td align="left"><strong>cuBLAS &#x2F; cuDNN</strong></td>
+<td align="left">cublasSgemm、cudnnConvolutionForward</td>
+<td align="left">厂商优化库 vs 手写 kernel</td>
+</tr>
+<tr>
+<td align="left"><strong>CUDA Stream 与异步</strong></td>
+<td align="left"><code>cudaMemcpyAsync</code>、<code>cudaStream_t</code></td>
+<td align="left">实现计算-传输 overlap</td>
+</tr>
+<tr>
+<td align="left"><strong>TensorRT 基础</strong></td>
+<td align="left">构建期优化、INT8&#x2F;FP16 量化</td>
+<td align="left">生产级 GPU 部署标准方案</td>
+</tr>
+<tr>
+<td align="left"><strong>CUDA Graph</strong></td>
+<td align="left">将推理图捕获为 <code>cudaGraphExec_t</code></td>
+<td align="left">消除小模型的 kernel launch 开销</td>
+</tr>
+<tr>
+<td align="left"><strong>Nsight 性能分析</strong></td>
+<td align="left">Occupancy、roofline、SM 利用率</td>
+<td align="left">发现性能瓶颈（你的 CUDA 方案利用率仅 1.7%）</td>
+</tr>
+</tbody></table>
+<h3 id="聚焦：优化你的-CUDA-方案"><a href="#聚焦：优化你的-CUDA-方案" class="headerlink" title="聚焦：优化你的 CUDA 方案"></a>聚焦：优化你的 CUDA 方案</h3><p><strong>当前问题</strong>（从 manual_cuda.cu 的实际数据）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CUDA 稳态 0.30 ms，但 kernel launch 占 ~60%</span><br><span class="line">→ 9 次 launch，每次 ~15 μs</span><br><span class="line">→ 实际计算仅 ~5 μs</span><br></pre></td></tr></table></figure>
+
+<p><strong>优化路径：</strong></p>
+<ol>
+<li><p><strong>Kernel 融合 → 减少 launch 次数</strong>（降低到 3 次）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">当前:   Conv → ReLU → Pool  (3 launches / block × 3 blocks = 9 launches)</span><br><span class="line">融合后: ConvReLUPool  (1 launch / block × 3 blocks = 3 launches)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>CUDA Graph</strong> → 将整个推理图捕获为一次 launch</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">当前:   9 kernels + 2 cuBLAS + 3 memcpy = ~15 次 launch</span><br><span class="line">CUDA Graph: 1 次 cudaGraphLaunch</span><br><span class="line">→ 从 ~300 μs 降至 ~50 μs（接近理论极限）</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>增大 batch size</strong> → 摊平 launch 开销</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">batch=1:  0.30 ms   利用率 1.7%</span><br><span class="line">batch=32: 0.40 ms   利用率 ~50%</span><br><span class="line">batch=64: 0.60 ms   利用率 ~70%</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="推荐资源-3"><a href="#推荐资源-3" class="headerlink" title="推荐资源"></a>推荐资源</h3><ul>
+<li><strong>《CUDA C++ Programming Guide》</strong>（NVIDIA 官方，免费）</li>
+<li><strong>《CUDA by Example》</strong> — 入门实践</li>
+<li><strong>NVIDIA Developer Blog</strong> — kernel 融合、CUDA Graph 案例</li>
+<li><strong>TensorRT Developer Guide</strong> — 生产过程式部署</li>
+</ul>
+<h3 id="练习项目-3"><a href="#练习项目-3" class="headerlink" title="练习项目"></a>练习项目</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 练习1: 在你的 manual_cuda.cu 基础上，将 Conv+ReLU+Pool 融合为单个 kernel</span></span><br><span class="line"><span class="comment"># 练习2: 加入共享内存 tiling 优化卷积</span></span><br><span class="line"><span class="comment"># 练习3: 使用 CUDA Graph 捕获整个推理图</span></span><br><span class="line"><span class="comment"># 练习4: 对比手写 CUDA kernel vs TensorRT 部署的延迟</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Phase-5：模型部署实战（3-周）"><a href="#Phase-5：模型部署实战（3-周）" class="headerlink" title="Phase 5：模型部署实战（3 周）"></a>Phase 5：模型部署实战（3 周）</h2><h3 id="目标-4"><a href="#目标-4" class="headerlink" title="目标"></a>目标</h3><p>系统化串联前面所有知识，深入到<strong>每个推理引擎的内部调用链</strong>——这是你的 ncnn_deploy 项目的灵魂所在。</p>
+<h3 id="学习内容-4"><a href="#学习内容-4" class="headerlink" title="学习内容"></a>学习内容</h3><table>
+<thead>
+<tr>
+<th align="left">主题</th>
+<th align="left">关键知识点</th>
+<th align="left">对应你的项目</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>模型导出对比</strong></td>
+<td align="left">TorchScript &#x2F; ONNX &#x2F; PNNX &#x2F; TFLite &#x2F; CoreML 的差异与坑</td>
+<td align="left">ncnn_deploy&#x2F;model&#x2F;</td>
+</tr>
+<tr>
+<td align="left"><strong>ncnn 调用链</strong></td>
+<td align="left">Net→Extractor→Layer→forward 全路径</td>
+<td align="left">ncnn-internal-analysis.md</td>
+</tr>
+<tr>
+<td align="left"><strong>MNN 调用链</strong></td>
+<td align="left">Interpreter→Session→Backend→Execution 全路径</td>
+<td align="left">mnn-internal-analysis.md</td>
+</tr>
+<tr>
+<td align="left"><strong>ONNX Runtime</strong></td>
+<td align="left">OrtSession→Run、IOBinding、多后端</td>
+<td align="left">st_nndeploy 的 ORT backend</td>
+</tr>
+<tr>
+<td align="left"><strong>TNN</strong></td>
+<td align="left">同 ncnn 的 Layer 架构 + Metal&#x2F;Vulkan 后端</td>
+<td align="left">st_nndeploy 的 TNN backend</td>
+</tr>
+<tr>
+<td align="left"><strong>Engine 对比</strong></td>
+<td align="left">6 路方案的精度&#x2F;延迟&#x2F;内部优化手段</td>
+<td align="left">deployment-comparison.md</td>
+</tr>
+<tr>
+<td align="left"><strong>模型量化</strong></td>
+<td align="left">FP16、INT8、PTQ、QAT、Calibration</td>
+<td align="left">生产部署的精度-速度权衡</td>
+</tr>
+<tr>
+<td align="left"><strong>权重复用</strong></td>
+<td align="left">同一权重以不同布局喂给多个引擎</td>
+<td align="left">main.cpp 的 load_opt_w &#x2F; load_simd_w</td>
+</tr>
+</tbody></table>
+<h3 id="聚焦：st-nndeploy-的架构分析"><a href="#聚焦：st-nndeploy-的架构分析" class="headerlink" title="聚焦：st_nndeploy 的架构分析"></a>聚焦：st_nndeploy 的架构分析</h3><p>你的 <code>st_nndeploy</code> 项目是一个<strong>统一的部署推理框架</strong>，类似 OpenMMLab 的 mmdeploy。它的核心架构：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────┐</span><br><span class="line">│  st_nndeploy（统一上层接口）                   │</span><br><span class="line">│   ├─ Model: 模型加载与解析                    │</span><br><span class="line">│   ├─ Session: 推理会话                       │</span><br><span class="line">│   └─ Pipeline: 前后处理 + 推理 流水线         │</span><br><span class="line">├─────────────────────────────────────────────┤</span><br><span class="line">│  Backend 层（多引擎桥接）                      │</span><br><span class="line">│   ├─ ncnn backend   ← 你已经深入分析的         │</span><br><span class="line">│   ├─ MNN backend    ← 你已经深入分析的         │</span><br><span class="line">│   ├─ ONNX Runtime backend                     │</span><br><span class="line">│   ├─ TNN backend                              │</span><br><span class="line">│   ├─ TensorRT backend                         │</span><br><span class="line">│   └─ CoreML backend (macOS/iOS)               │</span><br><span class="line">├─────────────────────────────────────────────┤</span><br><span class="line">│  算子层                                       │</span><br><span class="line">│   ├─ 通用算子抽象 (Conv2D, Pooling, FC)       │</span><br><span class="line">│   └─ 各引擎的算子实现 (ncnn::Convolution 等)   │</span><br><span class="line">└─────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>学习路线：</strong> 逐个分析每个 backend 的桥接代码，理解各引擎的 API 差异。</p>
+<h3 id="推荐资源-4"><a href="#推荐资源-4" class="headerlink" title="推荐资源"></a>推荐资源</h3><ul>
+<li><strong>你的项目源码</strong>：<code>ncnn_deploy/src/</code> 下的全部文件</li>
+<li><strong>各引擎官方仓库</strong>：Tencent&#x2F;ncnn, alibaba&#x2F;MNN, microsoft&#x2F;onnxruntime, Tencent&#x2F;TNN</li>
+<li><strong>st_nndeploy 源码</strong>：学习多引擎统一封装的架构模式</li>
+<li><strong>OpenMMLab mmdeploy</strong>：了解工业级部署框架设计</li>
+</ul>
+<h3 id="练习项目-4"><a href="#练习项目-4" class="headerlink" title="练习项目"></a>练习项目</h3><ul>
+<li>为你的 ncnn_deploy 添加<strong>第 7 种方案</strong>（ONNX Runtime &#x2F; TNN &#x2F; TensorRT 三选一）</li>
+<li>对比不同引擎的 <strong>INT8 量化精度</strong></li>
+<li>分析 st_nndeploy 中某个 backend 的桥接代码（如 <code>ncnn_backend.cpp</code>）</li>
+</ul>
+<hr>
+<h2 id="Phase-6：算子融合与极致调优（2-周）"><a href="#Phase-6：算子融合与极致调优（2-周）" class="headerlink" title="Phase 6：算子融合与极致调优（2 周）"></a>Phase 6：算子融合与极致调优（2 周）</h2><h3 id="目标-5"><a href="#目标-5" class="headerlink" title="目标"></a>目标</h3><p>深入推理引擎的<strong>算子优化层</strong>——Conv+BN+ReLU 融合原理、Winograd 变换、汇编级微内核。</p>
+<h3 id="学习内容-5"><a href="#学习内容-5" class="headerlink" title="学习内容"></a>学习内容</h3><table>
+<thead>
+<tr>
+<th align="left">主题</th>
+<th align="left">关键知识点</th>
+<th align="left">对应模型部署场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Conv+BN 融合</strong></td>
+<td align="left">数学推导、合并公式、fp32&#x2F;fp16 融合</td>
+<td align="left">manual_cuda.cu 用的 fused 权重</td>
+</tr>
+<tr>
+<td align="left"><strong>Conv+ReLU 融合</strong></td>
+<td align="left">activation_type&#x3D;1 的 conv kernel 内实现</td>
+<td align="left">ncnn param 中的 <code>1=1</code></td>
+</tr>
+<tr>
+<td align="left"><strong>Winograd F(2×2,3×3)</strong></td>
+<td align="left">从 9 次乘法降至 4 次、变换矩阵、系数选择</td>
+<td align="left">ncnn 3×3 conv 加速的核心</td>
+</tr>
+<tr>
+<td align="left"><strong>汇编级 sgemm 微内核</strong></td>
+<td align="left">6×16 寄存器分块、prefetch、指令调度</td>
+<td align="left">ncnn x86 convolution_x86.cpp</td>
+</tr>
+<tr>
+<td align="left"><strong>int8 量化卷积</strong></td>
+<td align="left">量化公式、zero-point、saturation 处理</td>
+<td align="left">移动端推理的标准方案</td>
+</tr>
+<tr>
+<td align="left"><strong>图优化</strong></td>
+<td align="left">常量折叠、死算子消除、算子合并</td>
+<td align="left">推理引擎的”编译器”优化阶段</td>
+</tr>
+</tbody></table>
+<h3 id="聚焦：手动推导-Conv-BN-融合"><a href="#聚焦：手动推导-Conv-BN-融合" class="headerlink" title="聚焦：手动推导 Conv+BN 融合"></a>聚焦：手动推导 Conv+BN 融合</h3><p>这是你项目 <code>weights/</code> 目录中 <code>_fused.raw</code> 的由来——现在理解其数学原理：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Conv+BN 融合公式（PyTorch eval mode）</span></span><br><span class="line"><span class="comment"># Conv: y = X * w + b</span></span><br><span class="line"><span class="comment"># BN:   z = gamma * (y - mean) / sqrt(var + eps) + beta</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 代入:</span></span><br><span class="line"><span class="comment"># z = gamma * (X*w + b - mean) / sqrt(var+eps) + beta</span></span><br><span class="line"><span class="comment">#   = X * [gamma * w / sqrt(var+eps)] + [gamma * (b - mean) / sqrt(var+eps) + beta]</span></span><br><span class="line"><span class="comment">#   = X * w_fused + b_fused</span></span><br><span class="line"></span><br><span class="line">w_fused = gamma * w / sqrt(var + eps)</span><br><span class="line">b_fused = gamma * (b - mean) / sqrt(var + eps) + beta</span><br></pre></td></tr></table></figure>
+
+<p>在你的项目中验证：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 对比 fused vs unfused 权重的推理结果是否一致</span></span><br><span class="line"><span class="comment"># weights/layer_conv1_w.raw vs weights/layer_conv1_w_fused.raw</span></span><br><span class="line">python3 -c <span class="string">&quot;</span></span><br><span class="line"><span class="string">import numpy as np</span></span><br><span class="line"><span class="string">w = np.fromfile(&#x27;weights/layer_conv1_w.raw&#x27;, dtype=np.float32)</span></span><br><span class="line"><span class="string">wf = np.fromfile(&#x27;weights/layer_conv1_w_fused.raw&#x27;, dtype=np.float32)</span></span><br><span class="line"><span class="string">print(&#x27;MAE:&#x27;, np.max(np.abs(w.reshape(-1,27) - wf.reshape(-1,27))))</span></span><br><span class="line"><span class="string">&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="推荐资源-5"><a href="#推荐资源-5" class="headerlink" title="推荐资源"></a>推荐资源</h3><ul>
+<li><strong>Winograd 论文</strong>：Lavin &amp; Gray, “Fast Algorithms for Convolutional Neural Networks” (CVPR 2016)</li>
+<li><strong>ncnn 源码</strong>：<code>src/layer/x86/</code> 目录下的全部汇编文件</li>
+<li><strong>《Efficient Processing of Deep Neural Networks》</strong>(Vivienne Sze) — 全书覆盖所有 DNN 加速技术</li>
+<li><strong>nnfusion &#x2F; TVM</strong>：了解编译优化的图优化与自动调优</li>
+</ul>
+<h3 id="练习项目-5"><a href="#练习项目-5" class="headerlink" title="练习项目"></a>练习项目</h3><ul>
+<li>在 manual_simd.cpp 中实现 F(2×2,3×3) Winograd 变换版本</li>
+<li>分析 ncnn 的 convolution_x86.cpp 中 sgemm 微内核的汇编代码</li>
+<li>对比 ncnn 开启&#x2F;关闭 Winograd 的性能差异</li>
+</ul>
+<hr>
+<h2 id="Phase-7：生产级部署（1-周）"><a href="#Phase-7：生产级部署（1-周）" class="headerlink" title="Phase 7：生产级部署（1 周）"></a>Phase 7：生产级部署（1 周）</h2><h3 id="目标-6"><a href="#目标-6" class="headerlink" title="目标"></a>目标</h3><p>将模型部署从”跑通”提升到”生产就绪”——性能、稳定性、可维护性、监控。</p>
+<h3 id="学习内容-6"><a href="#学习内容-6" class="headerlink" title="学习内容"></a>学习内容</h3><table>
+<thead>
+<tr>
+<th align="left">主题</th>
+<th align="left">关键知识点</th>
+<th align="left">对应模型部署场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>TensorRT 部署</strong></td>
+<td align="left">OnnxParser、builder config、INT8 calibration</td>
+<td align="left">GPU 生产部署的标准</td>
+</tr>
+<tr>
+<td align="left"><strong>服务化部署</strong></td>
+<td align="left">Triton Inference Server、gRPC 接口</td>
+<td align="left">大规模并发推理</td>
+</tr>
+<tr>
+<td align="left"><strong>流水线并行</strong></td>
+<td align="left">前处理&#x2F;推理&#x2F;后处理的 pipeline 重叠</td>
+<td align="left">提高吞吐量</td>
+</tr>
+<tr>
+<td align="left"><strong>性能监控</strong></td>
+<td align="left">延迟百分位 (P50&#x2F;P99)、吞吐量、GPU 利用率</td>
+<td align="left">线上模型运行状态</td>
+</tr>
+<tr>
+<td align="left"><strong>错误处理</strong></td>
+<td align="left">模型版本管理、回滚策略、超时机制</td>
+<td align="left">生产稳定性</td>
+</tr>
+<tr>
+<td align="left"><strong>CI&#x2F;CD for ML</strong></td>
+<td align="left">模型自动测试（精度测试benchmark）、回归测试</td>
+<td align="left">持续集成</td>
+</tr>
+</tbody></table>
+<h3 id="练习项目-6"><a href="#练习项目-6" class="headerlink" title="练习项目"></a>练习项目</h3><ul>
+<li>使用 TensorRT 部署 CIFAR-10 CNN 并对比 CUDA 手写方案</li>
+<li>在你的 ncnn_deploy 中添加<strong>精度回归测试</strong>（将 benchmark 脚本化）</li>
+<li>设计一个简单的推理服务 REST API</li>
+</ul>
+<hr>
+<h2 id="八、总结性能力阶梯"><a href="#八、总结性能力阶梯" class="headerlink" title="八、总结性能力阶梯"></a>八、总结性能力阶梯</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">阶段                             掌握技能                                 可到达延迟(21M FLOPs)</span><br><span class="line">───────────────────────────────────────────────────────────────────</span><br><span class="line">Phase 1 C++ 内功         RAII、模板、编译期计算                               —</span><br><span class="line">Phase 2 内存布局          缓存优化、池化分配器、对齐                             不影响</span><br><span class="line">Phase 3 CPU 并行          OpenMP + SIMD                                   ~0.37 ms (ncnn)</span><br><span class="line">Phase 4 GPU 并行          CUDA kernel + cuBLAS + CUDA Graph               ~0.05~0.30 ms</span><br><span class="line">Phase 5 模型部署实战       全引擎深入调用链                                      —</span><br><span class="line">Phase 6 极致调优           Winograd + 汇编微内核                             ~0.20 ms</span><br><span class="line">Phase 7 生产部署           TensorRT + Triton + CI                           ~0.03~0.10 ms</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>关键认知：</strong> 对 21M FLOPs 的 CIFAR-10 CNN，性能天花板是 <strong>~0.03 ms</strong>（受限于 kernel launch + 内存搬运）。<br>更大模型（&gt;100M FLOPs）时，极致调优的效果会更显著。</p>
+</blockquote>
+<hr>
+<h2 id="九、推荐学习资源总表"><a href="#九、推荐学习资源总表" class="headerlink" title="九、推荐学习资源总表"></a>九、推荐学习资源总表</h2><h3 id="书籍"><a href="#书籍" class="headerlink" title="书籍"></a>书籍</h3><table>
+<thead>
+<tr>
+<th align="left">书名</th>
+<th align="left">作者</th>
+<th align="left">覆盖内容</th>
+<th align="center">优先级</th>
+<th align="center">已有?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>C++ High Performance</strong></td>
+<td align="left">Viktor Sehr</td>
+<td align="left">C++ 现代实践 + 并发 + SIMD</td>
+<td align="center">⭐⭐⭐</td>
+<td align="center">✅ PDF</td>
+</tr>
+<tr>
+<td align="left"><strong>现代 C++ 教程</strong></td>
+<td align="left">欧长坤</td>
+<td align="left">C++11&#x2F;14&#x2F;17&#x2F;20 新特性速览</td>
+<td align="center">⭐⭐⭐</td>
+<td align="center">✅ PDF</td>
+</tr>
+<tr>
+<td align="left"><strong>Computer Architecture</strong></td>
+<td align="left">Hennessy &amp; Patterson</td>
+<td align="left">内存层次、流水线、多核</td>
+<td align="center">⭐⭐⭐</td>
+<td align="center">❌</td>
+</tr>
+<tr>
+<td align="left"><strong>Efficient Processing of DNNs</strong></td>
+<td align="left">Vivienne Sze</td>
+<td align="left">DNN 加速全指南</td>
+<td align="center">⭐⭐⭐</td>
+<td align="center">❌ 有网上版</td>
+</tr>
+<tr>
+<td align="left"><strong>Programming Massively Parallel Processors</strong></td>
+<td align="left">Kirk &amp; Hwu</td>
+<td align="left">CUDA 原理与实践</td>
+<td align="center">⭐⭐</td>
+<td align="center">❌</td>
+</tr>
+<tr>
+<td align="left"><strong>Agner Fog Optimizations</strong></td>
+<td align="left">Agner Fog</td>
+<td align="left">x86 微架构优化</td>
+<td align="center">⭐⭐</td>
+<td align="center">网上免费</td>
+</tr>
+</tbody></table>
+<h3 id="开源项目（对应你的工作）"><a href="#开源项目（对应你的工作）" class="headerlink" title="开源项目（对应你的工作）"></a>开源项目（对应你的工作）</h3><table>
+<thead>
+<tr>
+<th align="left">项目</th>
+<th align="left">仓库</th>
+<th align="left">学习内容</th>
+<th align="center">优先级</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>ncnn</strong></td>
+<td align="left">Tencent&#x2F;ncnn</td>
+<td align="left">SIMD + Winograd + 内存池</td>
+<td align="center">⭐⭐⭐</td>
+</tr>
+<tr>
+<td align="left"><strong>MNN</strong></td>
+<td align="left">alibaba&#x2F;MNN</td>
+<td align="left">NC4HW4 + 多后端调度</td>
+<td align="center">⭐⭐⭐</td>
+</tr>
+<tr>
+<td align="left"><strong>TNN</strong></td>
+<td align="left">Tencent&#x2F;TNN</td>
+<td align="left">Metal&#x2F;Vulkan 后端</td>
+<td align="center">⭐⭐</td>
+</tr>
+<tr>
+<td align="left"><strong>ONNX Runtime</strong></td>
+<td align="left">microsoft&#x2F;onnxruntime</td>
+<td align="left">跨平台生产部署</td>
+<td align="center">⭐⭐</td>
+</tr>
+<tr>
+<td align="left"><strong>TensorRT</strong></td>
+<td align="left">NVIDIA&#x2F;TensorRT</td>
+<td align="left">GPU 部署优化</td>
+<td align="center">⭐⭐</td>
+</tr>
+<tr>
+<td align="left"><strong>OpenMMLab mmdeploy</strong></td>
+<td align="left">open-mmlab&#x2F;mmdeploy</td>
+<td align="left">统一部署框架设计</td>
+<td align="center">⭐⭐</td>
+</tr>
+<tr>
+<td align="left"><strong>TVM</strong></td>
+<td align="left">apache&#x2F;tvm</td>
+<td align="left">编译优化 + 自动调优</td>
+<td align="center">⭐⭐</td>
+</tr>
+<tr>
+<td align="left"><strong>LLVM</strong></td>
+<td align="left">llvm&#x2F;llvm-project</td>
+<td align="left">编译器基础设施</td>
+<td align="center">⭐</td>
+</tr>
+</tbody></table>
+<h3 id="文档参考"><a href="#文档参考" class="headerlink" title="文档参考"></a>文档参考</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/docs/intrinsics-guide/">Intel Intrinsics Guide</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/">CUDA Programming Guide</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/tensorrt/">TensorRT Developer Guide</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.openmp.org/specifications/">OpenMP Specification</a></li>
+<li><a target="_blank" rel="noopener" href="https://people.freebsd.org/~lstewart/articles/cpumemory.pdf">What Every Programmer Should Know About Memory</a></li>
+</ul>
+<hr>
+<h2 id="十、落地项目对照表"><a href="#十、落地项目对照表" class="headerlink" title="十、落地项目对照表"></a>十、落地项目对照表</h2><h3 id="你的项目进度与学习计划映射"><a href="#你的项目进度与学习计划映射" class="headerlink" title="你的项目进度与学习计划映射"></a>你的项目进度与学习计划映射</h3><table>
+<thead>
+<tr>
+<th align="left">你的项目</th>
+<th align="left">当前状态</th>
+<th align="left">学习计划对应阶段</th>
+<th align="left">下一个改进方向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>ncnn_deploy</strong></td>
+<td align="left">六路方案完成、对比文档齐全</td>
+<td align="left">Phase 1-5</td>
+<td align="left">加入 ONNX Runtime &#x2F; TNN 方案</td>
+</tr>
+<tr>
+<td align="left"><strong>ncnn-internal-analysis.md</strong></td>
+<td align="left">完成</td>
+<td align="left">Phase 5</td>
+<td align="left">—</td>
+</tr>
+<tr>
+<td align="left"><strong>mnn-internal-analysis.md</strong></td>
+<td align="left">完成</td>
+<td align="left">Phase 5</td>
+<td align="left">—</td>
+</tr>
+<tr>
+<td align="left"><strong>manual-infer-analysis.md</strong></td>
+<td align="left">新增完成</td>
+<td align="left">Phase 5</td>
+<td align="left">—</td>
+</tr>
+<tr>
+<td align="left"><strong>manual-optimized-analysis.md</strong></td>
+<td align="left">新增完成</td>
+<td align="left">Phase 3</td>
+<td align="left">—</td>
+</tr>
+<tr>
+<td align="left"><strong>manual-simd-analysis.md</strong></td>
+<td align="left">新增完成</td>
+<td align="left">Phase 3</td>
+<td align="left">加入寄存器分块</td>
+</tr>
+<tr>
+<td align="left"><strong>manual-cuda-analysis.md</strong></td>
+<td align="left">新增完成</td>
+<td align="left">Phase 4</td>
+<td align="left">加入 kernel 融合 + CUDA Graph</td>
+</tr>
+<tr>
+<td align="left"><strong>st_nndeploy</strong></td>
+<td align="left">已有框架代码</td>
+<td align="left">Phase 5</td>
+<td align="left">深入每个 backend 桥接代码</td>
+</tr>
+<tr>
+<td align="left"><strong>learn_cpp&#x2F;</strong></td>
+<td align="left">已有基础+摘要</td>
+<td align="left">Phase 1</td>
+<td align="left">按计划推进</td>
+</tr>
+</tbody></table>
+<h3 id="推荐下一步动手方向"><a href="#推荐下一步动手方向" class="headerlink" title="推荐下一步动手方向"></a>推荐下一步动手方向</h3><ol>
+<li><strong>短期（1-2 天）</strong>：在 ncnn_deploy 中加入第 7 种推理方案（ONNX Runtime C++ API）</li>
+<li><strong>中期（1 周）</strong>：实现 manual_simd 的寄存器分块版本（4pixel × 8OC）</li>
+<li><strong>中期（1 周）</strong>：融合 manual_cuda 的 kernel（减少 9→3 次 launch）</li>
+<li><strong>长期（2-3 周）</strong>：在 st_nndeploy 中复现同一套六路对比，验证统一封装层的性能开销</li>
+<li><strong>长期（2-3 周）</strong>：TensorRT 部署 CIFAR-10 CNN，加入对比</li>
+</ol>
+<hr>
+<blockquote>
+<p><strong>最后的话：</strong> 模型部署最核心的竞争力不在于”会用某个引擎”，而在于<strong>理解推理引擎内部发生了什么</strong>。你的 ncnn_deploy 项目——从手写 6 层循环到 SIMD 到 CUDA——已经让你具备了这种”从底层到上层”的完整认知。本计划的目标是帮你把散落的知识点串成体系，并找到每个知识的<strong>工程落脚点</strong>。不需要全部学完再动手——学一个概念，立即可在项目中验证，才是最高效的路径。</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/" rel="tag"># 学习计划</a>
+              <a href="/tags/%E9%AB%98%E6%80%A7%E8%83%BD%E8%AE%A1%E7%AE%97/" rel="tag"># 高性能计算</a>
+              <a href="/tags/%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/" rel="tag"># 模型部署</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/07/01/network-summary/" rel="prev" title="计算机网络 总结与思维导图">
+                  <i class="fa fa-angle-left"></i> 计算机网络 总结与思维导图
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/07/23/cuda-study-plan/" rel="next" title="CUDA 学习计划 — 从入门到精通">
+                  CUDA 学习计划 — 从入门到精通 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

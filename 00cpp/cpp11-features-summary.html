@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="C++ 基础 — C++11 新特性 总结与思维导图 来源：00basic&#x2F;03 - C++基础 - C++11新特性.docx核心内容：auto&#x2F;decltype、nullptr、智能指针、右值引用、lambda、移动语义、完美转发   思维导图123456789101112131415161718192021222324252627282930313233343536373">
+<meta property="og:type" content="website">
+<meta property="og:title" content="C++ 基础 — C++11 新特性 总结">
+<meta property="og:url" content="http://192.168.1.3:4000/00cpp/cpp11-features-summary.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="C++ 基础 — C++11 新特性 总结与思维导图 来源：00basic&#x2F;03 - C++基础 - C++11新特性.docx核心内容：auto&#x2F;decltype、nullptr、智能指针、右值引用、lambda、移动语义、完美转发   思维导图123456789101112131415161718192021222324252627282930313233343536373">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-01T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-01T02:00:00.000Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="面试">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="C++11">
+<meta property="article:tag" content="八股文">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/00cpp/cpp11-features-summary">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/00cpp/cpp11-features-summary.html","path":"00cpp/cpp11-features-summary.html","title":"C++ 基础 — C++11 新特性 总结"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>C++ 基础 — C++11 新特性 总结 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#C-%E5%9F%BA%E7%A1%80-%E2%80%94-C-11-%E6%96%B0%E7%89%B9%E6%80%A7-%E6%80%BB%E7%BB%93%E4%B8%8E%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE"><span class="nav-number">1.</span> <span class="nav-text">C++ 基础 — C++11 新特性 总结与思维导图</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE"><span class="nav-number">1.1.</span> <span class="nav-text">思维导图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%A6%E7%BB%86%E6%80%BB%E7%BB%93"><span class="nav-number">1.2.</span> <span class="nav-text">详细总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-auto-decltype-decltype-auto"><span class="nav-number">1.2.1.</span> <span class="nav-text">1. auto &#x2F; decltype &#x2F; decltype(auto)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8-%E4%B8%8E-%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89"><span class="nav-number">1.2.2.</span> <span class="nav-text">2. 右值引用 与 移动语义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%AE%8C%E7%BE%8E%E8%BD%AC%E5%8F%91"><span class="nav-number">1.2.3.</span> <span class="nav-text">3. 完美转发</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-Lambda-%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="nav-number">1.2.4.</span> <span class="nav-text">4. Lambda 表达式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E8%80%83%E7%82%B9%E9%80%9F%E8%AE%B0"><span class="nav-number">1.3.</span> <span class="nav-text">核心考点速记</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">C++ 基础 — C++11 新特性 总结
+</h1>
+
+<div class="post-meta-container">
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="C-基础-—-C-11-新特性-总结与思维导图"><a href="#C-基础-—-C-11-新特性-总结与思维导图" class="headerlink" title="C++ 基础 — C++11 新特性 总结与思维导图"></a>C++ 基础 — C++11 新特性 总结与思维导图</h1><blockquote>
+<p>来源：00basic&#x2F;03 - C++基础 - C++11新特性.docx<br>核心内容：auto&#x2F;decltype、nullptr、智能指针、右值引用、lambda、移动语义、完美转发</p>
+</blockquote>
+<hr>
+<h2 id="思维导图"><a href="#思维导图" class="headerlink" title="思维导图"></a>思维导图</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">┌───────────────────────────────────────────────────────┐</span><br><span class="line">│             C++11 新特性（面试八股）                    │</span><br><span class="line">├───────────────────────────────────────────────────────┤</span><br><span class="line">│                                                         │</span><br><span class="line">│  1. 类型推导                                            │</span><br><span class="line">│  ├─ auto: 编译器根据初始值推导类型                      │</span><br><span class="line">│  │  └─ 必须初始化，忽略引用和顶层const                  │</span><br><span class="line">│  ├─ decltype: 获取表达式类型（不求值）                   │</span><br><span class="line">│  │  └─ 保留引用和 const                                 │</span><br><span class="line">│  └─ decltype(auto) (C++14): 结合两者语义                │</span><br><span class="line">│                                                         │</span><br><span class="line">│  2. nullptr                                             │</span><br><span class="line">│  ├─ 解决 NULL 在 C++ 中被定义为 0 的重载歧义           │</span><br><span class="line">│  ├─ nullptr_t 类型，可转为任意指针                      │</span><br><span class="line">│  └─ 不可转为整数类型                                    │</span><br><span class="line">│                                                         │</span><br><span class="line">│  3. 智能指针                                            │</span><br><span class="line">│  ├─ shared_ptr: 引用计数共享所有权                      │</span><br><span class="line">│  │  └─ 线程安全（引用计数原子操作，所指对象不保证）     │</span><br><span class="line">│  ├─ unique_ptr: 独占所有权，move-only                   │</span><br><span class="line">│  │  └─ 可作为函数返回值                                 │</span><br><span class="line">│  ├─ weak_ptr: 弱引用，lock()提升，破循环引用            │</span><br><span class="line">│  └─ make_shared: 一次分配，控制块+对象连续              │</span><br><span class="line">│                                                         │</span><br><span class="line">│  4. 右值引用 &amp;&amp; 与 移动语义                             │</span><br><span class="line">│  ├─ 左值: 可取地址，有名字                              │</span><br><span class="line">│  ├─ 右值: 不可取地址，临时对象                          │</span><br><span class="line">│  │  ├─ 纯右值: 字面量、表达式返回值                     │</span><br><span class="line">│  │  └─ 将亡值: std::move、T&amp;&amp; 返回值                   │</span><br><span class="line">│  ├─ 移动构造/移动赋值: 盗取资源而非拷贝                 │</span><br><span class="line">│  │  └─ 性能提升，特别对 vector/string 等容器            │</span><br><span class="line">│  └─ std::move: 左值→右值引用（资源转移）                │</span><br><span class="line">│                                                         │</span><br><span class="line">│  5. 完美转发                                            │</span><br><span class="line">│  ├─ 万能引用 T&amp;&amp;: T 被推导时的特殊规则                 │</span><br><span class="line">│  ├─ 引用折叠: T&amp; &amp; → T&amp;, T&amp;&amp; &amp; → T&amp;,                  │</span><br><span class="line">│  │            T&amp; &amp;&amp; → T&amp;, T&amp;&amp; &amp;&amp; → T&amp;&amp;                │</span><br><span class="line">│  └─ std::forward: 保持原始值类别（左值/右值）            │</span><br><span class="line">│                                                         │</span><br><span class="line">│  6. Lambda 表达式                                       │</span><br><span class="line">│  ├─ 语法: [捕获](参数) mutable -&gt; 返回类型 &#123; 体 &#125;      │</span><br><span class="line">│  ├─ 捕获方式: [=]值, [&amp;]引用, [this], [a, &amp;b] 混合     │</span><br><span class="line">│  ├─ 本质: 匿名函数对象（仿函数）                        │</span><br><span class="line">│  └─ C++14 扩展: 泛型lambda、初始化捕获                 │</span><br><span class="line">│                                                         │</span><br><span class="line">│  7. 范围 for 循环                                       │</span><br><span class="line">│  ├─ for (auto&amp; x : container) &#123; &#125;                      │</span><br><span class="line">│  └─ 底层: 调用 begin()/end() 迭代器                    │</span><br><span class="line">│                                                         │</span><br><span class="line">│  8. 其他重要特性                                        │</span><br><span class="line">│  ├─ std::array: 定长数组容器                            │</span><br><span class="line">│  ├─ std::forward_list: 单向链表                         │</span><br><span class="line">│  ├─ long long 类型                                      │</span><br><span class="line">│  ├─ static_assert: 编译期断言                           │</span><br><span class="line">│  ├─ 委托构造函数: 一个构造函数调用另一个                │</span><br><span class="line">│  ├─ override / final: 显式虚函数重写/禁止继承           │</span><br><span class="line">│  ├─ 默认/删除函数: =default / =delete                  │</span><br><span class="line">│  ├─ constexpr: 编译期常量表达式                         │</span><br><span class="line">│  └─ 可变参数模板: template&lt;typename... Args&gt;            │</span><br><span class="line">│                                                         │</span><br><span class="line">└───────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="详细总结"><a href="#详细总结" class="headerlink" title="详细总结"></a>详细总结</h2><h3 id="1-auto-decltype-decltype-auto"><a href="#1-auto-decltype-decltype-auto" class="headerlink" title="1. auto &#x2F; decltype &#x2F; decltype(auto)"></a>1. auto &#x2F; decltype &#x2F; decltype(auto)</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> a = <span class="number">42</span>;             <span class="comment">// int</span></span><br><span class="line"><span class="keyword">auto</span> b = <span class="number">3.14</span>;           <span class="comment">// double</span></span><br><span class="line"><span class="keyword">auto</span>&amp; c = a;             <span class="comment">// int&amp;</span></span><br><span class="line"><span class="type">const</span> <span class="keyword">auto</span>&amp; d = a;       <span class="comment">// const int&amp;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">decltype</span>(a) x;           <span class="comment">// int（不求值）</span></span><br><span class="line"><span class="keyword">decltype</span>((a)) y = a;     <span class="comment">// int&amp;（多加括号变成引用）</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">decltype</span>(<span class="keyword">auto</span>) <span class="title">f</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> a; &#125;  <span class="comment">// 返回 int</span></span><br><span class="line"><span class="function"><span class="keyword">decltype</span>(<span class="keyword">auto</span>) <span class="title">g</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> (a); &#125; <span class="comment">// 返回 int&amp;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-右值引用-与-移动语义"><a href="#2-右值引用-与-移动语义" class="headerlink" title="2. 右值引用 与 移动语义"></a>2. 右值引用 与 移动语义</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 左值 vs 右值</span></span><br><span class="line"><span class="type">int</span> a = <span class="number">42</span>;        <span class="comment">// a 是左值，42 是右值（纯右值）</span></span><br><span class="line"><span class="type">int</span>&amp;&amp; r = <span class="number">42</span>;      <span class="comment">// r 是右值引用，绑定到右值</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 移动语义 — 避免深拷贝</span></span><br><span class="line"><span class="function">std::vector&lt;<span class="type">int</span>&gt; <span class="title">v1</span><span class="params">(<span class="number">1000000</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line">std::vector&lt;<span class="type">int</span>&gt; v2 = std::<span class="built_in">move</span>(v1);  <span class="comment">// v1 内容被&quot;偷走&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 移动构造</span></span><br><span class="line"><span class="built_in">vector</span>(vector&amp;&amp; other) <span class="keyword">noexcept</span></span><br><span class="line">    : <span class="built_in">data_</span>(other.data_), <span class="built_in">size_</span>(other.size_) &#123;</span><br><span class="line">    other.data_ = <span class="literal">nullptr</span>;  <span class="comment">// 原对象置空</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-完美转发"><a href="#3-完美转发" class="headerlink" title="3. 完美转发"></a>3. 完美转发</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> F, <span class="keyword">typename</span>... Args&gt;</span></span><br><span class="line"><span class="function"><span class="keyword">decltype</span>(<span class="keyword">auto</span>) <span class="title">invoke</span><span class="params">(F&amp;&amp; f, Args&amp;&amp;... args)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> std::forward&lt;F&gt;(f)(std::forward&lt;Args&gt;(args)...);</span><br><span class="line">    <span class="comment">// 保持参数的所有左值/右值属性</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 引用折叠规则</span></span><br><span class="line"><span class="comment">// 实参类型     T 推导   实际类型</span></span><br><span class="line"><span class="comment">// int&amp;        T=int&amp;    T&amp;&amp; = int&amp; &amp; → int&amp;</span></span><br><span class="line"><span class="comment">// int&amp;&amp;       T=int     T&amp;&amp; = int&amp;&amp;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-Lambda-表达式"><a href="#4-Lambda-表达式" class="headerlink" title="4. Lambda 表达式"></a>4. Lambda 表达式</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> f1 = [](<span class="type">int</span> x, <span class="type">int</span> y) -&gt; <span class="type">int</span> &#123; <span class="keyword">return</span> x + y; &#125;;</span><br><span class="line"><span class="keyword">auto</span> f2 = [](<span class="keyword">auto</span> x, <span class="keyword">auto</span> y) &#123; <span class="keyword">return</span> x + y; &#125;;  <span class="comment">// C++14 泛型lambda</span></span><br><span class="line"><span class="keyword">auto</span> f3 = [ptr = std::<span class="built_in">make_unique</span>&lt;<span class="type">int</span>&gt;(<span class="number">42</span>)]() &#123;   <span class="comment">// C++14 初始化捕获</span></span><br><span class="line">    <span class="keyword">return</span> *ptr;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Lambda 底层实现 ≈ 匿名函数对象</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">LambdaImpl</span> &#123;</span><br><span class="line">    <span class="type">int</span> captured_val_;  <span class="comment">// 捕获的变量成为成员变量</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">auto</span> <span class="title">operator</span><span class="params">()</span><span class="params">(<span class="type">int</span> x)</span> <span class="type">const</span> </span>&#123; <span class="keyword">return</span> x + captured_val_; &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="核心考点速记"><a href="#核心考点速记" class="headerlink" title="核心考点速记"></a>核心考点速记</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">✅ 高频:</span><br><span class="line">  - 左值 vs 右值（概念 + 判断 + 作用）</span><br><span class="line">  - 移动语义与 move（几乎必问）</span><br><span class="line">  - 完美转发 forward（难点）</span><br><span class="line">  - 智能指针（必问，见内存管理篇）</span><br><span class="line"></span><br><span class="line">✅ 中频:</span><br><span class="line">  - auto 与 decltype 区别</span><br><span class="line">  - nullptr vs NULL</span><br><span class="line">  - Lambda 表达式</span><br><span class="line">  - 引用折叠规则</span><br><span class="line"></span><br><span class="line">✅ 记忆口诀:</span><br><span class="line">  &quot;auto推导不带引，decltype保完整，</span><br><span class="line">   右值引用&amp;&amp;转，移动语义免拷贝，</span><br><span class="line">   forward保原值，lambda匿名函，</span><br><span class="line">   make系列省内存，nullptr解歧义。&quot;</span><br></pre></td></tr></table></figure>
+
+      </div>
+      
+      
+      
+    </div>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
