@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 320" font-family="Menlo, Consolas, monospace" font-size="12">
+  <rect x="0" y="0" width="680" height="320" fill="#fbfcfe"/>
+  <text x="20" y="24" font-size="14" font-weight="bold" fill="#1f2933">图一：顺序核(A53) vs 乱序多端口核(A76) 的「指令→端口」</text>
+
+  <!-- in-order -->
+  <rect x="20" y="50" width="300" height="240" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="40" y="74" font-weight="bold" fill="#334155">Cortex-A53 (in-order)</text>
+  <text x="40" y="94" fill="#64748b">单 NEON 端口 · 1 条/周期</text>
+  <rect x="40" y="110" width="260" height="22" fill="#e2e8f0"/>
+  <text x="50" y="125" fill="#334155">取指 → 译码 → 发射 → 单 NEON 管 → 退休</text>
+  <rect x="40" y="150" width="40" height="100" fill="#fde68a" stroke="#d6b656"/>
+  <text x="60" y="205" fill="#92560c" transform="rotate(-90 60 205)">NEON 管</text>
+  <text x="40" y="275" fill="#b45309">1 条 fmla/周期 → 峰值低</text>
+
+  <!-- ooo -->
+  <rect x="360" y="50" width="300" height="240" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="380" y="74" font-weight="bold" fill="#334155">Cortex-A76 (out-of-order)</text>
+  <text x="380" y="94" fill="#64748b">多端口 · 2×NEON · 8 μop/周期</text>
+  <rect x="380" y="110" width="260" height="22" fill="#e2e8f0"/>
+  <text x="390" y="125" fill="#334155">取指 → 译码 → 重命名 → 分发</text>
+  <rect x="380" y="150" width="58" height="100" fill="#bbf7d0" stroke="#5bb872"/>
+  <text x="409" y="205" fill="#166534" transform="rotate(-90 409 205)">ALU</text>
+  <rect x="446" y="150" width="58" height="100" fill="#bfdbfe" stroke="#5b8fd6"/>
+  <text x="475" y="205" fill="#1e40af" transform="rotate(-90 475 205)">NEON0</text>
+  <rect x="512" y="150" width="58" height="100" fill="#bfdbfe" stroke="#5b8fd6"/>
+  <text x="541" y="205" fill="#1e40af" transform="rotate(-90 541 205)">NEON1</text>
+  <rect x="578" y="150" width="48" height="100" fill="#fbcfe8" stroke="#d66bb0"/>
+  <text x="602" y="205" fill="#9d174d" transform="rotate(-90 602 205)">LD/ST</text>
+  <text x="380" y="275" fill="#166534">2 条 fmla/周期 → 需 2+ 独立链喂满</text>
+</svg>

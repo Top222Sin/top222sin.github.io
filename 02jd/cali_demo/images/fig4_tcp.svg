@@ -1,0 +1,44 @@
+<svg viewBox="0 0 680 300" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,'Microsoft YaHei',sans-serif">
+  <text x="340" y="26" text-anchor="middle" font-size="15" font-weight="500" fill="#1a202c">L1.4 四点法：多姿态共指同一固定点</text>
+
+  <!-- 公共接触点 P / TCP 尖 -->
+  <circle cx="400" cy="160" r="7" fill="#E24B4A"/>
+  <text x="412" y="156" font-size="12" font-weight="500" fill="#a32d2d">P（公共接触点 / TCP 尖）</text>
+
+  <!-- 法兰姿态 1 -->
+  <g transform="translate(110,80)">
+    <circle cx="0" cy="0" r="3" fill="#444441"/>
+    <line x1="0" y1="0" x2="34" y2="0" stroke="#E24B4A" stroke-width="2"/>
+    <line x1="0" y1="0" x2="0" y2="-28" stroke="#639922" stroke-width="2"/>
+    <line x1="0" y1="0" x2="-22" y2="14" stroke="#378ADD" stroke-width="2"/>
+    <text x="-6" y="-36" font-size="11" font-weight="500" fill="#0c447c">法兰姿态 1</text>
+  </g>
+  <line x1="144" y1="80" x2="400" y2="160" stroke="#BA7517" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="250" y="108" font-size="10" fill="#854f0b">工具轴 → TCP</text>
+
+  <!-- 法兰姿态 2 -->
+  <g transform="translate(110,210)">
+    <circle cx="0" cy="0" r="3" fill="#444441"/>
+    <line x1="0" y1="0" x2="30" y2="20" stroke="#E24B4A" stroke-width="2"/>
+    <line x1="0" y1="0" x2="-6" y2="-30" stroke="#639922" stroke-width="2"/>
+    <line x1="0" y1="0" x2="-26" y2="6" stroke="#378ADD" stroke-width="2"/>
+    <text x="-6" y="40" font-size="11" font-weight="500" fill="#0c447c">法兰姿态 2</text>
+  </g>
+  <line x1="140" y1="230" x2="400" y2="160" stroke="#BA7517" stroke-width="1.5" stroke-dasharray="5 3"/>
+
+  <!-- 法兰姿态 3 (上方) -->
+  <g transform="translate(360,40)">
+    <circle cx="0" cy="0" r="3" fill="#444441"/>
+    <line x1="0" y1="0" x2="20" y2="22" stroke="#E24B4A" stroke-width="2"/>
+    <line x1="0" y1="0" x2="-10" y2="-26" stroke="#639922" stroke-width="2"/>
+    <line x1="0" y1="0" x2="28" y2="-6" stroke="#378ADD" stroke-width="2"/>
+    <text x="34" y="-14" font-size="11" font-weight="500" fill="#0c447c">法兰姿态 3</text>
+  </g>
+  <line x1="380" y1="62" x2="400" y2="153" stroke="#BA7517" stroke-width="1.5" stroke-dasharray="5 3"/>
+
+  <!-- 方程 -->
+  <rect x="470" y="200" width="195" height="64" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1"/>
+  <text x="567" y="226" text-anchor="middle" font-size="12" fill="#27500a">P = R_i·x + t_i</text>
+  <text x="567" y="246" text-anchor="middle" font-size="10" fill="#3b6d11">堆叠 (R_i-R_1)x = t_1-t_i</text>
+  <text x="567" y="260" text-anchor="middle" font-size="10" fill="#3b6d11">最小二乘解 x(=TCP)</text>
+</svg>

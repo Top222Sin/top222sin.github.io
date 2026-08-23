@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L2.6 计算机视觉：重投影雅可比与束调整（BA） 一句话：3D 点 X 经相机投影成像素 x。像素对 X 的重投影雅可比 ∂x&#x2F;∂X 由链式法则得到（含 1&#x2F;z 透视项）。调相机&#x2F;点使”重投影误差”最小，就是 BA——SLAM &#x2F; SFM 的核心。   一、针孔投影与雅可比相机内参——简化版记 K&#x3D;diag(f,f,1)（即忽略主点、设 cx&#x3D;cy&#x3D;0）；含主点的完整内参为 [[f,0,cx],">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L2.6 计算机视觉：重投影雅可比与束调整（BA）">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l2_vision.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L2.6 计算机视觉：重投影雅可比与束调整（BA） 一句话：3D 点 X 经相机投影成像素 x。像素对 X 的重投影雅可比 ∂x&#x2F;∂X 由链式法则得到（含 1&#x2F;z 透视项）。调相机&#x2F;点使”重投影误差”最小，就是 BA——SLAM &#x2F; SFM 的核心。   一、针孔投影与雅可比相机内参——简化版记 K&#x3D;diag(f,f,1)（即忽略主点、设 cx&#x3D;cy&#x3D;0）；含主点的完整内参为 [[f,0,cx],">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/Jacobian_demo/images/fig11_vision.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/Jacobian_demo/images/fig11_vision.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l2_vision">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l2_vision.html","path":"02jd/Jacobian_demo/jac_l2_vision.html","title":"L2.6 计算机视觉：重投影雅可比与束调整（BA）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L2.6 计算机视觉：重投影雅可比与束调整（BA） | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L2-6-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89%EF%BC%9A%E9%87%8D%E6%8A%95%E5%BD%B1%E9%9B%85%E5%8F%AF%E6%AF%94%E4%B8%8E%E6%9D%9F%E8%B0%83%E6%95%B4%EF%BC%88BA%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">L2.6 计算机视觉：重投影雅可比与束调整（BA）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E9%92%88%E5%AD%94%E6%8A%95%E5%BD%B1%E4%B8%8E%E9%9B%85%E5%8F%AF%E6%AF%94"><span class="nav-number">1.1.</span> <span class="nav-text">一、针孔投影与雅可比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A8%E5%AF%BC%E9%93%BE%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF-1-z-%E5%92%8C-%E2%88%921-z%C2%B2"><span class="nav-number">1.1.1.</span> <span class="nav-text">推导链：为什么是 1&#x2F;z 和 −1&#x2F;z²</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E6%9D%9F%E8%B0%83%E6%95%B4%EF%BC%88Bundle-Adjustment%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">二、束调整（Bundle Adjustment）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#BA-%E7%9A%84%E8%A7%84%E6%A8%A1%E4%B8%8E%E7%A8%80%E7%96%8F%E7%BB%93%E6%9E%84%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E8%83%BD%E5%AE%9E%E6%97%B6%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">BA 的规模与稀疏结构（为什么能实时）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88jac-l2-vision-cpp%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、代码走读（jac_l2_vision.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.4.</span> <span class="nav-text">四、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.6.</span> <span class="nav-text">六、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.7.</span> <span class="nav-text">七、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L2.6 计算机视觉：重投影雅可比与束调整（BA）
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Jacobian_demo/">JACOBIAN_DEMO</a></li>
+            <li>JAC_L2_VISION</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L2-6-计算机视觉：重投影雅可比与束调整（BA）"><a href="#L2-6-计算机视觉：重投影雅可比与束调整（BA）" class="headerlink" title="L2.6 计算机视觉：重投影雅可比与束调整（BA）"></a>L2.6 计算机视觉：重投影雅可比与束调整（BA）</h1><blockquote>
+<p>一句话：3D 点 X 经相机投影成像素 x。像素对 X 的<strong>重投影雅可比 ∂x/∂X</strong> 由链式法则得到（含 1/z 透视项）。调相机/点使”重投影误差”最小，就是 <strong>BA</strong>——SLAM / SFM 的核心。</p>
+</blockquote>
+<hr>
+<h2 id="一、针孔投影与雅可比"><a href="#一、针孔投影与雅可比" class="headerlink" title="一、针孔投影与雅可比"></a>一、针孔投影与雅可比</h2><p>相机内参——<strong>简化版</strong>记 <code>K=diag(f,f,1)</code>（即忽略主点、设 cx=cy=0）；含主点的<strong>完整内参</strong>为 <code>[[f,0,cx],[0,f,cy],[0,0,1]]</code>。下面的投影公式采用完整式（含 cx/cy），位姿取 R=I、平移 t。3D 点投影到像素：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x_cam = X + t ;   u = f·x/z + cx ,  v = f·y/z + cy</span><br></pre></td></tr></tbody></table></figure>
+
+<p>对 X=(X,Y,Z) 求偏导（R=I，故 ∂x_cam/∂X=I），得到 2×3 重投影雅可比：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">∂(u,v)/∂X = [ f/z ,    0   ,  −f·x/z² ]</span><br><span class="line">            [  0  ,   f/z ,  −f·y/z² ]</span><br></pre></td></tr></tbody></table></figure>
+
+<p>注意 <strong>−f·x/z²、−f·y/z²</strong> 这两项：透视投影让”深度 z 方向的位置不确定性”被 1/z² 放大（固定横向坐标、单独扰动深度时）。</p>
+<h3 id="推导链：为什么是-1-z-和-−1-z²"><a href="#推导链：为什么是-1-z-和-−1-z²" class="headerlink" title="推导链：为什么是 1/z 和 −1/z²"></a>推导链：为什么是 1/z 和 −1/z²</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">u = f·x/z → ∂u/∂x = f/z          (水平方向, 深度归一)</span><br><span class="line">∂u/∂z = −f·x/z²                  (深度方向, 投影放大率随 z 反平方衰减)</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>两个洞察</strong>：</p>
+<ol>
+<li><code>f/z</code> 是”每米 3D 位移对应多少像素”——z 越大，同样位移像素变化越小（远处物体”看着不动”）；</li>
+<li><code>−f·x/z²</code> 是<strong>固定横向坐标下</strong>深度误差的像素代价——近处 z 小、1/z² 大，该方向深度误差被强烈放大。</li>
+</ol>
+<p><strong>重要澄清（单目深度不可观的真正原因）</strong>：单目单视图深度不可观<strong>不是</strong> 1/z² 项，而是投影雅可比 <code>∂π/∂X</code>（2×3）存在<strong>一维零空间</strong>——沿视线方向缩放 X 时像素完全不变：<code>J·(x,y,z)ᵀ = 0</code>（r=X·λ 同方向任意深度投到同一点）。<code>1/z²</code> 只描述”固定横向坐标、单独动 z”的局部敏感度。BA 里近点对相机<strong>平移</strong>约束强（1/z 衰减）、对旋转约束不按同方式衰减——“近点约束远强于远点”是过度概括。</p>
+<h2 id="二、束调整（Bundle-Adjustment）"><a href="#二、束调整（Bundle-Adjustment）" class="headerlink" title="二、束调整（Bundle Adjustment）"></a>二、束调整（Bundle Adjustment）</h2><p>有多个视角、多个点，把”所有点的 3D 坐标 + 所有相机位姿”一起优化，最小化总重投影误差 Σ‖x − x_obs‖²。每步求解线性化后的最小二乘子问题（G-N/LM/Dogleg 皆可），方向由<strong>堆叠的重投影雅可比</strong>给出。</p>
+<blockquote>
+<p>说明：本 demo 的两视例固定相机、只优化 1 个点，严格说是”多视图点三角化的非线性重投影优化”——是 BA 的最小子问题，不是完整 BA。完整 BA 联合优化多相机+多点，且存在<strong>规范自由度（gauge freedom）</strong>：同时优化相机和点时，全局坐标系可以任意平移/旋转/缩放（单目还有尺度自由度）——必须固定首帧位姿或加先验，否则 Hessian 秩亏。</p>
+</blockquote>
+<h3 id="BA-的规模与稀疏结构（为什么能实时）"><a href="#BA-的规模与稀疏结构（为什么能实时）" class="headerlink" title="BA 的规模与稀疏结构（为什么能实时）"></a>BA 的规模与稀疏结构（为什么能实时）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">变量: N 个 3D 点 (3N) + M 个相机位姿 (6M)  → 大问题 (千~百万维)</span><br><span class="line">残差: 每个"点-相机对"一个 2 维重投影残差</span><br><span class="line">雅可比: 每个残差只对"它关联的点"和"它关联的相机"有非零块 → 巨大稀疏矩阵</span><br><span class="line">求解: 利用 Schur 补(先消点只留相机) + 稀疏 Cholesky → 这就是 g2o/Ceres 的杀手锏</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程要点</strong>：<strong>局部/滑窗 BA 可接近实时</strong>；大规模全局 BA 通常离线。BA 能跑快不是靠暴力，是靠<strong>雅可比的稀疏结构</strong>——每个残差的非零块模式（谁连谁）预先固定，求解器按图结构分块。你在 08robot 手眼标定/SLAM 里用到的优化，背后就是这个。</p>
+<h2 id="三、代码走读（jac-l2-vision-cpp）"><a href="#三、代码走读（jac-l2-vision-cpp）" class="headerlink" title="三、代码走读（jac_l2_vision.cpp）"></a>三、代码走读（jac_l2_vision.cpp）</h2><ul>
+<li><code>project</code>：投影；<code>jacProj</code>：解析重投影雅可比 (2×3)。</li>
+<li>① 验证 <code>jacProj</code> 与有限差分一致（误差 &lt; 1e-3）。</li>
+<li>② <strong>两视 BA</strong>：用真值观测 obs0,obs1 和带扰动的初值 Xopt，叠加重投影雅可比（4×3）做 G-N，迭代使重投影误差 → 0（&lt; 1e-3）。</li>
+</ul>
+<h2 id="四、你会看到什么"><a href="#四、你会看到什么" class="headerlink" title="四、你会看到什么"></a>四、你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[L2.6] 重投影雅可比 解析vs差分 误差=2.1e-07   (应 &lt; 1e-3)</span><br><span class="line">[L2.6] BA 后 X=(0.100, 0.200, 2.000)</span><br><span class="line">[L2.6] 重投影误差 e0=3e-10 e1=3e-10   (应→0)</span><br><span class="line">[PASS] 重投影雅可比正确 + 两视BA收敛</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img src="/02jd/Jacobian_demo/images/fig11_vision.svg" alt="L2.6 重投影雅可比与束调整"></p>
+<h2 id="五、工程落点（真实项目）"><a href="#五、工程落点（真实项目）" class="headerlink" title="五、工程落点（真实项目）"></a>五、工程落点（真实项目）</h2><ul>
+<li><strong>ORB-SLAM3 / VINS-Fusion</strong>：局部 BA 每个关键帧跑一次，后端全局 BA 收尾——全部用重投影雅可比 + LM（L2.5）。</li>
+<li><strong>OpenCV</strong> <code>cv::solvePnP</code>（迭代法）、<code>cv::calibrateCamera</code>：内参/外参估计就是 BA 的特例（cali_demo 的数学地基）。</li>
+<li><strong>colmap</strong>：三维重建的完整 BA 实现（稀疏求解器 ccSparseSolver）。</li>
+<li><strong>Ceres/g2o</strong>：BA 的标准载体——你只需要提供残差+雅可比（或自动微分），稀疏求解交给库。</li>
+<li><strong>手眼标定（cali_demo L2）</strong>：AX=XB 求解后通常再走一次 BA 联合优化（内参+外参+手眼一起），把重投影误差最小化。</li>
+</ul>
+<h2 id="六、自检"><a href="#六、自检" class="headerlink" title="六、自检"></a>六、自检</h2><ul>
+<li>把点 Z（深度）调小，看重投影雅可比里 −f·x/z² 项如何急剧增大（深度越浅越敏感）。</li>
+<li>思考：若只给一个视角，能否唯一确定 X 的深度？（提示：不能→退化，对应前面 L1.2 的”秩亏”）</li>
+<li>挑战：两视 BA 里”基线太短”为什么病态？（两相机视角几乎相同 → 深度方向约束弱 → H 矩阵近奇异——这就是”平移是深度估计的源泉”）</li>
+</ul>
+<h2 id="七、下一步"><a href="#七、下一步" class="headerlink" title="七、下一步"></a>七、下一步</h2><p>进入 <a href="/02jd/Jacobian_demo/jac_l3_slam.html">L3.1 SLAM 位姿图雅可比</a>：在多相机/多帧的轨迹上，雅可比如何在流形上组装。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Jacobian_demo/">JACOBIAN_DEMO</a></li>
+            <li>JAC_L2_VISION</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

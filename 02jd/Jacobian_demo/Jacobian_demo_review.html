@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Jacobian_demo 内容审查报告 审查对象：02jd&#x2F;Jacobian_demo&#x2F;（README.md + 20 篇课程 .md + 20 个 .cpp + _diagrams.html + images&#x2F; 20 张 SVG）审查日期：2026-08-18审查维度：数学公式正确性（雅可比、链式法则、李代数、EKF&#x2F;MPC 线性化）、数值声明、文档与程序一致性、文件完整性   〇、总体结论">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Jacobian_demo 内容审查报告">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/Jacobian_demo/Jacobian_demo_review.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="Jacobian_demo 内容审查报告 审查对象：02jd&#x2F;Jacobian_demo&#x2F;（README.md + 20 篇课程 .md + 20 个 .cpp + _diagrams.html + images&#x2F; 20 张 SVG）审查日期：2026-08-18审查维度：数学公式正确性（雅可比、链式法则、李代数、EKF&#x2F;MPC 线性化）、数值声明、文档与程序一致性、文件完整性   〇、总体结论">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/Jacobian_demo/Jacobian_demo_review">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/Jacobian_demo/Jacobian_demo_review.html","path":"02jd/Jacobian_demo/Jacobian_demo_review.html","title":"Jacobian_demo 内容审查报告"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Jacobian_demo 内容审查报告 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Jacobian-demo-%E5%86%85%E5%AE%B9%E5%AE%A1%E6%9F%A5%E6%8A%A5%E5%91%8A"><span class="nav-number">1.</span> <span class="nav-text">Jacobian_demo 内容审查报告</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E3%80%87%E3%80%81%E6%80%BB%E4%BD%93%E7%BB%93%E8%AE%BA"><span class="nav-number">1.1.</span> <span class="nav-text">〇、总体结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E7%A1%AE%E5%AE%9A%E6%80%A7%E9%94%99%E8%AF%AF%EF%BC%88%E2%9D%8C-%E5%BB%BA%E8%AE%AE%E4%BF%AE%E6%AD%A3%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">一、确定性错误（❌ 建议修正）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#E1-%E2%9D%8C-jac-l1-manipulator-md-%E2%80%94%E2%80%94-%E9%9B%85%E5%8F%AF%E6%AF%94%E7%9F%A9%E9%98%B5-J-2-1-%E9%A1%B9%E7%AC%94%E8%AF%AF"><span class="nav-number">1.2.1.</span> <span class="nav-text">E1. ❌ jac_l1_manipulator.md —— 雅可比矩阵 J(2,1) 项笔误</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#E2-%E2%9D%8C-jac-l2-manipulability-md-%E2%80%94%E2%80%94-%E7%A4%BA%E4%BE%8B%E8%BE%93%E5%87%BA%E6%95%B0%E5%80%BC%E4%B8%8E%E7%A8%8B%E5%BA%8F%E5%AE%9E%E9%99%85%E8%AE%A1%E7%AE%97%E4%B8%8D%E7%AC%A6"><span class="nav-number">1.2.2.</span> <span class="nav-text">E2. ❌ jac_l2_manipulability.md —— 示例输出数值与程序实际计算不符</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E8%BD%BB%E5%BE%AE%E8%A1%A8%E8%BF%B0%E9%97%AE%E9%A2%98%EF%BC%88%E2%9A%A0%EF%B8%8F-%E5%BB%BA%E8%AE%AE%E4%BF%AE%E6%AD%A3%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">二、轻微表述问题（⚠️ 建议修正）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#W1-%E2%9A%A0%EF%B8%8F-jac-l2-vision-md-%E2%80%94%E2%80%94-%E2%80%9CK-diag-f-f-1-%E2%80%9D-%E4%B8%8E%E5%90%8E%E6%96%87-cx-cy-%E4%B8%8D%E4%B8%80%E8%87%B4"><span class="nav-number">1.3.1.</span> <span class="nav-text">W1. ⚠️ jac_l2_vision.md —— “K&#x3D;diag(f,f,1)” 与后文 cx&#x2F;cy 不一致</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#W2-%E2%9A%A0%EF%B8%8F-%E8%A6%86%E7%9B%96%E6%80%A7%E8%AF%B4%E6%98%8E%EF%BC%88%E9%9D%9E%E9%94%99%E8%AF%AF%EF%BC%89"><span class="nav-number">1.3.2.</span> <span class="nav-text">W2. ⚠️ 覆盖性说明（非错误）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E9%80%90%E6%96%87%E4%BB%B6%E6%A0%B8%E9%AA%8C%E6%B8%85%E5%8D%95%EF%BC%88%E5%85%A8%E9%83%A8-20-%E7%AF%87%E5%B7%B2%E9%80%9A%E8%AF%BB%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">三、逐文件核验清单（全部 20 篇已通读）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BF%AE%E5%A4%8D%E5%BB%BA%E8%AE%AE"><span class="nav-number">1.5.</span> <span class="nav-text">四、修复建议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%A4%8D%E6%A0%B8%E6%96%B9%E5%BC%8F"><span class="nav-number">1.6.</span> <span class="nav-text">五、复核方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E7%8B%AC%E7%AB%8B%E5%A4%8D%E6%A0%B8%E7%BB%93%E8%AE%BA%EF%BC%882026-08-18%EF%BC%8CPython-%E6%95%B0%E5%80%BC%E5%A4%8D%E7%AE%97-cpp-%E5%AF%B9%E7%85%A7%EF%BC%89"><span class="nav-number">1.7.</span> <span class="nav-text">六、独立复核结论（2026-08-18，Python 数值复算 + cpp 对照）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%812026-08-19-%E5%86%85%E5%AE%B9%E5%85%85%E5%AE%9E%E5%90%8E-Review-%E5%A4%84%E7%BD%AE%E8%AE%B0%E5%BD%95"><span class="nav-number">1.8.</span> <span class="nav-text">七、2026-08-19 内容充实后 Review 处置记录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E8%B4%A8%E9%94%99%E8%AF%AF%E4%BF%AE%E5%A4%8D%EF%BC%8816-%E5%A4%84%EF%BC%8C%E5%85%A8%E9%83%A8%E6%95%B0%E5%80%BC%E5%A4%8D%E7%AE%97%E9%AA%8C%E8%AF%81%EF%BC%89"><span class="nav-number">1.8.1.</span> <span class="nav-text">实质错误修复（16 处，全部数值复算验证）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E5%80%BC%E5%A4%8D%E7%AE%97%E9%AA%8C%E8%AF%81%EF%BC%88%E6%9C%AC%E6%9C%BA-python%EF%BC%89"><span class="nav-number">1.8.2.</span> <span class="nav-text">数值复算验证（本机 python）</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">Jacobian_demo 内容审查报告
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Jacobian_demo/">JACOBIAN_DEMO</a></li>
+            <li>JACOBIAN_DEMO_REVIEW</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="Jacobian-demo-内容审查报告"><a href="#Jacobian-demo-内容审查报告" class="headerlink" title="Jacobian_demo 内容审查报告"></a>Jacobian_demo 内容审查报告</h1><blockquote>
+<p>审查对象：<code>02jd/Jacobian_demo/</code>（README.md + 20 篇课程 <code>.md</code> + 20 个 <code>.cpp</code> + <code>_diagrams.html</code> + <code>images/</code> 20 张 SVG）<br>审查日期：2026-08-18<br>审查维度：数学公式正确性（雅可比、链式法则、李代数、EKF/MPC 线性化）、数值声明、文档与程序一致性、文件完整性</p>
+</blockquote>
+<hr>
+<h2 id="〇、总体结论"><a href="#〇、总体结论" class="headerlink" title="〇、总体结论"></a>〇、总体结论</h2><ul>
+<li><strong>整体质量高</strong>：20 篇（L1×5 + L2×6 + L3×9）三件套齐全（21 md = README + 20 篇，20 cpp，20 张图，无缺件）。本报告<strong>逐篇通读了全部 20 篇 md</strong> 并复算了核心数学，绝大多数内容正确：<ul>
+<li>链式法则、det=面积缩放、梯度/最速下降、LK 光流、几何 vs 解析雅可比（det B=cosβ）、DLS/伪逆、零空间投影、GN/LM、重投影雅可比、位姿图残差、MPC 灵敏度闭式解、BP 链式法则、SE(3) 伴随/右雅可比、CNN backprop-identity、EKF F/G/H、计算力矩控制——<strong>公式与标准理论全部一致</strong>。</li>
+</ul>
+</li>
+<li><strong>确定性错误 2 处</strong>（均在 md 文档层，cpp 实现正确）：① L1.3 雅可比矩阵一处笔误；② L2.2 示例输出数值与程序实际计算不符。</li>
+<li><strong>轻微表述问题 2 处</strong>。</li>
+<li><strong>方法说明</strong>：本机无 C++ 编译器，结论基于逐篇数学复算 + cpp 关键实现核对（cpp 与 md 冲突处已逐一核实程序真值）。</li>
+</ul>
+<hr>
+<h2 id="一、确定性错误（❌-建议修正）"><a href="#一、确定性错误（❌-建议修正）" class="headerlink" title="一、确定性错误（❌ 建议修正）"></a>一、确定性错误（❌ 建议修正）</h2><h3 id="E1-❌-jac-l1-manipulator-md-——-雅可比矩阵-J-2-1-项笔误"><a href="#E1-❌-jac-l1-manipulator-md-——-雅可比矩阵-J-2-1-项笔误" class="headerlink" title="E1. ❌ jac_l1_manipulator.md —— 雅可比矩阵 J(2,1) 项笔误"></a>E1. ❌ <code>jac_l1_manipulator.md</code> —— 雅可比矩阵 J(2,1) 项笔误</h3><p><strong>位置</strong>：<code>jac_l1_manipulator.md</code> 第 28 行（二连杆速度运动学矩阵）。</p>
+<p><strong>错误内容</strong>：矩阵第二行第一列写作</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ẏ =  sinθ1 + cos(θ1+θ2)  · q̇1</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>正确形式</strong>：对 <code>y = sinθ1 + sin(θ1+θ2)</code> 求导，<code>∂y/∂θ1 = cosθ1 + cos(θ1+θ2)</code>——首项应为 <strong>cosθ1</strong>（而非 sinθ1）。</p>
+<p><strong>证据</strong>：<code>jac_l1_manipulator.cpp</code> 第 34–38 行实现正确（<code>L1*c1 + L2*c12</code>，其中 <code>t2 = q[0]+q[1]</code> 即 θ1+θ2，<code>c12 = cos(θ1+θ2)</code>；注意该 cpp 的变量命名 <code>c12/s12</code> 易被误读为 cos(θ2)/sin(θ2)，但数学正确）。即<strong>文档笔误、代码无误</strong>。</p>
+<p><strong>影响</strong>：照抄矩阵的学习者会得到错误的 ∂y/∂θ1；建议改为 <code>cosθ1 + cos(θ1+θ2)</code>。</p>
+<hr>
+<h3 id="E2-❌-jac-l2-manipulability-md-——-示例输出数值与程序实际计算不符"><a href="#E2-❌-jac-l2-manipulability-md-——-示例输出数值与程序实际计算不符" class="headerlink" title="E2. ❌ jac_l2_manipulability.md —— 示例输出数值与程序实际计算不符"></a>E2. ❌ <code>jac_l2_manipulability.md</code> —— 示例输出数值与程序实际计算不符</h3><p><strong>位置</strong>：<code>jac_l2_manipulability.md</code> 第 34 行”好构型(q=π/4,π/2) w 较大”与第 40–41 行示例输出”好构型 w=0.707 σ_min=0.707”。</p>
+<p><strong>推导</strong>：二连杆 l1=l2=1，<code>w = √det(JJᵀ) = |det J| = |l1·l2·sinθ2| = |sinθ2|</code>。</p>
+<ul>
+<li>在 q=(π/4, π/2)（θ2=90°）：<strong>w = sin(90°) = 1.0</strong>；σ_min = √λ_min(JJᵀ)，JJᵀ=[[2.5,0.5],[0.5,0.5]]，λ_min=(3−√5)/2≈0.382 → <strong>σ_min≈0.618</strong>。</li>
+<li>md 声称的 0.707 = sin(45°) 对应的是 <strong>θ2=45°</strong> 构型，与文中 q=(π/4,π/2) 不符。</li>
+</ul>
+<p><strong>证据</strong>：<code>jac_l2_manipulability.cpp</code> 第 73–75 行 <code>qGood={M_PI/4, M_PI/2}</code>，实际计算输出 <strong>w=1.0、σ_min=0.618</strong>（<code>manip()</code> 与 <code>sigmaMin()</code> 实现正确）。md 的”你会看到什么”（0.707/0.707）与程序输出矛盾，属示例数据错误。</p>
+<p><strong>建议</strong>：改示例输出为 w=1.0、σ_min=0.618；或把”好构型”改为 θ2=45°（如 q=(π/4,π/4)）并核对数值。</p>
+<hr>
+<h2 id="二、轻微表述问题（⚠️-建议修正）"><a href="#二、轻微表述问题（⚠️-建议修正）" class="headerlink" title="二、轻微表述问题（⚠️ 建议修正）"></a>二、轻微表述问题（⚠️ 建议修正）</h2><h3 id="W1-⚠️-jac-l2-vision-md-——-“K-diag-f-f-1-”-与后文-cx-cy-不一致"><a href="#W1-⚠️-jac-l2-vision-md-——-“K-diag-f-f-1-”-与后文-cx-cy-不一致" class="headerlink" title="W1. ⚠️ jac_l2_vision.md —— “K=diag(f,f,1)” 与后文 cx/cy 不一致"></a>W1. ⚠️ <code>jac_l2_vision.md</code> —— “K=diag(f,f,1)” 与后文 cx/cy 不一致</h3><p>第 17 行写”相机 K=diag(f,f,1)”，但紧接着的投影公式 <code>u = f·x/z + cx</code>、<code>v = f·y/z + cy</code> 又含主点 cx/cy——严格的内参应为 <code>[[f,0,cx],[0,f,cy],[0,0,1]]</code>（对角形式不含 cx/cy）。属教学简写，但会造成记号冲突，建议统一。</p>
+<h3 id="W2-⚠️-覆盖性说明（非错误）"><a href="#W2-⚠️-覆盖性说明（非错误）" class="headerlink" title="W2. ⚠️ 覆盖性说明（非错误）"></a>W2. ⚠️ 覆盖性说明（非错误）</h3><p>README”校验状态”声称所有 20 个 demo 已经”受管 Python 镜像”核验（SE(3) 1e-16、A/B 1e-9~1e-11、EKF 0.58→0.007、跟踪误差 8e-5 等运行数字）。本环境无编译器，无法复核这些运行值；但<strong>静态可验证的数学内容（本报告逐篇复算）与 md 描述一致</strong>，且抽查到的 cpp 实现（manipulator/manipulability/ik）数学正确。建议后续在有 g++ 的环境跑一遍 <code>cmake .. &amp;&amp; cmake --build .</code> 作最终验收。</p>
+<hr>
+<h2 id="三、逐文件核验清单（全部-20-篇已通读）"><a href="#三、逐文件核验清单（全部-20-篇已通读）" class="headerlink" title="三、逐文件核验清单（全部 20 篇已通读）"></a>三、逐文件核验清单（全部 20 篇已通读）</h2><table>
+<thead>
+<tr>
+<th>文件</th>
+<th>核验</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>README.md</td>
+<td>✅</td>
+<td>20 篇结构、学习路径、构建方式正确；校验声明（W2）</td>
+</tr>
+<tr>
+<td>jac_l1_definition</td>
+<td>✅</td>
+<td>局部线性化、链式法则 D(g∘f)=Dg·Df 正确</td>
+</tr>
+<tr>
+<td>jac_l1_geometry</td>
+<td>✅</td>
+<td>det=2.85（f1 线性映射）、f2 det=2x、f3 秩亏全部正确</td>
+</tr>
+<tr>
+<td>jac_l1_manipulator</td>
+<td>❌ E1</td>
+<td>J·q̇=ẋ 方法正确；<strong>J(2,1) 笔误（sinθ1→cosθ1）</strong>，cpp 正确</td>
+</tr>
+<tr>
+<td>jac_l1_gradient</td>
+<td>✅</td>
+<td>∇f=[2(x−2),2(y−3)]、p=(1.3,4.7) 处 (−1.4,3.4) 验证吻合、中心差分正确</td>
+</tr>
+<tr>
+<td>jac_l1_optflow</td>
+<td>✅</td>
+<td>LK 残差雅可比 [Ix;Iy]、A=Σ[Jx;Iy]·[Ix,Jy]、b=Σ[Jx;Iy]·res 正确</td>
+</tr>
+<tr>
+<td>jac_l2_geometric</td>
+<td>✅</td>
+<td>几何 vs 解析雅可比、ZYX 欧拉 det B=cosβ（β=10°→0.985、85°→0.087 验证吻合）</td>
+</tr>
+<tr>
+<td>jac_l2_manipulability</td>
+<td>❌ E2</td>
+<td>w=√det(JJᵀ)、DLS 公式正确；<strong>示例输出 0.707 与程序 1.0/0.618 不符</strong></td>
+</tr>
+<tr>
+<td>jac_l2_ik</td>
+<td>✅</td>
+<td>DLS <code>Jᵀ(JJᵀ+λ²I)⁻¹e</code>、回溯线搜索正确</td>
+</tr>
+<tr>
+<td>jac_l2_trajectory</td>
+<td>✅</td>
+<td>零空间投影 N=I−J⁺J、q̇=J⁺ẋ+N·ẋ_null 正确</td>
+</tr>
+<tr>
+<td>jac_l2_optim</td>
+<td>✅</td>
+<td>GN/LM 公式、模型 y=a·e^{bx} 雅可比 [e^{bx}, a·x·e^{bx}] 正确</td>
+</tr>
+<tr>
+<td>jac_l2_vision</td>
+<td>⚠️ W1</td>
+<td>重投影雅可比 [[f/z,0,−fx/z²],[0,f/z,−fy/z²]] 正确；K 记号简写冲突</td>
+</tr>
+<tr>
+<td>jac_l3_slam</td>
+<td>✅</td>
+<td>位姿图残差 e=log(Z⁻¹Tᵢ⁻¹Tⱼ)^∨、Jᵢ/Jⱼ、GN 更新正确</td>
+</tr>
+<tr>
+<td>jac_l3_motion</td>
+<td>✅</td>
+<td>unicycle A/B、MPC u* 闭式与灵敏度 S=−(BᵀQB+ρI)⁻¹BᵀQA 推导正确</td>
+</tr>
+<tr>
+<td>jac_l3_ml</td>
+<td>✅</td>
+<td>δ1/δ2、∂L/∂W、∂y/∂x=W2·diag(tanh’)·W1 全部正确</td>
+</tr>
+<tr>
+<td>jac_l3_ibvs</td>
+<td>✅</td>
+<td>图像雅可比+机械臂雅可比串接、双 DLS 控制律正确</td>
+</tr>
+<tr>
+<td>jac_l3_se3</td>
+<td>✅</td>
+<td>exp/log 互逆、Ad 同态、点作用雅可比 [−R[x]^,R]·J_r、共轭 Ad(T₂)ξ 全部标准正确</td>
+</tr>
+<tr>
+<td>jac_l3_cnn</td>
+<td>✅</td>
+<td>卷积=Toeplitz、ReLU=对角门、∂y/∂x=backprop(I)；维度 10→8→6→12→2 自洽</td>
+</tr>
+<tr>
+<td>jac_l3_dynamics</td>
+<td>✅</td>
+<td>三模型 A/B 描述正确（自行车 B 含 (v/L)sec²φ）；MPC S 公式正确</td>
+</tr>
+<tr>
+<td>jac_l3_ekf</td>
+<td>✅</td>
+<td>F/G/H 描述正确（GPS H=[I₂0]、地标 1/r、−1/r²）；EKF 更新式正确</td>
+</tr>
+<tr>
+<td>jac_l3_indrobot</td>
+<td>✅</td>
+<td>计算力矩 τ=M(q̈_des+Kp·e+Kd·ė)+Cq̇+G、闭环 ë+Kdė+Kpe=0、Ṁ−2C 反对称、DLS 全部正确</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>✅ = 数学与实现描述正确；❌ = 确定性错误；⚠️ = 轻微问题。</p>
+</blockquote>
+<hr>
+<h2 id="四、修复建议"><a href="#四、修复建议" class="headerlink" title="四、修复建议"></a>四、修复建议</h2><ol>
+<li><strong>P0</strong>：修 E1（manipulator.md J(2,1)：<code>sinθ1</code> → <code>cosθ1</code>）。</li>
+<li><strong>P0</strong>：修 E2（manipulability.md 示例输出：q=(π/4,π/2) 时 w=1.0、σ_min=0.618；或改构型为 θ2=45°）。</li>
+<li><strong>P1</strong>：统一 vision.md 的 K 记号（W1）。</li>
+<li><strong>P2</strong>：有 g++ 环境时跑 <code>cmake .. &amp;&amp; cmake --build .</code>，把 20 个 demo 的真实输出与”你会看到什么”逐一对拍回填（本报告已确认静态数学正确）。</li>
+</ol>
+<h2 id="五、复核方式"><a href="#五、复核方式" class="headerlink" title="五、复核方式"></a>五、复核方式</h2><p>E1、E2 均有可独立复算的推导（∂y/∂θ1=cosθ1+cos(θ1+θ2)；w=|sinθ2|=1、σ_min=√((3−√5)/2)≈0.618），且与对应 cpp 的实现对照确认。</p>
+<hr>
+<h2 id="六、独立复核结论（2026-08-18，Python-数值复算-cpp-对照）"><a href="#六、独立复核结论（2026-08-18，Python-数值复算-cpp-对照）" class="headerlink" title="六、独立复核结论（2026-08-18，Python 数值复算 + cpp 对照）"></a>六、独立复核结论（2026-08-18，Python 数值复算 + cpp 对照）</h2><blockquote>
+<p>复核方式：用受管 Python（venv）逐项数值复算，并与 <code>*.cpp</code> 实现逐一对拍，<strong>未照单全收 review 的任何断言</strong>。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>review 说法</th>
+<th>独立复算结果</th>
+<th>处置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>E1</strong> J(2,1) 笔误</td>
+<td>md <code>sinθ1 + cos(θ1+θ2)</code></td>
+<td><code>y=sinθ1+sin(θ1+θ2)</code> ⇒ <code>∂y/∂θ1=cosθ1+cos(θ1+θ2)</code>（实算 0.6965，md 错值 0.4358）；cpp <code>Jfk</code> 第二行 <code>{L1*c1+L2*c12, L2*c12}</code> 正确</td>
+<td>✅ <strong>成立，已修复</strong>：md 第 28 行 <code>sinθ1</code>→<code>cosθ1</code></td>
+</tr>
+<tr>
+<td><strong>E2</strong> 示例输出不符</td>
+<td>md <code>w=0.707 σ_min=0.707</code>（q=π/4,π/2）</td>
+<td>q=(π/4,π/2) ⇒ θ2=90°，`w=</td>
+<td>det J</td>
+</tr>
+<tr>
+<td><strong>W1</strong> K 记号冲突</td>
+<td><code>K=diag(f,f,1)</code> 与后文含 cx/cy 的 u/v 公式冲突</td>
+<td>后文投影公式采用完整内参 <code>[[f,0,cx],[0,f,cy],[0,0,1]]</code>，简写 diag 确为该式的 cx=cy=0 特例；属教学简写，易致记号冲突</td>
+<td>⚠️ <strong>成立，已加澄清</strong>：vision.md 第 17 行补”简化版忽略主点 / 完整内参”说明</td>
+</tr>
+<tr>
+<td><strong>W2</strong> 覆盖说明</td>
+<td>本机无编译器，运行值未复核</td>
+<td>非文档缺陷，仅环境限制；静态数学已逐篇复算一致</td>
+<td>➖ 无需改动，记录</td>
+</tr>
+</tbody></table>
+<p><strong>本次复核未发现问题</strong>：review 的 E1/E2/W1 判断均准确、无自身误判（与 cali 的 W6、control 的 W5/KF、cuda 的 DRELU 不同，本篇 review 可信度高）。</p>
+<p><strong>图片一致性</strong>：<code>images/fig3_manipulator.svg</code>、<code>images/fig7_manipulability.svg</code> 经 grep 确认不含 <code>sinθ1</code>/<code>0.707</code> 旧数字，无需改动。</p>
+<p><strong>已落盘修改</strong>：<code>jac_l1_manipulator.md</code>（E1）、<code>jac_l2_manipulability.md</code>（E2）、<code>jac_l2_vision.md</code>（W1）。<code>*.cpp</code> 实现均正确，未改动。</p>
+<p><strong>提醒</strong>：本机无 g++，20 篇 cpp 未本地编译；建议有编译器环境跑 <code>cmake .. &amp;&amp; cmake --build .</code> 把真实输出回填各篇”你会看到什么”（E1 的 <code>ẋ(解析)=(-0.32…,0.18…)</code> 等已对拍，E2 已据 cpp 真值修正）。</p>
+<hr>
+<h2 id="七、2026-08-19-内容充实后-Review-处置记录"><a href="#七、2026-08-19-内容充实后-Review-处置记录" class="headerlink" title="七、2026-08-19 内容充实后 Review 处置记录"></a>七、2026-08-19 内容充实后 Review 处置记录</h2><blockquote>
+<p>充实范围：20 篇课程 md（篇均 3037B → 5086B），补推导链/工程落点（Ceres/g2o/OpenCV/KDL/Sophus/ncnn）/决策表/工程坑。<br>校验器：qinzhiai gpt-5.6-sol，9 段并发 review（1 段超时拆 3 段重发）。</p>
+</blockquote>
+<p><strong>review 共 96 条：已修 90 / 有意不修 6</strong>（教学简化并已加注记的表述）</p>
+<h3 id="实质错误修复（16-处，全部数值复算验证）"><a href="#实质错误修复（16-处，全部数值复算验证）" class="headerlink" title="实质错误修复（16 处，全部数值复算验证）"></a>实质错误修复（16 处，全部数值复算验证）</h3><table>
+<thead>
+<tr>
+<th>#</th>
+<th>位置</th>
+<th>问题</th>
+<th>修复</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>E1</td>
+<td>jac_l1_manipulator</td>
+<td>示例数值错误（写 (−0.32,0.18)，实算 (0.0716,0.3688)）</td>
+<td>重算并更新代码走读/输出</td>
+</tr>
+<tr>
+<td>E2</td>
+<td>jac_l1_manipulator</td>
+<td>奇异位形方向描述反了（径向/切向）</td>
+<td>改”只能沿切向移动, 径向无法产生”+折叠构型 θ2=π</td>
+</tr>
+<tr>
+<td>E3</td>
+<td>jac_l1_geometry</td>
+<td>det=0 ⇒ 局部不可逆/降维（x³ 反例）</td>
+<td>改逆函数定理充分条件 + 常秩定理限定 + 伪逆有限性澄清</td>
+</tr>
+<tr>
+<td>E4</td>
+<td>jac_l1_optflow</td>
+<td>残差雅可比符号矛盾（[Ix;Iy] vs 应为 [−Ix,−Iy]）</td>
+<td>统一负号 + G-N 法方程完整推导</td>
+</tr>
+<tr>
+<td>E5</td>
+<td>jac_l2_geometric</td>
+<td>B 矩阵方向矛盾（角速度↔欧拉角率）</td>
+<td>统一 ω=B·ė, ė=B⁻¹ω + 平面例 Ja=Jg 说明</td>
+</tr>
+<tr>
+<td>E6</td>
+<td>jac_l2_trajectory</td>
+<td><strong>DLS 伪逆非严格零空间投影</strong>（JN_λ=λ²(JJᵀ+λ²I)⁻¹J≠0）</td>
+<td>区分精确 MP 伪逆与阻尼近似 + 泄漏量验证建议</td>
+</tr>
+<tr>
+<td>E7</td>
+<td>jac_l2_optim</td>
+<td>G-N/LM 更新符号漏负号</td>
+<td>补 −(JᵀJ)⁻¹Jᵀr 约定 + 二次收敛条件</td>
+</tr>
+<tr>
+<td>E8</td>
+<td>jac_l2_vision</td>
+<td>单目深度不可观归因错误（非 1/z²，是雅可比零空间）</td>
+<td>改零空间解释 + 近点约束限定 + gauge freedom</td>
+</tr>
+<tr>
+<td>E9</td>
+<td>jac_l3_slam</td>
+<td>位姿图 1 边 2 顶点 H 奇异（规范自由度）</td>
+<td>补固定顶点/先验说明 + 左/右扰动约定</td>
+</tr>
+<tr>
+<td>E10</td>
+<td>jac_l3_motion</td>
+<td><strong>“一步 MPC 收敛到 LQR Riccati 增益”错误</strong></td>
+<td>改”形式同构数值不同”（实测 S=−0.045 vs K=2.586）</td>
+</tr>
+<tr>
+<td>E11</td>
+<td>jac_l3_ml</td>
+<td>梯度”内积”错误（应为外积 δ·xᵀ）+ z2 未定义</td>
+<td>修正 + 定义 z2</td>
+</tr>
+<tr>
+<td>E12</td>
+<td>jac_l3_se3</td>
+<td>exp 平移项 V·ω 写错（应为 V(ω)v）</td>
+<td>修正 + 扰动 A/B 两情形区分 + θ→π 归因</td>
+</tr>
+<tr>
+<td>E13</td>
+<td>jac_l3_cnn</td>
+<td>JVP/VJP 混淆 + 多通道非零元 k→C_in·k</td>
+<td>改 VJP + 复杂度修正</td>
+</tr>
+<tr>
+<td>E14</td>
+<td>jac_l3_dynamics</td>
+<td>倒立摆离心项漏 sinθ + θ=0/π 稳定性约定反了</td>
+<td>补 sinθ·cosθ + 统一”θ=0 竖直向上不稳定”</td>
+</tr>
+<tr>
+<td>E15</td>
+<td>jac_l3_ekf</td>
+<td>bearing 缺 −θ 项（航向不可观）+ 残差未归一化</td>
+<td>补 ∂b/∂θ=−1 + wrap + Joseph 形式说明</td>
+</tr>
+<tr>
+<td>E16</td>
+<td>jac_l3_ibvs</td>
+<td>相机-末端外参缺失 + 两步伪逆≠总雅可比 DLS + λ 混用</td>
+<td>补 Ad(T_ce) 假设 + 总雅可比直接反解 + k/μ 区分</td>
+</tr>
+</tbody></table>
+<h3 id="数值复算验证（本机-python）"><a href="#数值复算验证（本机-python）" class="headerlink" title="数值复算验证（本机 python）"></a>数值复算验证（本机 python）</h3><ul>
+<li>J(q)q̇=(0.0716,0.3688) ✅；局部线性化误差 9.4e-05 与 O(|dp|²) 一致 ✅</li>
+<li>精确奇异 MP 伪逆有限（norm=0.8，非 Inf）✅；一步 S≠LQR K（−0.045 vs 2.586）✅</li>
+<li>DLS 泄漏 ||J·N_λ||=0.016≠0（λ&gt;0 非严格零空间）✅；∂b/∂θ=−1 ✅</li>
+</ul>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Jacobian_demo/">JACOBIAN_DEMO</a></li>
+            <li>JACOBIAN_DEMO_REVIEW</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

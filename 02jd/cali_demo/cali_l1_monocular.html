@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="单目标定（Monocular）· 端到端闭环与”标定的价值” L1.3 让你跑通张正友法得到 K+畸变，L2.1 讲清误差从哪来。本篇把两者”收口”——不仅验证”标得准”，还量化”标定到底有啥用”。   一、单目标定到底产出什么单目标定（monocular &#x2F; single-camera calibration）就是求一个相机的内参 K 与畸变 D： 1233D 板点 --[外参 R,t(每张图不">
+<meta property="og:type" content="website">
+<meta property="og:title" content="单目标定（Monocular）· 端到端闭环与&quot;标定的价值&quot;">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cali_demo/cali_l1_monocular.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="单目标定（Monocular）· 端到端闭环与”标定的价值” L1.3 让你跑通张正友法得到 K+畸变，L2.1 讲清误差从哪来。本篇把两者”收口”——不仅验证”标得准”，还量化”标定到底有啥用”。   一、单目标定到底产出什么单目标定（monocular &#x2F; single-camera calibration）就是求一个相机的内参 K 与畸变 D： 1233D 板点 --[外参 R,t(每张图不">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/cali_demo/images/fig15_monocular.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.910Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/cali_demo/images/fig15_monocular.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cali_demo/cali_l1_monocular">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cali_demo/cali_l1_monocular.html","path":"02jd/cali_demo/cali_l1_monocular.html","title":"单目标定（Monocular）· 端到端闭环与\"标定的价值\""}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>单目标定（Monocular）· 端到端闭环与"标定的价值" | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8D%95%E7%9B%AE%E6%A0%87%E5%AE%9A%EF%BC%88Monocular%EF%BC%89%C2%B7-%E7%AB%AF%E5%88%B0%E7%AB%AF%E9%97%AD%E7%8E%AF%E4%B8%8E%E2%80%9D%E6%A0%87%E5%AE%9A%E7%9A%84%E4%BB%B7%E5%80%BC%E2%80%9D"><span class="nav-number">1.</span> <span class="nav-text">单目标定（Monocular）· 端到端闭环与”标定的价值”</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%8D%95%E7%9B%AE%E6%A0%87%E5%AE%9A%E5%88%B0%E5%BA%95%E4%BA%A7%E5%87%BA%E4%BB%80%E4%B9%88"><span class="nav-number">1.1.</span> <span class="nav-text">一、单目标定到底产出什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%98%E8%A6%81%E5%8D%95%E7%8B%AC%E5%86%99%E4%B8%80%E4%B8%AA%E2%80%9D%E7%AB%AF%E5%88%B0%E7%AB%AF%E2%80%9Ddemo"><span class="nav-number">1.2.</span> <span class="nav-text">二、为什么还要单独写一个”端到端”demo</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#naive-%E5%86%85%E5%8F%82%E4%B8%BA%E4%BB%80%E4%B9%88%E9%94%99%E5%BE%97%E7%A6%BB%E8%B0%B1%EF%BC%88%E9%87%8F%E5%8C%96%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">naive 内参为什么错得离谱（量化）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88cali-l1-monocular-cpp%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、代码走读（cali_l1_monocular.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%B8%8E%E5%8F%8C%E7%9B%AE%E6%A0%87%E5%AE%9A%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.4.</span> <span class="nav-text">四、与双目标定的关系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AF%E5%B7%AE%E4%BC%A0%E9%80%92%E9%93%BE%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%95%E7%9B%AE%E6%98%AF%E5%9C%B0%E5%9F%BA%EF%BC%89"><span class="nav-number">1.4.1.</span> <span class="nav-text">误差传递链（为什么单目是地基）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.6.</span> <span class="nav-text">六、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.7.</span> <span class="nav-text">七、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">单目标定（Monocular）· 端到端闭环与"标定的价值"
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L1_MONOCULAR</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="单目标定（Monocular）·-端到端闭环与”标定的价值”"><a href="#单目标定（Monocular）·-端到端闭环与”标定的价值”" class="headerlink" title="单目标定（Monocular）· 端到端闭环与”标定的价值”"></a>单目标定（Monocular）· 端到端闭环与”标定的价值”</h1><blockquote>
+<p>L1.3 让你跑通张正友法得到 K+畸变，L2.1 讲清误差从哪来。本篇把两者”收口”——不仅验证”标得准”，还量化”标定到底有啥用”。</p>
+</blockquote>
+<hr>
+<h2 id="一、单目标定到底产出什么"><a href="#一、单目标定到底产出什么" class="headerlink" title="一、单目标定到底产出什么"></a>一、单目标定到底产出什么</h2><p>单目标定（monocular / single-camera calibration）就是求<strong>一个相机</strong>的内参 <code>K</code> 与畸变 <code>D</code>：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">3D 板点 --[外参 R,t(每张图不同)]--&gt; 相机系 (X,Y,Z)</span><br><span class="line">相机系 --[针孔]--&gt; 物理像面 x=fx·X/Z, y=fy·Y/Z</span><br><span class="line">物理像面 --[内参 K + 畸变]--&gt; 像素 u=fx·X/Z+cx, v=fy·Y/Z+cy</span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li>张正友法（见 <a href="/02jd/cali_demo/cali_l1_intrinsics.html">L1.3 内参标定</a>）用它解出 K 与畸变；</li>
+<li>误差来源（姿态覆盖、角点精度、模型阶数）见 <a href="/02jd/cali_demo/cali_l2_intrinsics_deep.html">L2.1 内参深入</a>。</li>
+<li>本篇是这条线的<strong>端到端验收</strong>：合成真值 → 反估 → 对拍真值 → 顺便证明”不标定会很糟”。</li>
+</ul>
+<h2 id="二、为什么还要单独写一个”端到端”demo"><a href="#二、为什么还要单独写一个”端到端”demo" class="headerlink" title="二、为什么还要单独写一个”端到端”demo"></a>二、为什么还要单独写一个”端到端”demo</h2><p>L1.3 已经能恢复 K、畸变、RMS。但有个问题没回答：<strong>标定为啥必须做？</strong> 不标定直接用相机行不行？</p>
+<p>直觉上，相机像素宽高差不多等于焦距量级——有人会想”拿图像尺寸当 K 凑合得了”。本 demo 用一组对照把这件事说死：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>内参</th>
+<th>重投影 RMS</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>标定后</td>
+<td>反估的 K、畸变</td>
+<td>≈ 角点噪声（~0.6 px）</td>
+</tr>
+<tr>
+<td>不标定（naive）</td>
+<td>fx=fy=图像宽、主点=中心、零畸变</td>
+<td>大得多（数 px 甚至十 px）</td>
+</tr>
+</tbody></table>
+<p>差距就是”标定的价值”。</p>
+<h3 id="naive-内参为什么错得离谱（量化）"><a href="#naive-内参为什么错得离谱（量化）" class="headerlink" title="naive 内参为什么错得离谱（量化）"></a>naive 内参为什么错得离谱（量化）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">fx 差 10~20%（图像宽 vs 真值）→ 投影尺度系统性偏</span><br><span class="line">主点差几十 px → 所有点整体平移</span><br><span class="line">零畸变 → 边缘点径向偏移（广角镜头可差 10+ px）</span><br><span class="line">三个误差叠加 → 数 px 到十 px 级重投影误差</span><br><span class="line">对 PnP/手眼的影响: 内参错 → T_target2cam 错 → 手眼 X 错 → 抓取偏差</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程结论</strong>：内参错误不报错、不显眼，但会<strong>系统性</strong>污染所有下游 3D 结果（PnP、手眼、双目）——这就是”标定必须做”的终极理由（L2.5 的”系统性 vs 随机残差”正是识别这类错误的工具）。</p>
+<h2 id="三、代码走读（cali-l1-monocular-cpp）"><a href="#三、代码走读（cali-l1-monocular-cpp）" class="headerlink" title="三、代码走读（cali_l1_monocular.cpp）"></a>三、代码走读（cali_l1_monocular.cpp）</h2><ol>
+<li>用真值 <code>Kgt</code>、<code>dgt</code> + 24 个随机姿态，<code>projectPoints</code> 合成 2D 角点并加 0.6 px 噪声。</li>
+<li><code>calibrateCamera</code> 反估 <code>Kc</code>、<code>Dc</code>，记录各图 <code>rvecs/tvecs</code>（外参）。</li>
+<li>真值对拍：<code>K 相对误差&lt;5%</code>、<code>畸变误差&lt;0.05</code>、<code>RMS&lt;2px</code> → 标得准。</li>
+<li><strong>价值验证</strong>：用同一批外参，分别拿 <code>Kc/Dc</code>（标定后）和 naive 针孔 <code>Kn/Dn</code>（标定前）把 3D 点投影回像素，和观测点求距离：<ul>
+<li>标定后 RMS（calRMS）应≈ 角点噪声量级（仅噪声）；</li>
+<li>naive RMS（naiveRMS）应远大于它（K 错 + 没去畸变）；</li>
+<li>判定 <strong><code>naiveRMS &gt; 3×calRMS</code></strong> → 标定确实显著降低误差（方向别写反！）。</li>
+</ul>
+</li>
+<li>全部满足才 <code>PASS</code>。</li>
+</ol>
+<blockquote>
+<p>这正是下游算法（PnP、SLAM、手眼、双目）强依赖单目标定的原因：一个错的内参会系统性地把所有 3D 结果带偏。</p>
+</blockquote>
+<h2 id="四、与双目标定的关系"><a href="#四、与双目标定的关系" class="headerlink" title="四、与双目标定的关系"></a>四、与双目标定的关系</h2><p>单目标定是<strong>双目标定的前置</strong>：双目要先各自单目标定得到稳定 K、再 <code>stereoCalibrate(..., CALIB_FIX_INTRINSIC, ...)</code> 固定内参去求两相机相对位姿。没有可靠的单目内参，双目必发散（见 <a href="/02jd/cali_demo/cali_l1_stereo.html">L1 双目标定基础</a>）。</p>
+<h3 id="误差传递链（为什么单目是地基）"><a href="#误差传递链（为什么单目是地基）" class="headerlink" title="误差传递链（为什么单目是地基）"></a>误差传递链（为什么单目是地基）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">单目 K/D 误差 → 手眼 X 误差（solvePnP 输入错）→ 抓取/引导误差</span><br><span class="line">单目 K/D 误差 → 双目 R,T 误差（stereoCalibrate 固定内参也受初值影响）</span><br><span class="line">单目 K/D 误差 → PnP 位姿误差 → 机器人到位偏差</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>一句话</strong>：单目标定是整条链的第一块多米诺——它稳，后面才可能稳；它偏，后面全偏（L2.5 误差校验会量化每一环）。</p>
+<p><img src="/02jd/cali_demo/images/fig15_monocular.svg" alt="单目标定：标定前后重投影误差对比"></p>
+<h2 id="五、工程落点（真实项目）"><a href="#五、工程落点（真实项目）" class="headerlink" title="五、工程落点（真实项目）"></a>五、工程落点（真实项目）</h2><ul>
+<li><strong>OpenCV 标定示例</strong>：<code>camera_calibration</code> 的官方流程 = 本 demo 的”采集→标定→RMS”三步。</li>
+<li><strong>ROS 相机驱动</strong>：<code>usb_cam</code>/<code>realsense</code> 加载 <code>calibration.yaml</code> 后 <code>undistort</code> 图像——去畸变是下游所有视觉算法的前提。</li>
+<li><strong>PX4 视觉着陆/避障</strong>：机载相机 K/D 标定后，AprilTag/光流/深度估计才有正确几何。</li>
+<li><strong>Kalibr</strong>：视觉惯性标定（相机-IMU 外参）的第一步就是单目标定——它的 <code>camchain.yaml</code> 就是本 demo 的产物。</li>
+</ul>
+<h2 id="六、自检"><a href="#六、自检" class="headerlink" title="六、自检"></a>六、自检</h2><ul>
+<li>把噪声从 0.6 px 调到 3 px，看 naiveRMS/calRMS 比值是否仍 &gt;&gt; 1（标定价值对噪声鲁棒）。</li>
+<li>把 <code>Kn</code> 的焦距故意设成真值的 0.5 倍，看 naiveRMS 进一步爆炸——直观感受 K 偏差的破坏力。</li>
+<li>挑战：为什么”标定后 RMS≈噪声”而不是 0？（标定是拟合，残差下限 = 角点检测噪声——RMS 接近噪声说明模型对、没过拟合）</li>
+</ul>
+<h2 id="七、下一步"><a href="#七、下一步" class="headerlink" title="七、下一步"></a>七、下一步</h2><p>进 <a href="/02jd/cali_demo/cali_l1_stereo.html">L1 双目标定基础</a>：两个标定好的相机如何拼在一起、求相对位姿、对齐极线。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L1_MONOCULAR</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

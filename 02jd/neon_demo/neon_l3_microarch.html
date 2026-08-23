@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3 深度优化（库开发者 &#x2F; 移动端推理引擎）· 第二部分Cortex-A 微架构调优（流水线 · 发射端口 · 延迟&#x2F;吞吐 · 缓存带宽） 配套文件：neon_l3_microarch.cpp（可运行的调优实验台：perf 读 IPC、1&#x2F;4&#x2F;8 累加器 ILP 演示、aarch64 NEON 1 vs 8 累加器点积、STREAM 带宽）图示文件：images&#x2F;fig4_pipeline.sv">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3 深度优化（库开发者 &#x2F; 移动端推理引擎）· 第二部分">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/neon_demo/neon_l3_microarch.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3 深度优化（库开发者 &#x2F; 移动端推理引擎）· 第二部分Cortex-A 微架构调优（流水线 · 发射端口 · 延迟&#x2F;吞吐 · 缓存带宽） 配套文件：neon_l3_microarch.cpp（可运行的调优实验台：perf 读 IPC、1&#x2F;4&#x2F;8 累加器 ILP 演示、aarch64 NEON 1 vs 8 累加器点积、STREAM 带宽）图示文件：images&#x2F;fig4_pipeline.sv">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.960Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/neon_demo/neon_l3_microarch">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/neon_demo/neon_l3_microarch.html","path":"02jd/neon_demo/neon_l3_microarch.html","title":"L3 深度优化（库开发者 / 移动端推理引擎）· 第二部分"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3 深度优化（库开发者 / 移动端推理引擎）· 第二部分 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%8C%96%EF%BC%88%E5%BA%93%E5%BC%80%E5%8F%91%E8%80%85-%E7%A7%BB%E5%8A%A8%E7%AB%AF%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E%EF%BC%89%C2%B7-%E7%AC%AC%E4%BA%8C%E9%83%A8%E5%88%86"><span class="nav-number">1.</span> <span class="nav-text">L3 深度优化（库开发者 &#x2F; 移动端推理引擎）· 第二部分</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Cortex-A-%E5%BE%AE%E6%9E%B6%E6%9E%84%E8%B0%83%E4%BC%98%EF%BC%88%E6%B5%81%E6%B0%B4%E7%BA%BF-%C2%B7-%E5%8F%91%E5%B0%84%E7%AB%AF%E5%8F%A3-%C2%B7-%E5%BB%B6%E8%BF%9F-%E5%90%9E%E5%90%90-%C2%B7-%E7%BC%93%E5%AD%98%E5%B8%A6%E5%AE%BD%EF%BC%89"><span class="nav-number">1.1.</span> <span class="nav-text">Cortex-A 微架构调优（流水线 · 发射端口 · 延迟&#x2F;吞吐 · 缓存带宽）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%87%82%E5%BE%AE%E6%9E%B6%E6%9E%84"><span class="nav-number">1.2.</span> <span class="nav-text">一、为什么要懂微架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E6%B5%81%E6%B0%B4%E7%BA%BF%E3%80%81%E5%8F%91%E5%B0%84%E5%AE%BD%E5%BA%A6%E3%80%81%E6%89%A7%E8%A1%8C%E7%AB%AF%E5%8F%A3"><span class="nav-number">1.3.</span> <span class="nav-text">二、流水线、发射宽度、执行端口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%90%84%E6%A0%B8%E5%BF%83-NEON-%E5%90%9E%E5%90%90-%E5%BB%B6%E8%BF%9F%E5%AF%B9%E7%85%A7"><span class="nav-number">1.4.</span> <span class="nav-text">三、各核心 NEON 吞吐 &#x2F; 延迟对照</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81Cortex-A76-%E6%B7%B1%E5%BA%A6%E6%8B%86%E8%A7%A3%EF%BC%88%E5%AE%98%E6%96%B9%E6%95%B0%E6%8D%AE%E5%AE%9E%E8%AF%81%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">四、Cortex-A76 深度拆解（官方数据实证）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E8%B0%83%E5%BA%A6%E5%8E%9F%E5%88%99%E8%90%BD%E5%88%B0%E5%BE%AE%E6%9E%B6%E6%9E%84%E4%B8%8A"><span class="nav-number">1.6.</span> <span class="nav-text">五、调度原则落到微架构上</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E7%BC%93%E5%AD%98%E5%B1%82%E6%AC%A1%E4%B8%8E%E5%86%85%E5%AD%98%E5%B8%A6%E5%AE%BD"><span class="nav-number">1.7.</span> <span class="nav-text">六、缓存层次与内存带宽</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E6%80%8E%E4%B9%88%E9%87%8F%EF%BC%9Aperf-%E8%AE%A1%E6%95%B0%E5%99%A8%E8%B0%83%E4%BC%98%E9%97%AD%E7%8E%AF"><span class="nav-number">1.8.</span> <span class="nav-text">七、怎么量：perf 计数器调优闭环</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E8%B0%83%E4%BC%98%E9%97%AD%E7%8E%AF-%E5%AE%9E%E6%88%98%E6%B8%85%E5%8D%95"><span class="nav-number">1.9.</span> <span class="nav-text">八、调优闭环 + 实战清单</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8E%E7%AC%94%E8%AE%B0%E3%80%8A00NEON%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0-docx%E3%80%8B%E5%AF%B9%E5%BA%94"><span class="nav-number">1.9.1.</span> <span class="nav-text">与笔记《00NEON基础学习.docx》对应</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3 深度优化（库开发者 / 移动端推理引擎）· 第二部分
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/neon_demo/">NEON_DEMO</a></li>
+            <li>NEON_L3_MICROARCH</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-深度优化（库开发者-移动端推理引擎）·-第二部分"><a href="#L3-深度优化（库开发者-移动端推理引擎）·-第二部分" class="headerlink" title="L3 深度优化（库开发者 / 移动端推理引擎）· 第二部分"></a>L3 深度优化（库开发者 / 移动端推理引擎）· 第二部分</h1><h2 id="Cortex-A-微架构调优（流水线-·-发射端口-·-延迟-吞吐-·-缓存带宽）"><a href="#Cortex-A-微架构调优（流水线-·-发射端口-·-延迟-吞吐-·-缓存带宽）" class="headerlink" title="Cortex-A 微架构调优（流水线 · 发射端口 · 延迟/吞吐 · 缓存带宽）"></a>Cortex-A 微架构调优（流水线 · 发射端口 · 延迟/吞吐 · 缓存带宽）</h2><blockquote>
+<p>配套文件：<code>neon_l3_microarch.cpp</code>（可运行的调优实验台：perf 读 IPC、1/4/8 累加器 ILP 演示、aarch64 NEON 1 vs 8 累加器点积、STREAM 带宽）<br>图示文件：<code>images/fig4_pipeline.svg</code> / <code>fig5_ilp.svg</code> / <code>fig6_cache.svg</code>（可直接嵌入 markdown）<br>浏览器预览：<code>neon_l3_microarch_diagrams.html</code><br>数据来源：各代核心《Arm Cortex-Axx Software Optimization Guide》；A76 数字为官方实证</p>
+</blockquote>
+<hr>
+<h2 id="一、为什么要懂微架构"><a href="#一、为什么要懂微架构" class="headerlink" title="一、为什么要懂微架构"></a>一、为什么要懂微架构</h2><p>同一行 NEON intrinsic（比如 <code>fmla</code>），在 Cortex-A53 和 Cortex-X1 上能差出 <strong>2~4 倍</strong>——不是编译器的问题，是<strong>核本身的发射端口数、延迟、缓存带宽</strong>不同。L3 的调优，本质就是：</p>
+<blockquote>
+<p><strong>让写出来的指令流，正好喂满你手里这块核的端口与带宽，不空转、不卡链、不饿肚子。</strong></p>
+</blockquote>
+<p>所以动手前先回答三个问题：</p>
+<ol>
+<li>这是 little 核还是 big 核？（顺序 vs 乱序，决定了能不能靠 ILP 隐藏延迟）</li>
+<li>它每周期能发几条 NEON？（决定你要开多少个累加器）</li>
+<li>它的 L1/L2 一次能搬多少字节？（决定访存要不要预取、要不要 pack）</li>
+</ol>
+<hr>
+<h2 id="二、流水线、发射宽度、执行端口"><a href="#二、流水线、发射宽度、执行端口" class="headerlink" title="二、流水线、发射宽度、执行端口"></a>二、流水线、发射宽度、执行端口</h2><p>超标量乱序核（A7x/X 系列）把一条指令拆成多级：取指 → 译码 → 重命名/分发 → <strong>发射到多个执行端口</strong> → 执行 → 退休。关键在「发射」这一步：</p>
+<ul>
+<li><strong>发射宽度（issue width）</strong>：每周期最多把几条指令送入执行端口（A76=8 μop，A78=??→见下，X1=8 指令）。</li>
+<li><strong>执行端口（port）</strong>：每个端口连一种执行单元（整数 ALU / 载入 / 存储 / <strong>NEON FP</strong>）。两条 <code>fmla</code> 想同周期发射，必须去<strong>不同的 NEON 端口</strong>。</li>
+<li><strong>吞吐 throughput</strong>：某类指令每周期最多几条（受端口数约束）。</li>
+<li><strong>延迟 latency</strong>：结果多久后能被下一条指令使用（依赖链长度）。</li>
+</ul>
+<p>关系一句话：<strong>吞吐是端口给的「上限」，延迟是依赖链给的「下限」。</strong> 单条依赖链（累加器）只能按 <code>1/延迟</code> 的速度推进，永远摸不到吞吐上限——除非你开多条独立链（ILP）。</p>
+<div align="center">
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 320" font-family="Menlo, Consolas, monospace" font-size="12">
+  <rect x="0" y="0" width="680" height="320" fill="#fbfcfe"></rect>
+  <text x="20" y="24" font-size="14" font-weight="bold" fill="#1f2933">图一：顺序核(A53) vs 乱序多端口核(A76) 的「指令→端口」</text>
+
+  <!-- in-order -->
+  <rect x="20" y="50" width="300" height="240" rx="6" fill="#ffffff" stroke="#cbd5e1"></rect>
+  <text x="40" y="74" font-weight="bold" fill="#334155">Cortex-A53 (in-order)</text>
+  <text x="40" y="94" fill="#64748b">单 NEON 端口 · 1 条/周期</text>
+  <rect x="40" y="110" width="260" height="22" fill="#e2e8f0"></rect>
+  <text x="50" y="125" fill="#334155">取指 → 译码 → 发射 → 单 NEON 管 → 退休</text>
+  <rect x="40" y="150" width="40" height="100" fill="#fde68a" stroke="#d6b656"></rect>
+  <text x="60" y="205" fill="#92560c" transform="rotate(-90 60 205)">NEON 管</text>
+  <text x="40" y="275" fill="#b45309">1 条 fmla/周期 → 峰值低</text>
+
+  <!-- ooo -->
+  <rect x="360" y="50" width="300" height="240" rx="6" fill="#ffffff" stroke="#cbd5e1"></rect>
+  <text x="380" y="74" font-weight="bold" fill="#334155">Cortex-A76 (out-of-order)</text>
+  <text x="380" y="94" fill="#64748b">多端口 · 2×NEON · 8 μop/周期</text>
+  <rect x="380" y="110" width="260" height="22" fill="#e2e8f0"></rect>
+  <text x="390" y="125" fill="#334155">取指 → 译码 → 重命名 → 分发</text>
+  <rect x="380" y="150" width="58" height="100" fill="#bbf7d0" stroke="#5bb872"></rect>
+  <text x="409" y="205" fill="#166534" transform="rotate(-90 409 205)">ALU</text>
+  <rect x="446" y="150" width="58" height="100" fill="#bfdbfe" stroke="#5b8fd6"></rect>
+  <text x="475" y="205" fill="#1e40af" transform="rotate(-90 475 205)">NEON0</text>
+  <rect x="512" y="150" width="58" height="100" fill="#bfdbfe" stroke="#5b8fd6"></rect>
+  <text x="541" y="205" fill="#1e40af" transform="rotate(-90 541 205)">NEON1</text>
+  <rect x="578" y="150" width="48" height="100" fill="#fbcfe8" stroke="#d66bb0"></rect>
+  <text x="602" y="205" fill="#9d174d" transform="rotate(-90 602 205)">LD/ST</text>
+  <text x="380" y="275" fill="#166534">2 条 fmla/周期 → 需 2+ 独立链喂满</text>
+</svg>
+
+</div>
+
+<hr>
+<h2 id="三、各核心-NEON-吞吐-延迟对照"><a href="#三、各核心-NEON-吞吐-延迟对照" class="headerlink" title="三、各核心 NEON 吞吐 / 延迟对照"></a>三、各核心 NEON 吞吐 / 延迟对照</h2><p>下表是<strong>代际能力概览</strong>。精确到具体 SKU 的延迟/吞吐，请以对应核心的《Arm Cortex-Axx Software Optimization Guide》为准（搜索核型号 + “Software Optimization Guide” 即可在 arm.com 拿到 PDF）。</p>
+<table>
+<thead>
+<tr>
+<th>核心</th>
+<th>类型</th>
+<th>NEON FMLA 每周期</th>
+<th>FMLA 延迟</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Cortex-A53 / A55</td>
+<td>little（顺序）</td>
+<td><strong>1</strong> 条/周期</td>
+<td><del>4</del>6</td>
+<td>单 NEON 管，靠不上 ILP</td>
+</tr>
+<tr>
+<td>Cortex-A57 / A72</td>
+<td>big（乱序）</td>
+<td><strong>2</strong> 条/周期</td>
+<td><del>5</del>6</td>
+<td>双 NEON 管</td>
+</tr>
+<tr>
+<td>Cortex-A73</td>
+<td>big（乱序，省电）</td>
+<td><strong>1</strong> 条/周期</td>
+<td>~5</td>
+<td>故意收窄到 1 管</td>
+</tr>
+<tr>
+<td>Cortex-A75</td>
+<td>big（乱序）</td>
+<td><strong>2</strong> 条/周期</td>
+<td>~4</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Cortex-A76</strong></td>
+<td>big（乱序）</td>
+<td><strong>2</strong> 条/周期</td>
+<td><strong>4</strong></td>
+<td>双 NEON 管（官方实证）</td>
+</tr>
+<tr>
+<td>Cortex-A77</td>
+<td>big（乱序）</td>
+<td><strong>3</strong> 条/周期</td>
+<td>~4</td>
+<td>三 NEON 管</td>
+</tr>
+<tr>
+<td>Cortex-A78</td>
+<td>big（乱序）</td>
+<td><strong>2</strong> 条/周期</td>
+<td>~4</td>
+<td>收 FP 管换内存带宽</td>
+</tr>
+<tr>
+<td>Cortex-X1 / X2 / X3</td>
+<td>prime（超大核）</td>
+<td><strong>4</strong> 条/周期</td>
+<td>~4</td>
+<td>4×128-bit NEON 引擎</td>
+</tr>
+</tbody></table>
+<p>内存带宽（L1D→寄存器，约值）：A53 ≈8B/cyc；A76 ≈32B/cyc；A78 比 A77 +50% load、store 翻倍；X1 在 A78 基础上再翻倍（~64B/cyc）。</p>
+<blockquote>
+<p>权重提示：A77→A78 这一代，<strong>FP 管从 3 减到 2，但内存带宽大涨</strong>。意思是——A78 上「算子」没更快，但「喂数据」快很多。调 GEMM 时要相应把 K 维分块做得更 friendly 于带宽。</p>
+</blockquote>
+<hr>
+<h2 id="四、Cortex-A76-深度拆解（官方数据实证）"><a href="#四、Cortex-A76-深度拆解（官方数据实证）" class="headerlink" title="四、Cortex-A76 深度拆解（官方数据实证）"></a>四、Cortex-A76 深度拆解（官方数据实证）</h2><p>拿 A76 当样板，因为它是官方指南写得最清楚的一代（Larq 论文也据此给出实测峰值：fp32 fmla = 2 指令/周期 = <strong>8 MAC/周期</strong>；int8 sdot = 2 指令/周期 = <strong>32 MAC/周期</strong>）。</p>
+<p>Arm Cortex-A76 Software Optimization Guide (p.28) 关键行：</p>
+<table>
+<thead>
+<tr>
+<th>指令组</th>
+<th>执行延迟</th>
+<th>吞吐</th>
+<th>占用流水线</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ASIMD FP 乘加 (FMLA/FMLS)</td>
+<td><strong>4</strong></td>
+<td><strong>2</strong></td>
+<td>V1</td>
+</tr>
+<tr>
+<td>ASIMD FP 长乘加 (FMLAL)</td>
+<td>5</td>
+<td>2</td>
+<td>V1</td>
+</tr>
+<tr>
+<td>ASIMD FP 加减乘 (VADD/VSUB/VMUL)</td>
+<td>2</td>
+<td>2</td>
+<td>V</td>
+</tr>
+<tr>
+<td>ASIMD 提取 (EXT) / 插入 (INS)</td>
+<td>2</td>
+<td>2</td>
+<td>V</td>
+</tr>
+</tbody></table>
+<p>解读：</p>
+<ul>
+<li><strong>FMLA 延迟 4、每周期 2 条</strong> → 单累加器点积每 4 周期才推进一次（1/4 峰值）；要<strong>喂满吞吐需 ≥ latency×throughput = 4×2 = 8 条独立链</strong>（不是 2 条！）。2 条链只能把吞吐推到 1/2；8 条链才到满吞吐。</li>
+<li><strong>VADD 延迟仅 2</strong> → 归约（horizontal reduction）很快，不是瓶颈；真正的瓶颈是乘加的依赖链。</li>
+<li>注 1：乘加流水线支持「late-forwarding」——典型的 FMLA 链可以每 N 周期发一条（N 即括号里的累加延迟），这正是我们要用多条链填掉的空隙。</li>
+</ul>
+<hr>
+<h2 id="五、调度原则落到微架构上"><a href="#五、调度原则落到微架构上" class="headerlink" title="五、调度原则落到微架构上"></a>五、调度原则落到微架构上</h2><p>把「L3 第一部分」的调度技巧翻译成微架构语言：</p>
+<ol>
+<li><strong>ILP 深度 = 每周期 NEON 条数</strong>：隐藏 FMLA 延迟需 <strong>≥ latency×throughput 条独立累加器链</strong>——A76（延迟 4、吞吐 2）理论下限 <strong>8 条</strong>，X1（延迟 4、吞吐 4）理论下限 <strong>16 条</strong>（需扣除加载/地址/寄存器压力，实际是”接近此下限”而非必然达标）。GEMM 输出块大小本质上是「寄存器预算」与「端口数」共同逼出来的（见 <code>neon_l3_asm.md</code> 图一）。</li>
+<li><strong>避免结构冒险</strong>：同周期想发两条 <code>fmla</code>，必须分到 NEON0 / NEON1 两个端口——靠多条独立链自然达成；若全挤一条依赖链，第二个端口永远空着。</li>
+<li><strong>延迟隐藏</strong>：依赖链长度 = 延迟 ×（链数 − 已并行）。开 N 条独立链，等效把「可同时飞行」的乘加数提到 N，掩盖 4 周期延迟。</li>
+<li><strong>预取藏访存延迟</strong>：<code>prfm pldl1keep, [addr, #off]</code> 提前把数据搬进 L1，让真正 <code>ldr</code> 时不 stalls。这是手工调度才精确可控的（见 <code>neon_l3_asm.cpp</code> §三）。</li>
+<li><strong>循环尾巴不排空</strong>：subs/bne 之间插一批独立指令，避免流水线在循环回边排空。</li>
+</ol>
+<p>下面这张时间线——单累加器（上）被 4 周期延迟卡成「发一条等三条」，8 累加器（下）每个周期都有 2 条 fmla 在飞——就是上面全部原则的视觉化。</p>
+<div align="center">
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 300" font-family="Menlo, Consolas, monospace" font-size="12">
+  <rect x="0" y="0" width="680" height="300" fill="#fbfcfe"></rect>
+  <text x="20" y="24" font-size="14" font-weight="bold" fill="#1f2933">图二：单累加器(延迟受限) vs 8 累加器(喂满双 NEON 管)</text>
+
+  <!-- 单累加器 -->
+</svg><p>  <text x="20" y="56" font-weight="bold" fill="#b45309">单累加器 · 1 条依赖链（A76: FMLA 延迟 4）</text><br>  <rect x="20" y="66" width="630" height="26" fill="#ffffff" stroke="#e2e8f0"><br>  <text x="26" y="84" fill="#64748b">周期:</text><br>  <g fill="#fbbf24" stroke="#d6b656"><br>    <rect x="80" y="68" width="44" height="22"><rect x="248" y="68" width="44" height="22"><rect x="416" y="68" width="44" height="22"><br>  </rect></rect></rect></g><br>  <text x="92" y="84" fill="#7c4a03">fmla</text><text x="260" y="84" fill="#7c4a03">fmla</text><text x="428" y="84" fill="#7c4a03">fmla</text><br>  <text x="26" y="110" fill="#94a3b8">↑ 每 4 周期才发一条，NEON1 端口全程空转</text></rect></p>
+  <!-- 双 NEON 管示意 -->
+<p>  <text x="20" y="150" font-weight="bold" fill="#166534">8 累加器 · 多独立链（每周期 2 条 fmla 喂满双管）</text><br>  <rect x="20" y="160" width="630" height="26" fill="#ffffff" stroke="#e2e8f0"><br>  <text x="26" y="178" fill="#1e40af">NEON0:</text><br>  <g fill="#60a5fa" stroke="#3b82f6"><br>    <rect x="92" y="162" width="30" height="22"><rect x="156" y="162" width="30" height="22"><rect x="220" y="162" width="30" height="22"><rect x="284" y="162" width="30" height="22"><rect x="348" y="162" width="30" height="22"><br>  </rect></rect></rect></rect></rect></g><br>  <text x="92" y="178" fill="#fff">a0</text><text x="156" y="178" fill="#fff">a2</text><text x="220" y="178" fill="#fff">a4</text><text x="284" y="178" fill="#fff">a6</text><text x="348" y="178" fill="#fff">a..</text><br>  <rect x="20" y="190" width="630" height="26" fill="#ffffff" stroke="#e2e8f0"><br>  <text x="26" y="208" fill="#1e40af">NEON1:</text><br>  <g fill="#34d399" stroke="#10b981"><br>    <rect x="124" y="192" width="30" height="22"><rect x="188" y="192" width="30" height="22"><rect x="252" y="192" width="30" height="22"><rect x="316" y="192" width="30" height="22"><rect x="380" y="192" width="30" height="22"><br>  </rect></rect></rect></rect></rect></g><br>  <text x="124" y="208" fill="#fff">a1</text><text x="188" y="208" fill="#fff">a3</text><text x="252" y="208" fill="#fff">a5</text><text x="316" y="208" fill="#fff">a7</text><text x="380" y="208" fill="#fff">a..</text><br>  <text x="26" y="238" fill="#94a3b8">↑ a0..a7 互相独立，每周期 2 条 fmla 同时飞，延迟被完全掩盖</text><br>  <text x="26" y="262" font-weight="bold" fill="#0f766e">结论：ILP 深度 ≥ 端口数 → 摸到吞吐上限；否则被延迟链卡在 1/延迟。</text><br></rect></rect></p>
+</div>
+
+<hr>
+<h2 id="六、缓存层次与内存带宽"><a href="#六、缓存层次与内存带宽" class="headerlink" title="六、缓存层次与内存带宽"></a>六、缓存层次与内存带宽</h2><p>NEON 算得再快，数据喂不上照样空转。典型 DynamIQ 簇的层次（以 A76 簇为例）：</p>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>容量</th>
+<th>带宽（约）</th>
+<th>调优启示</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>L1 D-cache</td>
+<td>32/64 KB</td>
+<td>~32 B/cyc load</td>
+<td>微内核工作集要塞进它（GEMM 分块依据）</td>
+</tr>
+<tr>
+<td>L2（每核私享）</td>
+<td>128~512 KB</td>
+<td>~32 B/cyc</td>
+<td>权重 pack 后常驻这里最香</td>
+</tr>
+<tr>
+<td>L3（DSU 共享）</td>
+<td>1~8 MB</td>
+<td>较低</td>
+<td>多核竞争，跨核数据别乱放</td>
+</tr>
+<tr>
+<td>DDR</td>
+<td>GB 级</td>
+<td>几十 GB/s</td>
+<td>顺序、预取、少随机</td>
+</tr>
+</tbody></table>
+<div align="center">
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 260" font-family="Menlo, Consolas, monospace" font-size="12">
+  <rect x="0" y="0" width="680" height="260" fill="#fbfcfe"></rect>
+  <text x="20" y="24" font-size="14" font-weight="bold" fill="#1f2933">图三：缓存层次与带宽（越往下越慢、越大）</text>
+
+  <rect x="250" y="44" width="180" height="34" rx="5" fill="#bfdbfe" stroke="#3b82f6"></rect>
+  <text x="340" y="66" fill="#1e3a8a" text-anchor="middle">L1 D$ 32/64KB · 32B/cyc</text>
+
+  <rect x="210" y="98" width="260" height="34" rx="5" fill="#bbf7d0" stroke="#10b981"></rect>
+  <text x="340" y="120" fill="#065f46" text-anchor="middle">L2 私享 128~512KB · ~32B/cyc</text>
+
+  <rect x="160" y="152" width="360" height="34" rx="5" fill="#fde68a" stroke="#d6b656"></rect>
+  <text x="340" y="174" fill="#7c4a03" text-anchor="middle">L3 (DSU) 1~8MB · 多核共享</text>
+
+  <rect x="100" y="206" width="480" height="34" rx="5" fill="#fecaca" stroke="#dc2626"></rect>
+  <text x="340" y="228" fill="#7f1d1d" text-anchor="middle">DDR 主存 GB 级 · 几十 GB/s · 顺序+预取才喂得饱</text>
+
+  <g stroke="#94a3b8" stroke-width="1.5" fill="none">
+    <line x1="340" y1="78" x2="340" y2="98"></line>
+    <line x1="340" y1="132" x2="340" y2="152"></line>
+    <line x1="340" y1="186" x2="340" y2="206"></line>
+  </g>
+</svg>
+
+</div>
+
+<p>调优抓手：</p>
+<ul>
+<li><strong>分块（tiling）</strong>：让每个微内核的工作集（A/B 块 + 累加器）塞进 L1/L2，减少 DDR 往返。</li>
+<li><strong>权重 pack</strong>：把卷积/ GEMM 的权重重排成内核友好的布局，一次加载反复用。</li>
+<li>**<code>prfm</code>**：对即将访问的地址提前预取，藏住 L1 miss 延迟。</li>
+<li><strong>SoA / 连续访问</strong>：避免 struct-of-array 退化成随机 stride（见 <code>neon_l1_lut.cpp</code> §3）。</li>
+</ul>
+<hr>
+<h2 id="七、怎么量：perf-计数器调优闭环"><a href="#七、怎么量：perf-计数器调优闭环" class="headerlink" title="七、怎么量：perf 计数器调优闭环"></a>七、怎么量：perf 计数器调优闭环</h2><p>调优不是猜，是测。Linux 下：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1) 全局计数器：指令数、周期、缓存失效</span></span><br><span class="line">perf <span class="built_in">stat</span> -e instructions,cycles,cache-misses,cache-references ./l3m</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2) 看 IPC：instructions/cycles。计算核 IPC 低 = 依赖链/访存受限</span></span><br><span class="line"><span class="comment">#    （A76 理论 IPC 上限约 8 μop/周期，NEON 密集核看 fmla 端口占用）</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3) 热点 + 反汇编：确认手调块真以写的顺序进了二进制</span></span><br><span class="line">perf record -e cycles ./l3m</span><br><span class="line">perf annotate            <span class="comment"># 看 fmla/fmla 是否连续、有无 spill</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4) NEON 专属 PMU 事件（Armv8 PMUv3，需内核开 perf 权限）</span></span><br><span class="line">perf <span class="built_in">stat</span> -e armv8_pmuv3/inst_retired/,armv8_pmuv3/simd_inst_retired/ ./l3m</span><br><span class="line"><span class="comment">#    simd_inst_retired 高 = 矢量指令确实在跑；低 = 没向量化/被标量化了</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 5) Android simpleperf（见 neon_l2_profiling.cpp §H）同理：app_profiler.py + report_html.py</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>判断表：</p>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>含义</th>
+<th>改法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IPC 低、simd_inst 高</td>
+<td>依赖链卡死（累加器不够）</td>
+<td>加 ILP 深度（更多累加器 / 展开）</td>
+</tr>
+<tr>
+<td>cache-misses 高</td>
+<td>访存不友好</td>
+<td>重排数据(SoA/pack)、加 prfm、分块</td>
+</tr>
+<tr>
+<td>反汇编里有 spill（<code>ldr x, [sp]</code> 里取 v 寄存器）</td>
+<td>寄存器不够</td>
+<td>缩输出块 / 手工钉寄存器（<code>neon_l3_asm.cpp</code>）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="八、调优闭环-实战清单"><a href="#八、调优闭环-实战清单" class="headerlink" title="八、调优闭环 + 实战清单"></a>八、调优闭环 + 实战清单</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">读指南 ──► 写代码 ──► perf 验证 ──► 改 ──┐</span><br><span class="line">  │                                      │</span><br><span class="line">  └──────────────────────────────────────┘</span><br></pre></td></tr></tbody></table></figure>
+
+<ol>
+<li><strong>查核</strong>：Arm 官网搜 «Cortex-A&lt;核&gt; Software Optimization Guide»，抄 FMLA/VADD/SDOT 的 latency &amp; throughput + LSU 带宽。</li>
+<li><strong>定 ILP 深度</strong>：累加器数 ≥ 每周期 NEON 条数（A76=2，X1=4）。这直接决定 GEMM 输出块大小。</li>
+<li><strong>写</strong>：多累加器 + 循环展开 + 插 <code>prfm</code> + 数据 pack/SoA。</li>
+<li><strong>验</strong>：<code>perf stat -e instructions,cycles,cache-misses</code> → 看 IPC 与 miss。</li>
+<li><strong>改</strong>：IPC 低加累加器；miss 高改布局/预取；有 spill 下沉到手写汇编钉寄存器（见 <code>neon_l3_asm.cpp</code>）。</li>
+</ol>
+<p><strong>一句话收口</strong>：微架构调优 = 把「延迟链」拆成「多条独立链」喂满端口，并把「数据」按层次预取/分块塞进缓存。L3 第一部分的汇编/调度，和第二部分的微架构参数，是同一件事的两面。</p>
+<hr>
+<h3 id="与笔记《00NEON基础学习-docx》对应"><a href="#与笔记《00NEON基础学习-docx》对应" class="headerlink" title="与笔记《00NEON基础学习.docx》对应"></a>与笔记《00NEON基础学习.docx》对应</h3><ul>
+<li>本文件 = 笔记「§九 L3 手写汇编/调度/寄存器」的延续：<strong>微架构调优视角</strong>。</li>
+<li>配套 <code>neon_l3_microarch.cpp</code> = 可运行实验台（perf / ILP / NEON 内核 / 带宽）。</li>
+<li>前一篇 <code>neon_l3_asm.cpp</code> + <code>neon_l3_asm.md</code> = L3 第一部分（手写汇编/调度/寄存器）。</li>
+</ul>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/neon_demo/">NEON_DEMO</a></li>
+            <li>NEON_L3_MICROARCH</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

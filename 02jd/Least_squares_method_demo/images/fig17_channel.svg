@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 300" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="300" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L4.2 通信:信道估计 + LMS + 波束成形</text>
+  <rect x="40" y="55" width="600" height="72" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="340" y="81" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">三个同源镜头</text>
+  <text x="340" y="102" font-size="13" font-weight="normal" fill="#1e3a8a" text-anchor="middle">OFDM 8 导频 LS+插值 → 64 子载波误码下降</text>
+  <rect x="40" y="140" width="600" height="72" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="340" y="166" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">LMS 2000 步收敛到 Wiener 解(误差 0.003)</text>
+  <text x="340" y="187" font-size="13" font-weight="normal" fill="#14532d" text-anchor="middle">MVDR w=R⁻¹a/(aᴴR⁻¹a): 期望向增益 1,干扰向零深(⚠ 增益要取 wᴴa)</text>
+  <rect x="40" y="225" width="600" height="72" rx="9" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="340" y="251" font-size="13" font-weight="bold" fill="#78350f" text-anchor="middle">OFDM 导频 LS 降误码;LMS=LS 的随机梯度在线版;MVDR=方向约束加权 LS。</text>
+</svg>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3.1 工业用例：IMU&#x2F;GPS 误差状态 ES-EKF 与 GPS 失锁 ⭐ 一句话：**误差状态法（ES-EKF）&#x3D; 用惯性导航积分”标称轨迹”，只用线性 KF 估计小误差 δx&#x3D;[δp, δv, δb]**——误差小所以线性化永远准、零偏可估、失锁时误差增长可控。这是自动驾驶&#x2F;无人机的标准架构。   一、为什么不直接滤 p, vIMU 1001000Hz、GPS 110Hz：若状态是全量">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3.1 工业用例：IMU&#x2F;GPS 误差状态 ES-EKF 与 GPS 失锁 ⭐">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/KF_demo/kf_l3_nav.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3.1 工业用例：IMU&#x2F;GPS 误差状态 ES-EKF 与 GPS 失锁 ⭐ 一句话：**误差状态法（ES-EKF）&#x3D; 用惯性导航积分”标称轨迹”，只用线性 KF 估计小误差 δx&#x3D;[δp, δv, δb]**——误差小所以线性化永远准、零偏可估、失锁时误差增长可控。这是自动驾驶&#x2F;无人机的标准架构。   一、为什么不直接滤 p, vIMU 1001000Hz、GPS 110Hz：若状态是全量">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/KF_demo/images/fig12_nav.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.940Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/KF_demo/images/fig12_nav.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/KF_demo/kf_l3_nav">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/KF_demo/kf_l3_nav.html","path":"02jd/KF_demo/kf_l3_nav.html","title":"L3.1 工业用例：IMU/GPS 误差状态 ES-EKF 与 GPS 失锁 ⭐"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3.1 工业用例：IMU/GPS 误差状态 ES-EKF 与 GPS 失锁 ⭐ | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-1-%E5%B7%A5%E4%B8%9A%E7%94%A8%E4%BE%8B%EF%BC%9AIMU-GPS-%E8%AF%AF%E5%B7%AE%E7%8A%B6%E6%80%81-ES-EKF-%E4%B8%8E-GPS-%E5%A4%B1%E9%94%81-%E2%AD%90"><span class="nav-number">1.</span> <span class="nav-text">L3.1 工业用例：IMU&#x2F;GPS 误差状态 ES-EKF 与 GPS 失锁 ⭐</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%9B%B4%E6%8E%A5%E6%BB%A4-p-v"><span class="nav-number">1.1.</span> <span class="nav-text">一、为什么不直接滤 p, v</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%A8%E9%87%8F-vs-%E8%AF%AF%E5%B7%AE%E7%8A%B6%E6%80%81%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E5%90%8E%E8%80%85%E7%BA%BF%E6%80%A7%E5%8C%96%E6%B0%B8%E8%BF%9C%E5%87%86%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">全量 vs 误差状态（为什么后者线性化永远准）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%811D-%E7%AE%80%E5%8C%96%E6%A8%A1%E5%9E%8B%EF%BC%88demo%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">二、1D 简化模型（demo）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#F-%E7%9A%84%E6%8E%A8%E5%AF%BC%EF%BC%88%E7%AC%A6%E5%8F%B7%E7%BA%A6%E5%AE%9A%E5%BF%85%E9%A1%BB%E6%98%8E%E7%A1%AE%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">F 的推导（符号约定必须明确）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81demo-%E7%BB%93%E6%9E%9C"><span class="nav-number">1.3.</span> <span class="nav-text">三、demo 结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%B1%E9%94%81%E4%B8%BA%E4%BB%80%E4%B9%88%E2%80%9D%E6%85%A2%E4%BA%8E%E7%BA%AF-DR%E2%80%9D%EF%BC%88%E4%B8%8E%E7%BA%AF-DR-%E7%9A%84%E5%AF%B9%E6%AF%94%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">失锁为什么”慢于纯 DR”（与纯 DR 的对比）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E7%9C%9F%E5%AE%9E%E7%B3%BB%E7%BB%9F%E5%AF%B9%E7%85%A7"><span class="nav-number">1.4.</span> <span class="nav-text">四、真实系统对照</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88kf-l3-nav-cpp%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、代码走读（kf_l3_nav.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.6.</span> <span class="nav-text">六、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.7.</span> <span class="nav-text">七、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.8.</span> <span class="nav-text">八、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B9%9D%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.9.</span> <span class="nav-text">九、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3.1 工业用例：IMU/GPS 误差状态 ES-EKF 与 GPS 失锁 ⭐
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L3_NAV</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-1-工业用例：IMU-GPS-误差状态-ES-EKF-与-GPS-失锁-⭐"><a href="#L3-1-工业用例：IMU-GPS-误差状态-ES-EKF-与-GPS-失锁-⭐" class="headerlink" title="L3.1 工业用例：IMU/GPS 误差状态 ES-EKF 与 GPS 失锁 ⭐"></a>L3.1 工业用例：IMU/GPS 误差状态 ES-EKF 与 GPS 失锁 ⭐</h1><blockquote>
+<p>一句话：**误差状态法（ES-EKF）= 用惯性导航积分”标称轨迹”，只用线性 KF 估计小误差 δx=[δp, δv, δb]**——误差小所以线性化永远准、零偏可估、失锁时误差增长可控。这是自动驾驶/无人机的标准架构。</p>
+</blockquote>
+<hr>
+<h2 id="一、为什么不直接滤-p-v"><a href="#一、为什么不直接滤-p-v" class="headerlink" title="一、为什么不直接滤 p, v"></a>一、为什么不直接滤 p, v</h2><p>IMU 100<del>1000Hz、GPS 1</del>10Hz：若状态是全量 p,v，预测步的非线性误差会迅速积累。<strong>误差状态</strong>的妙处：</p>
+<ul>
+<li>δx 始终很小 → F 线性化零阶就够准</li>
+<li>δx 的动力学是线性的（对姿态用 SO(3) 扰动后仍近似线性）</li>
+<li>修正后误差”归零重置”，永远工作在线性化甜点区</li>
+</ul>
+<h3 id="全量-vs-误差状态（为什么后者线性化永远准）"><a href="#全量-vs-误差状态（为什么后者线性化永远准）" class="headerlink" title="全量 vs 误差状态（为什么后者线性化永远准）"></a>全量 vs 误差状态（为什么后者线性化永远准）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">全量 EKF:  状态是 p,v,b 本身 → 估计误差可能很大 → F=∂f/∂x 在"错误点"取值</span><br><span class="line">           → 线性化歪 → 更新歪 → 恶性循环（L2.5 的三种死法之一）</span><br><span class="line">误差 EKF:  状态是 δp,δv,δb（小偏差）→ 误差动力学 ∂δf/∂δx 在"零点附近"取值</span><br><span class="line">           → 线性化几乎精确（因为 δx 本来就小!）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>核心洞察</strong>：误差状态的线性化误差 ∝ ‖δx‖，而全量的 ∝ ‖x−x_true‖。**”误差状态”把线性化的输入从”大状态”换成”小误差”<strong>——这是 IMU/GPS 系统能用 EKF 且不发散的根本原因。修正完 δx 后把误差叠加回标称轨迹并</strong>归零重置**（误差被”消费”掉了），下一拍又是小误差。</p>
+<h2 id="二、1D-简化模型（demo）"><a href="#二、1D-简化模型（demo）" class="headerlink" title="二、1D 简化模型（demo）"></a>二、1D 简化模型（demo）</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">a_meas = a_true + b + n     （加计零偏 b）</span><br><span class="line">误差动力学 F = [1  dt  −dt²/2]</span><br><span class="line">             [0  1   −dt  ]</span><br><span class="line">             [0  0    1   ]      δx=[δp, δv, δb]</span><br><span class="line">GPS 观测 H = [1 0 0]</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>零偏进入 F 的负号列</strong>——位置残差经此路径反推出 b（可观测性证明见 L3.2）。</p>
+<h3 id="F-的推导（符号约定必须明确）"><a href="#F-的推导（符号约定必须明确）" class="headerlink" title="F 的推导（符号约定必须明确）"></a>F 的推导（符号约定必须明确）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">约定: δb = b̂ − b_true（估计减真值）; 标称轨迹用 a_nom = a_meas − b̂ 积分</span><br><span class="line">位置: pₖ₊₁ = pₖ + dt·vₖ + ½dt²·(a+b+n)</span><br><span class="line">速度: vₖ₊₁ = vₖ + dt·(a+b+n)</span><br><span class="line">零偏（随机游走）: bₖ₊₁ = bₖ + w_b,  w_b ~ N(0,Q_b)</span><br><span class="line"></span><br><span class="line">误差（估计 − 真值, 标称用 a_nom）:</span><br><span class="line">δpₖ₊₁ = δpₖ + dt·δvₖ + ½dt²·δbₖ + ½dt²·n</span><br><span class="line">δvₖ₊₁ = δvₖ + dt·δbₖ + dt·n</span><br><span class="line">δbₖ₊₁ = δbₖ + w_b</span><br><span class="line">→ F 第三列 = [+½dt²; +dt; 1]（本 demo 用"估计减真值"约定; 若用"真值减估计"则全列反号）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>关键</strong>：F 第三列的符号取决于<strong>误差定义方向</strong>——本文取”估计−真值”（δb = b̂−b_true），第三列为正；若取”真值−估计”则为负。<strong>推导链必须与代码一致</strong>（demo 代码用正号约定）。零偏对位置的贡献是<strong>二阶时间累积</strong>（½dt²）——所以零偏可观测（L3.2 的 O 矩阵第三行就是 dt² 项），但收敛慢（增益小，需要长时观测/激励）。</p>
+<h2 id="三、demo-结果"><a href="#三、demo-结果" class="headerlink" title="三、demo 结果"></a>三、demo 结果</h2><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>数值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ES-EKF 位置 RMSE</td>
+<td><strong>0.123 m</strong></td>
+</tr>
+<tr>
+<td>纯 DR（无 KF）RMSE</td>
+<td>4.92 m（40 倍差）</td>
+</tr>
+<tr>
+<td>零偏估计误差</td>
+<td>0.008（真值 0.2）</td>
+</tr>
+<tr>
+<td>GPS 失锁 2s 末端误差</td>
+<td>0.137 m，恢复后 0.041 m</td>
+</tr>
+</tbody></table>
+<p>失锁段误差按 P 预测的速率<strong>平稳增长</strong>而非爆炸——因为 b 已被估准，DR 漂移只剩噪声积分。<strong>注意</strong>：这是”短时失锁、零偏已收敛”前提下的现象；残余零偏 δb≠0 时位置误差仍按 δb·t²/2 增长（理论上有界性不成立）——长时失锁仍会发散，只是比纯 DR 慢得多且增长<strong>可预测</strong>（P 传播给出增长率）。</p>
+<h3 id="失锁为什么”慢于纯-DR”（与纯-DR-的对比）"><a href="#失锁为什么”慢于纯-DR”（与纯-DR-的对比）" class="headerlink" title="失锁为什么”慢于纯 DR”（与纯 DR 的对比）"></a>失锁为什么”慢于纯 DR”（与纯 DR 的对比）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">纯 DR: 位置误差 = ∫∫(b_true + n)dt²  → 零偏累积 → 按 t² 增长（几秒就炸）</span><br><span class="line">ES-EKF 失锁: 零偏 b̂ 已收敛到真值附近 → 失锁期只有残余零偏 δb·t²/2 + 噪声积分</span><br><span class="line">           → 增长慢、可预测（P 传播给出的就是预期增长率）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程洞察</strong>：失锁时的误差增长 ≈ <strong>P 预测的标准差</strong>（在滤波器一致、噪声统计正确的假设下；实际误差应落在协方差范围内，可用 NEES 验证）——这是 ES-EKF 相对纯 DR 的第二重价值：<strong>不仅估得准，还知道估得多不准</strong>（用于导航系统降级决策）。</p>
+<h2 id="四、真实系统对照"><a href="#四、真实系统对照" class="headerlink" title="四、真实系统对照"></a>四、真实系统对照</h2><ul>
+<li>PX4/EKF2：24 维误差状态（四元数扰动 + 位置速度 + IMU 零偏 + 地磁），结构同本 demo</li>
+<li>GPS 失锁策略：P 按无更新传播 → NEES 闸门（L2.4）监控一致性 → 超界告警</li>
+</ul>
+<h2 id="五、代码走读（kf-l3-nav-cpp）"><a href="#五、代码走读（kf-l3-nav-cpp）" class="headerlink" title="五、代码走读（kf_l3_nav.cpp）"></a>五、代码走读（kf_l3_nav.cpp）</h2><ul>
+<li>标称积分 + 误差 KF（3×3 展开循环）+ 失锁区间判断 + 纯 DR 对照（同噪声序列）。</li>
+</ul>
+<h2 id="六、你会看到什么"><a href="#六、你会看到什么" class="headerlink" title="六、你会看到什么"></a>六、你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">=== L3.1 IMU/GPS 误差状态 ES-EKF（含失锁段）===</span><br><span class="line">  [demo] rmse_ES-EKF=0.1233  rmse_纯DR=4.9216  (失锁段末端误差=0.137 m)</span><br><span class="line">  [demo] 零偏估计 b̂=0.2079  (真值 b=0.2000)</span><br><span class="line">  ES-EKF RMSE ≪ 纯 DR                 err=0.0e+00 tol=5e-01  PASS</span><br><span class="line">  零偏估计收敛 |b̂−b|&lt;0.05             err=7.9e-03 tol=5e-02  PASS</span><br><span class="line">  失锁段末端误差有界(&lt;1m)             err=1.4e-01 tol=1e+00  PASS</span><br><span class="line">=== 3 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img src="/02jd/KF_demo/images/fig12_nav.svg" alt="L3.1 IMU/GPS 误差状态"></p>
+<h2 id="七、工程落点（真实项目）"><a href="#七、工程落点（真实项目）" class="headerlink" title="七、工程落点（真实项目）"></a>七、工程落点（真实项目）</h2><ul>
+<li><strong>PX4 EKF2</strong>：24 维 ES-EKF 的完整实现（<code>src/modules/ekf2</code>）——四元数扰动 δq + 位置速度 + 三组零偏（陀螺/加计/磁力计）+ 风场。本 demo 是它的 1D 切片。</li>
+<li><strong>自动驾驶组合导航</strong>：NovAtel/Inertial Labs 等 INS 模块内部就是 ES-EKF（IMU 高频 + GNSS 低频）——“DR 保高频、GNSS 纠漂移”的工业标准。</li>
+<li><strong>VINS 初始化</strong>：视觉惯性系统初始化也用 ES-EKF 估重力+尺度+零偏。</li>
+<li><strong>手机/可穿戴</strong>：GPS+IMU 的室内外无缝定位（Fusion 框架）——同一个架构。</li>
+</ul>
+<h2 id="八、自检"><a href="#八、自检" class="headerlink" title="八、自检"></a>八、自检</h2><ul>
+<li>把失锁段拉长到 200 步（10s），观察误差按 t² 增长（残余零偏×t²/2 主导）。</li>
+<li>把零偏初始估计 b̂₀ 设为 0.2（=真值），看收敛加速——说明”可观测但慢”。</li>
+<li>挑战：为什么陀螺零偏比加计零偏更难估？（陀螺零偏只进角度、角度又经旋转才进位置——可观性更弱，需要更多机动）</li>
+</ul>
+<h2 id="九、下一步"><a href="#九、下一步" class="headerlink" title="九、下一步"></a>九、下一步</h2><p>进入 <a href="/02jd/KF_demo/kf_l3_bias.html">L3.2 可观测性与状态增广</a>——哪些状态根本估不出来？</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L3_NAV</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

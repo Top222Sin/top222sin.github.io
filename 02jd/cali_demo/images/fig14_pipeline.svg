@@ -1,0 +1,35 @@
+<svg viewBox="0 0 680 280" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,'Microsoft YaHei',sans-serif">
+  <text x="340" y="26" text-anchor="middle" font-size="15" font-weight="500" fill="#1a202c">L3.4 全流程工具链（capstone）</text>
+
+  <g font-size="9" text-anchor="middle">
+    <rect x="14"  y="80" width="74" height="38" rx="8" fill="#E6F0FA" stroke="#185FA5"/><text x="51"  y="103" fill="#0c447c">角点检测</text>
+    <rect x="104" y="80" width="74" height="38" rx="8" fill="#E6F0FA" stroke="#185FA5"/><text x="141" y="103" fill="#0c447c">内参 K</text>
+    <!-- 退化闸门 菱形 -->
+    <polygon points="215,99 245,80 275,99 245,118" fill="#FBF1D6" stroke="#BA7517"/><text x="245" y="102" font-size="8" fill="#8a5a0f">退化</text>
+    <rect x="300" y="80" width="74" height="38" rx="8" fill="#E6F0FA" stroke="#185FA5"/><text x="337" y="103" fill="#0c447c">手眼 X</text>
+    <rect x="390" y="80" width="74" height="38" rx="8" fill="#E6F0FA" stroke="#185FA5"/><text x="427" y="103" fill="#0c447c">TCP</text>
+    <rect x="480" y="80" width="80" height="38" rx="8" fill="#EAF3DE" stroke="#3B6D11"/><text x="520" y="103" fill="#27500a">误差校验</text>
+    <rect x="576" y="80" width="84" height="38" rx="8" fill="#EAF3DE" stroke="#3B6D11"/><text x="618" y="103" fill="#27500a">端到端验证</text>
+
+    <g stroke="#5f5e5a" stroke-width="1.5" marker-end="url(#ar)">
+      <line x1="88" y1="99" x2="102" y2="99"/><line x1="178" y1="99" x2="213" y2="99"/>
+      <line x1="277" y1="99" x2="298" y2="99"/><line x1="374" y1="99" x2="388" y2="99"/>
+      <line x1="464" y1="99" x2="478" y2="99"/><line x1="560" y1="99" x2="574" y2="99"/>
+    </g>
+    <!-- 退化→告警 -->
+    <path d="M245 118 L245 150 L150 150 L150 200 L90 200 L90 118" fill="none" stroke="#A32D2D" stroke-width="1.5" marker-end="url(#arR)"/>
+    <text x="180" y="145" font-size="9" fill="#a32d2d">条件数&gt;阈值 → 中止并告警</text>
+
+    <!-- 结果 -->
+    <rect x="300" y="200" width="150" height="34" rx="8" fill="#EAF3DE" stroke="#3B6D11"/><text x="375" y="221" fill="#27500a">① 多样运动: PASS</text>
+    <rect x="476" y="200" width="184" height="34" rx="8" fill="#FCEBEB" stroke="#A32D2D"/><text x="568" y="221" fill="#a32d2d">② 纯平移: 退化告警</text>
+    <g stroke="#5f5e5a" stroke-width="1.2" marker-end="url(#ar)">
+      <line x1="520" y1="118" x2="520" y2="198"/><line x1="618" y1="118" x2="568" y2="198"/>
+    </g>
+  </g>
+
+  <defs>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#5f5e5a"/></marker>
+    <marker id="arR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#A32D2D"/></marker>
+  </defs>
+</svg>

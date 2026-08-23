@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3 深度优化（库开发者 &#x2F; 移动端推理引擎）· 第四部分SVE2 迁移：让一份微内核自适应 X2→X4 及 Neoverse，免逐代手写汇编 配套文件：neon_l3_sve2.cpp（可运行实验台：VLA 单路径自适应 VL&#x3D;4&#x2F;8&#x2F;16、谓词消除尾部、真 SVE2 内核守卫、HWCAP 分发）图示文件：images&#x2F;fig11_vla.svg &#x2F; fig12_tile.svg &#x2F; fig13">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3 深度优化（库开发者 &#x2F; 移动端推理引擎）· 第四部分">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/neon_demo/neon_l3_sve2.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3 深度优化（库开发者 &#x2F; 移动端推理引擎）· 第四部分SVE2 迁移：让一份微内核自适应 X2→X4 及 Neoverse，免逐代手写汇编 配套文件：neon_l3_sve2.cpp（可运行实验台：VLA 单路径自适应 VL&#x3D;4&#x2F;8&#x2F;16、谓词消除尾部、真 SVE2 内核守卫、HWCAP 分发）图示文件：images&#x2F;fig11_vla.svg &#x2F; fig12_tile.svg &#x2F; fig13">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.960Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/neon_demo/neon_l3_sve2">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/neon_demo/neon_l3_sve2.html","path":"02jd/neon_demo/neon_l3_sve2.html","title":"L3 深度优化（库开发者 / 移动端推理引擎）· 第四部分"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3 深度优化（库开发者 / 移动端推理引擎）· 第四部分 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%8C%96%EF%BC%88%E5%BA%93%E5%BC%80%E5%8F%91%E8%80%85-%E7%A7%BB%E5%8A%A8%E7%AB%AF%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E%EF%BC%89%C2%B7-%E7%AC%AC%E5%9B%9B%E9%83%A8%E5%88%86"><span class="nav-number">1.</span> <span class="nav-text">L3 深度优化（库开发者 &#x2F; 移动端推理引擎）· 第四部分</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#SVE2-%E8%BF%81%E7%A7%BB%EF%BC%9A%E8%AE%A9%E4%B8%80%E4%BB%BD%E5%BE%AE%E5%86%85%E6%A0%B8%E8%87%AA%E9%80%82%E5%BA%94-X2%E2%86%92X4-%E5%8F%8A-Neoverse%EF%BC%8C%E5%85%8D%E9%80%90%E4%BB%A3%E6%89%8B%E5%86%99%E6%B1%87%E7%BC%96"><span class="nav-number">1.1.</span> <span class="nav-text">SVE2 迁移：让一份微内核自适应 X2→X4 及 Neoverse，免逐代手写汇编</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E3%80%87%E3%80%81%E5%85%88%E6%A0%A1%E6%AD%A3%E4%B8%80%E4%B8%AA%E5%89%8D%E6%8F%90%EF%BC%88%E5%90%A6%E5%88%99%E6%95%B4%E4%B8%AA%E8%BF%81%E7%A7%BB%E5%8F%99%E4%BA%8B%E6%98%AF%E9%94%99%E7%9A%84%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">〇、先校正一个前提（否则整个迁移叙事是错的）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81SVE-SVE2-%E5%88%B0%E5%BA%95%E6%AF%94%E4%BD%A0%E6%89%8B%E5%86%99-NEON-%E5%BC%BA%E5%9C%A8%E5%93%AA%EF%BC%88%E4%B8%89%E4%B8%AA%E7%9C%9F%E5%AE%9E%E6%94%B6%E7%9B%8A%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">一、SVE &#x2F; SVE2 到底比你手写 NEON 强在哪（三个真实收益）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81VLA-%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B%EF%BC%9A%E5%9D%97%E5%B0%BA%E5%AF%B8%E7%94%B1-svcntw-%E5%86%B3%E5%AE%9A"><span class="nav-number">1.4.</span> <span class="nav-text">二、VLA 编程模型：块尺寸由 svcntw() 决定</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E8%B0%93%E8%AF%8D%E6%B6%88%E9%99%A4%E5%B0%BE%E9%83%A8%E5%BE%AA%E7%8E%AF%EF%BC%88SVE-%E6%9C%80%E9%A6%99%E7%9A%84%E4%B8%80%E7%82%B9%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">三、谓词消除尾部循环（SVE 最香的一点）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E7%9C%9F-SVE-SVE2-%E5%BE%AE%E5%86%85%E6%A0%B8%E9%95%BF%E4%BB%80%E4%B9%88%E6%A0%B7%EF%BC%88%E5%AF%B9%E7%85%A7%E7%AC%AC%E4%B8%89%E9%83%A8%E5%88%86-NEON-8%C3%974%EF%BC%8C%E5%9F%BA%E7%A1%80-SVE-%E5%8D%B3%E5%A4%9F%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">四、真 SVE &#x2F; SVE2 微内核长什么样（对照第三部分 NEON 8×4，基础 SVE 即够）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E8%BF%81%E7%A7%BB%E8%90%BD%E5%9C%B0%EF%BC%9A%E4%B8%89%E8%B7%AF%E5%88%86%E5%8F%91-%E7%BC%96%E8%AF%91"><span class="nav-number">1.7.</span> <span class="nav-text">五、迁移落地：三路分发 + 编译</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E4%BB%8E-NEON-8%C3%974-%E5%88%B0-SVE-VLA-%E7%9A%84-10-%E6%AD%A5%E6%B8%85%E5%8D%95"><span class="nav-number">1.8.</span> <span class="nav-text">六、从 NEON 8×4 到 SVE VLA 的 10 步清单</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E6%94%B6%E5%8F%A3%EF%BC%9AL3-%E5%9B%9B%E9%83%A8%E5%88%86%E5%85%A8%E4%B8%B2%E8%81%94"><span class="nav-number">1.9.</span> <span class="nav-text">七、收口：L3 四部分全串联</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3 深度优化（库开发者 / 移动端推理引擎）· 第四部分
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/neon_demo/">NEON_DEMO</a></li>
+            <li>NEON_L3_SVE2</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-深度优化（库开发者-移动端推理引擎）·-第四部分"><a href="#L3-深度优化（库开发者-移动端推理引擎）·-第四部分" class="headerlink" title="L3 深度优化（库开发者 / 移动端推理引擎）· 第四部分"></a>L3 深度优化（库开发者 / 移动端推理引擎）· 第四部分</h1><h2 id="SVE2-迁移：让一份微内核自适应-X2→X4-及-Neoverse，免逐代手写汇编"><a href="#SVE2-迁移：让一份微内核自适应-X2→X4-及-Neoverse，免逐代手写汇编" class="headerlink" title="SVE2 迁移：让一份微内核自适应 X2→X4 及 Neoverse，免逐代手写汇编"></a>SVE2 迁移：让一份微内核自适应 X2→X4 及 Neoverse，免逐代手写汇编</h2><blockquote>
+<p>配套文件：<code>neon_l3_sve2.cpp</code>（可运行实验台：VLA 单路径自适应 VL=4/8/16、谓词消除尾部、真 SVE2 内核守卫、HWCAP 分发）<br>图示文件：<code>images/fig11_vla.svg</code> / <code>fig12_tile.svg</code> / <code>fig13_predicate.svg</code> / <code>fig14_dispatch.svg</code>（可直接嵌入 markdown）<br>浏览器预览：<code>neon_l3_sve2_diagrams.html</code><br>串联：第一部分（寄存器/调度）+ 第二部分（微架构 ILP/带宽）+ 第三部分（GEMM 微内核）→ 本部分把它们从”逐代 NEON 汇编”升级到”一份 SVE/SVE2 自适应内核”（基础 SVE 指令，V1 与 X2+ 通用）</p>
+</blockquote>
+<hr>
+<h2 id="〇、先校正一个前提（否则整个迁移叙事是错的）"><a href="#〇、先校正一个前提（否则整个迁移叙事是错的）" class="headerlink" title="〇、先校正一个前提（否则整个迁移叙事是错的）"></a>〇、先校正一个前提（否则整个迁移叙事是错的）</h2><p>你原话是”自适应 A76/X1/X2”。这里有个硬事实必须先钉死：</p>
+<p><strong>A76 / A78 / X1 这一代是 Armv8.2~8.4，没有 SVE 单元。</strong> 但「SVE 是 Armv9 专属」是错的——<strong>基础 SVE 从 Armv8.2-A 起就是可选扩展</strong>（Neoverse-V1 = Armv8.4-A + SVE，仅 SVE、非 SVE2）；<strong>SVE2 才是 Armv9 的标配超集</strong>（X2/X3/X4、A710、Neoverse N2/V2）。</p>
+<table>
+<thead>
+<tr>
+<th>核</th>
+<th>架构</th>
+<th>SVE2?</th>
+<th>实现向量长度(典型)</th>
+<th>走哪条路</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Cortex-A76</td>
+<td>Armv8.2</td>
+<td>❌ 无</td>
+<td>—（固定 128b NEON）</td>
+<td>NEON 8×4 手写</td>
+</tr>
+<tr>
+<td>Cortex-A78</td>
+<td>Armv8.2</td>
+<td>❌ 无</td>
+<td>—</td>
+<td>NEON 8×4 手写</td>
+</tr>
+<tr>
+<td>Cortex-X1</td>
+<td>Armv8.2</td>
+<td>❌ 无</td>
+<td>—</td>
+<td>NEON 8×4 手写</td>
+</tr>
+<tr>
+<td>Cortex-X2</td>
+<td>Armv9.0</td>
+<td>✅</td>
+<td>128-bit（VL=4）</td>
+<td>SVE2 一份</td>
+</tr>
+<tr>
+<td>Cortex-A710</td>
+<td>Armv9.0</td>
+<td>✅</td>
+<td>128-bit（VL=4）</td>
+<td>SVE2 一份</td>
+</tr>
+<tr>
+<td>Neoverse-N2</td>
+<td>Armv9.0</td>
+<td>✅</td>
+<td>128-bit（VL=4）</td>
+<td>SVE2 一份</td>
+</tr>
+<tr>
+<td>Neoverse-V1</td>
+<td>Armv8.4-A</td>
+<td>❌ 无 SVE2（仅 SVE）</td>
+<td>256-bit（VL=8）</td>
+<td>SVE 一份（非 SVE2）</td>
+</tr>
+<tr>
+<td>Cortex-X3/X4</td>
+<td>Armv9.x</td>
+<td>✅</td>
+<td>128 / 256-bit</td>
+<td>SVE2 一份</td>
+</tr>
+<tr>
+<td>Neoverse-V2</td>
+<td>Armv9.2</td>
+<td>✅</td>
+<td>256-bit（VL=8）</td>
+<td>SVE2 一份</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>⚠️ 架构版本澄清：Neoverse-<strong>V1</strong> 是 <strong>Armv8.4-A + SVE（第一代）</strong>——它是首款带 SVE 的 Neoverse（2×256b 向量单元），但<strong>不是 SVE2</strong>；Neoverse-<strong>V2</strong> 才是 <strong>Armv9.0-A + SVE2</strong>。两者向量长度同为 256-bit，但指令集代际不同（SVE vs SVE2）。Cortex-X1 基础架构是 <strong>Armv8.2-A</strong>（额外实现 Armv8.4-A 的 dotprod 扩展），故无 SVE。</p>
+</blockquote>
+<p><strong>诚实结论（三路，不是两路）：</strong></p>
+<ul>
+<li>A76/A78/X1 这一代**不存在”SVE 自适应”**，它只能用 NEON（128-bit 固定），且每换一代芯片、每换一个不对称维度，都得手写/调整汇编。</li>
+<li>“一份内核免逐代手写汇编”的红利，<strong>发生在 V1→X4 之间</strong>——它们的向量长度由硅决定、且彼此不同（128 / 256 / 512-bit），但<strong>同一份 VLA 源码全部适配</strong>。</li>
+<li><strong>关键澄清</strong>：本部分 FP32 VLA 内核只用<strong>基础 SVE</strong> 指令（<code>svld1</code>/<code>svmla</code>/<code>svwhilelt</code>/<code>svdup</code>），所以 <strong>V1（基础 SVE）与 X2/V2/X4（SVE2）跑的是同一份</strong>；SVE2 作为超集，额外提供的是 <strong>int8 <code>svdot</code> 矩阵乘</strong>（int8 GEMM/量化见第五部分），对 FP32 GEMM 本身不影响。</li>
+<li>工程上的真正形态是<strong>三路分发</strong>：<code>HWCAP2_SVE2</code> 置位 → 走 SVE2 内核（X2/V2/X4）；仅 <code>HWCAP_SVE</code> 置位（无 SVE2）→ 走<strong>基础 SVE</strong> 内核守住 <strong>V1</strong>；两者皆无 → 走 A76/A78/X1 的 NEON 内核。三份代码各写一次，但 V1 与 X2+ 都复用同一份 VLA 源码。</li>
+</ul>
+<hr>
+<h2 id="一、SVE-SVE2-到底比你手写-NEON-强在哪（三个真实收益）"><a href="#一、SVE-SVE2-到底比你手写-NEON-强在哪（三个真实收益）" class="headerlink" title="一、SVE / SVE2 到底比你手写 NEON 强在哪（三个真实收益）"></a>一、SVE / SVE2 到底比你手写 NEON 强在哪（三个真实收益）</h2><p>很多人以为 SVE2 只是”更宽”。错。最值钱的是<strong>编程模型</strong>：</p>
+<p><strong>① VLA（Vector-Length Agnostic，向量长度未知）</strong><br>编译期你<strong>不知道</strong>目标核的向量多长。代码里不写死 128-bit，而是用 <code>svcntw()</code> 在<strong>运行时</strong>问”本核一向量装几个 float”。于是同一份 <code>.c</code>，在 X2(4)、V1(8)、X4(16) 上各自跑满，无需重编、无需重汇。</p>
+<p><strong>② 谓词执行（Predication）</strong><br><code>svwhilelt_b32(0, nr)</code> 生成一个”前 nr 位为真、其余为假”的掩码 <code>pg</code>。每个 SVE 指令都带 <code>pg</code>：假位<strong>不执行、不写、不越界</strong>。于是 N 不是 4 的倍数时，<strong>主循环直接处理尾部，不再写一段标量 remainder</strong>——这是消除”逐代补尾”脏代码的关键。</p>
+<p><strong>③ 一份二进制跨核</strong><br><code>svld1_f32(pg, ptr)</code> / <code>svmla_f32(pg, ...)</code> / <code>svst1_f32(pg, ...)</code> 全带谓词，语义与 VL 无关。你写一次，X2/V1/X4/Neoverse 全吃。</p>
+<blockquote>
+<p>⚠️ 这一段讲的是<strong>基础 SVE 的编程模型</strong>（VLA + 谓词 + 不透明类型）。本部分的 FP32 内核（<code>svld1</code>/<code>svmla</code>/<code>svwhilelt</code>/<code>svdup</code>）全是<strong>基础 SVE</strong> 指令——<strong>V1（仅 SVE）和 X2/V2/X4（SVE2）跑的是同一份</strong>。SVE2 作为超集额外给的是 int8 <code>svdot</code> 矩阵乘（见第五部分），对 FP32 GEMM 本身不产生影响。所以”一份二进制跨核”从 <strong>V1（基础 SVE）</strong> 就开始了，并非从 SVE2 才开始。</p>
+</blockquote>
+<div align="center">
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 300" font-family="Menlo, Consolas, monospace" font-size="12">
+  <rect x="0" y="0" width="680" height="300" fill="#fbfcfe"></rect>
+  <text x="20" y="22" font-size="14" font-weight="bold" fill="#1f2933">图一：NEON 逐代手写 vs SVE/SVE2 一份自适应</text>
+
+  <!-- NEON side -->
+  <rect x="20" y="45" width="300" height="230" rx="6" fill="#fff7ed" stroke="#fb923c"></rect>
+  <text x="170" y="66" fill="#9a3412" font-weight="bold" text-anchor="middle">NEON / ASIMD（Armv8.x，无 SVE）</text>
+  <g font-size="11">
+    <rect x="40" y="80" width="260" height="30" fill="#fff" stroke="#fb923c"></rect><text x="50" y="100" fill="#7c2d12">A76 内核  (128b, 手写 8×4)</text>
+    <rect x="40" y="118" width="260" height="30" fill="#fff" stroke="#fb923c"></rect><text x="50" y="138" fill="#7c2d12">A78 内核  (128b, 手写 8×4)</text>
+    <rect x="40" y="156" width="260" height="30" fill="#fff" stroke="#fb923c"></rect><text x="50" y="176" fill="#7c2d12">X1  内核  (128b, 手写 8×4)</text>
+  </g>
+  <text x="170" y="212" fill="#9a3412" text-anchor="middle">每代一份汇编</text>
+  <text x="170" y="230" fill="#9a3412" text-anchor="middle">尾部还各写 remainder</text>
+  <text x="170" y="256" fill="#b91c1c" font-weight="bold" text-anchor="middle">维护成本 ∝ 核数 × 维度</text>
+
+  <!-- SVE side -->
+  <rect x="360" y="45" width="300" height="230" rx="6" fill="#ecfdf5" stroke="#10b981"></rect>
+  <text x="510" y="66" fill="#065f46" font-weight="bold" text-anchor="middle">SVE / SVE2（VLA，基础 SVE 即够）</text>
+  <g font-size="11">
+    <rect x="380" y="80" width="260" height="30" fill="#fff" stroke="#10b981"></rect><text x="390" y="100" fill="#065f46">X2  内核  ← 同一份 .c（VL=4，SVE2）</text>
+    <rect x="380" y="118" width="260" height="30" fill="#fff" stroke="#10b981"></rect><text x="390" y="138" fill="#065f46">V1  内核  ← 同一份 .c（VL=8，基础 SVE）</text>
+    <rect x="380" y="156" width="260" height="30" fill="#fff" stroke="#10b981"></rect><text x="390" y="176" fill="#065f46">X4  内核  ← 同一份 .c（VL=16，SVE2）</text>
+  </g>
+  <text x="510" y="212" fill="#065f46" text-anchor="middle">NR = svcntw() 运行时决定</text>
+  <text x="510" y="230" fill="#065f46" text-anchor="middle">svwhilelt 掩掉尾部，无 remainder</text>
+  <text x="510" y="256" fill="#047857" font-weight="bold" text-anchor="middle">一份源码，全核通吃</text>
+
+  <!-- arrow -->
+</svg><p>  <defs><marker id="am" markerwidth="9" markerheight="9" refx="7" refy="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#475569"></path></marker></defs><br>  <line x1="320" y1="160" x2="360" y2="160" stroke="#475569" stroke-width="1.6" marker-end="url(#am)"><br>  <text x="340" y="152" fill="#475569" font-size="10" text-anchor="middle">迁移</text><br></line></p>
+</div>
+
+<hr>
+<h2 id="二、VLA-编程模型：块尺寸由-svcntw-决定"><a href="#二、VLA-编程模型：块尺寸由-svcntw-决定" class="headerlink" title="二、VLA 编程模型：块尺寸由 svcntw() 决定"></a>二、VLA 编程模型：块尺寸由 svcntw() 决定</h2><p>第三部分的微内核里，NR（列块）是写死的 4（128-bit NEON 的 4 个 float）。SVE 里（基础 SVE 即可，V1/X2+ 通用）NR 不再写死，而是：</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> VL = svcntw();              <span class="comment">// 运行时：X2→4, V1→8, X4→16</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; N; j += VL) {     <span class="comment">// 主循环按"本核向量长度"切</span></span><br><span class="line">    <span class="type">int</span> nr = (N - j &lt; VL) ? (N - j) : VL;</span><br><span class="line">    <span class="type">svbool_t</span> pg = svwhilelt_b32((<span class="type">uint32_t</span>)<span class="number">0</span>, (<span class="type">uint32_t</span>)nr);   <span class="comment">// 尾部谓词</span></span><br><span class="line">    ...</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>注意 <strong>MR（行块）与 VL 是正交的</strong>：你仍可取 MR=8 把工作集压进 L1（呼应第三部分），而列方向随核自适应。所以”一份 VLA 内核（基础 SVE 指令）”既不是”更宽就自动满”，也不是”随便写”——<strong>ILP 深度 ≥ 端口数</strong>这条铁律不变，只是现在累加器行数 = MR、每行的向量长度 = VL，二者解耦，调优空间更干净。</p>
+<div align="center">
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 300" font-family="Menlo, Consolas, monospace" font-size="12">
+  <rect x="0" y="0" width="680" height="300" fill="#fbfcfe"></rect>
+  <text x="20" y="22" font-size="14" font-weight="bold" fill="#1f2933">图二：同一份 VLA 内核，NR 随 svcntw() 变化，MR 不变</text>
+
+  <!-- kernel code box -->
+  <rect x="20" y="40" width="210" height="220" rx="6" fill="#fff" stroke="#64748b"></rect>
+  <text x="125" y="60" fill="#334155" font-weight="bold" text-anchor="middle">一份 VLA 内核（SVE）</text>
+  <g font-size="10" fill="#475569">
+    <text x="32" y="84">const int VL = svcntw();</text>
+    <text x="32" y="104">for j in 0..N step VL:</text>
+    <text x="32" y="124">  pg = svwhilelt(0, nr)</text>
+    <text x="32" y="144">  c[0..MR] = svdup(0)</text>
+    <text x="32" y="164">  for k:</text>
+    <text x="32" y="184">    b = svld1(pg, B)</text>
+    <text x="32" y="204">    c[r]+=svmla(pg,a,b)</text>
+    <text x="32" y="224">  svst1(pg, C, c)</text>
+  </g>
+  <text x="125" y="252" fill="#64748b" font-size="10" text-anchor="middle">代码完全不变</text>
+
+  <!-- three tile variants -->
+  <g font-size="11">
+    <text x="300" y="58" fill="#334155">X2  (VL=4):</text>
+    <rect x="300" y="66" width="160" height="40" fill="#dbeafe" stroke="#3b82f6"></rect>
+    <g fill="#1e40af"><text x="316" y="92">MR=8 × NR=4 累加器棋盘</text></g>
+
+</g></svg><pre><code>&lt;text x="300" y="128" fill="#334155"&gt;V1  (VL=8):&lt;/text&gt;
+&lt;rect x="300" y="136" width="280" height="40" fill="#dcfce7" stroke="#22c55e"/&gt;
+&lt;text x="440" y="161" fill="#166534" text-anchor="middle"&gt;MR=8 × NR=8&lt;/text&gt;
+
+&lt;text x="300" y="198" fill="#334155"&gt;X4  (VL=16):&lt;/text&gt;
+&lt;rect x="300" y="206" width="360" height="40" fill="#fae8ff" stroke="#c026d3"/&gt;
+&lt;text x="480" y="231" fill="#86198f" text-anchor="middle"&gt;MR=8 × NR=16&lt;/text&gt;
+</code></pre>
+  
+  <text x="480" y="270" fill="#64748b" font-size="10" text-anchor="middle">→ 列方向自适应，行方向(MR)由你定，工作集仍进 L1</text>
+
+<p>  <defs><marker id="bm" markerwidth="9" markerheight="9" refx="7" refy="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#475569"></path></marker></defs><br>  <line x1="230" y1="150" x2="298" y2="150" stroke="#475569" stroke-width="1.6" marker-end="url(#bm)"><br></line></p>
+</div>
+
+<hr>
+<h2 id="三、谓词消除尾部循环（SVE-最香的一点）"><a href="#三、谓词消除尾部循环（SVE-最香的一点）" class="headerlink" title="三、谓词消除尾部循环（SVE 最香的一点）"></a>三、谓词消除尾部循环（SVE 最香的一点）</h2><p>第三部分 NEON 8×4 内核，当 N 不是 4 的倍数时，必须补一段<strong>标量 remainder 循环</strong>：</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// NEON 固定 4 lane：主循环 + 手写尾部</span></span><br><span class="line"><span class="keyword">for</span> (j = <span class="number">0</span>; j + <span class="number">4</span> &lt;= N; j += <span class="number">4</span>) { <span class="comment">/* 4 路向量 */</span> }</span><br><span class="line"><span class="keyword">for</span> (; j &lt; N; ++j) {               <span class="comment">// 标量补 N%4 —— 每代每维度都来一遍</span></span><br><span class="line">    <span class="keyword">for</span> (r) <span class="keyword">for</span> (k) C[...] += A[...]*B[...];</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p>SVE 用一个谓词把尾部”缝”进主循环：</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">svbool_t</span> pg = svwhilelt_b32((<span class="type">uint32_t</span>)<span class="number">0</span>, (<span class="type">uint32_t</span>)nr);  <span class="comment">// 前 nr 位真</span></span><br><span class="line"><span class="type">svfloat32_t</span> b = svld1_f32(pg, &amp;B[k*N + j]);              <span class="comment">// 假位不载入/不越界</span></span><br><span class="line">c = svmla_f32(pg, c, a, b);                              <span class="comment">// 假位不更新</span></span><br><span class="line">svst1_f32(pg, &amp;C[...], c);                               <span class="comment">// 假位不写回</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>一个循环处理全部 N，零 remainder。</strong> 这是”免逐代手写汇编”在工程上最实在的减负——不对称维度（N、K、甚至 batch）不再逼你写一堆补丁循环。</p>
+<div align="center">
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 280" font-family="Menlo, Consolas, monospace" font-size="12">
+  <rect x="0" y="0" width="680" height="280" fill="#fbfcfe"></rect>
+  <text x="20" y="22" font-size="14" font-weight="bold" fill="#1f2933">图三：尾部处理 —— NEON 补 remainder vs SVE2 谓词一体化</text>
+
+  <!-- NEON -->
+  <rect x="20" y="40" width="300" height="210" rx="6" fill="#fff7ed" stroke="#fb923c"></rect>
+  <text x="170" y="62" fill="#9a3412" font-weight="bold" text-anchor="middle">NEON（固定 4 lane）</text>
+  <rect x="40" y="74" width="260" height="60" rx="4" fill="#ffedd5" stroke="#fb923c"></rect>
+  <text x="170" y="98" fill="#7c2d12" text-anchor="middle">主循环：j += 4</text>
+  <text x="170" y="118" fill="#7c2d12" text-anchor="middle">处理 4 的倍数部分</text>
+  <text x="170" y="158" fill="#b91c1c" font-weight="bold" text-anchor="middle">↓ 手写 remainder</text>
+  <rect x="40" y="170" width="260" height="60" rx="4" fill="#fee2e2" stroke="#ef4444"></rect>
+  <text x="170" y="194" fill="#991b1b" text-anchor="middle">标量 for：补 N%4</text>
+  <text x="170" y="214" fill="#991b1b" text-anchor="middle">每行都来一遍 → 脏</text>
+
+  <!-- SVE2 -->
+  <rect x="360" y="40" width="300" height="210" rx="6" fill="#ecfdf5" stroke="#10b981"></rect>
+  <text x="510" y="62" fill="#065f46" font-weight="bold" text-anchor="middle">SVE2（VLA + 谓词）</text>
+  <rect x="380" y="74" width="260" height="140" rx="4" fill="#d1fae5" stroke="#10b981"></rect>
+  <text x="510" y="100" fill="#065f46" text-anchor="middle">单一主循环：j += svcntw()</text>
+  <text x="510" y="124" fill="#065f46" text-anchor="middle">pg = svwhilelt(0, nr)</text>
+  <text x="510" y="148" fill="#065f46" text-anchor="middle">载入/乘加/写回 全部带 pg</text>
+  <text x="510" y="178" fill="#047857" text-anchor="middle">尾部由"假位"自然屏蔽</text>
+  <text x="510" y="202" fill="#047857" font-weight="bold" text-anchor="middle">零 remainder 循环</text>
+
+</svg><p>  <defs><marker id="cm" markerwidth="9" markerheight="9" refx="7" refy="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#475569"></path></marker></defs><br>  <line x1="320" y1="145" x2="360" y2="145" stroke="#475569" stroke-width="1.6" marker-end="url(#cm)"><br></line></p>
+</div>
+
+<hr>
+<h2 id="四、真-SVE-SVE2-微内核长什么样（对照第三部分-NEON-8×4，基础-SVE-即够）"><a href="#四、真-SVE-SVE2-微内核长什么样（对照第三部分-NEON-8×4，基础-SVE-即够）" class="headerlink" title="四、真 SVE / SVE2 微内核长什么样（对照第三部分 NEON 8×4，基础 SVE 即够）"></a>四、真 SVE / SVE2 微内核长什么样（对照第三部分 NEON 8×4，基础 SVE 即够）</h2><p>第三部分的 NEON 8×4 内核（节选）：</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">float32x4_t</span> c0..c7 = vdupq_n_f32(<span class="number">0</span>);          <span class="comment">// 8 个 128-bit 累加器</span></span><br><span class="line"><span class="keyword">for</span> k:</span><br><span class="line">    <span class="type">float32x4_t</span> b = vld1q_f32(&amp;B[...]);        <span class="comment">// 固定 4 lane</span></span><br><span class="line">    c0 = vmlaq_f32(c0, vdupq_n_f32(a0), b);</span><br><span class="line">    ...</span><br></pre></td></tr></tbody></table></figure>
+
+<p>SVE（基础 SVE 指令，SVE2 兼容）一一对应、但全部”去长度化”且带谓词：</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> VL = svcntw();                       <span class="comment">// 运行时列数</span></span><br><span class="line"><span class="type">svbool_t</span> pg = svwhilelt_b32(<span class="number">0</span>, nr);            <span class="comment">// 尾部谓词</span></span><br><span class="line"><span class="type">svfloat32_t</span> c0..c7 = svdup_n_f32(<span class="number">0</span>);           <span class="comment">// 不透明、长度未知</span></span><br><span class="line"><span class="keyword">for</span> k:</span><br><span class="line">    <span class="type">svfloat32_t</span> b = svld1_f32(pg, &amp;B[...]);     <span class="comment">// 谓词载入</span></span><br><span class="line">    c0 = svmla_f32(pg, c0, svdup_n_f32(a0), b);<span class="comment">// 谓词乘加</span></span><br><span class="line">    ...</span><br><span class="line">svst1_f32(pg, &amp;C[...], c0..c7);                <span class="comment">// 谓词写回</span></span><br></pre></td></tr></tbody></table></figure>
+<p><strong>语义同构</strong>：广播 A 行 × 取 B 面板 × 8 路乘加。区别仅在”长度未知 + 谓词”——而正是这两点，让它从”只能跑 A76 的 128-bit”变成”X2/V1/X4 通吃”。</p>
+<hr>
+<h2 id="五、迁移落地：三路分发-编译"><a href="#五、迁移落地：三路分发-编译" class="headerlink" title="五、迁移落地：三路分发 + 编译"></a>五、迁移落地：三路分发 + 编译</h2><p>一份二进制里同时含 NEON / 基础 SVE / SVE2 三份内核，运行时靠 HWCAP 选路（注意 SVE2 在 <code>AT_HWCAP2</code> 而非 <code>AT_HWCAP</code>）：</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/auxv.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;asm/hwcap.h&gt;</span>          <span class="comment">// HWCAP_SVE / HWCAP2_SVE2</span></span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span> hw  = getauxval(AT_HWCAP);    <span class="comment">// HWCAP_SVE：基础 SVE 或 SVE2 都置位</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span> hw2 = getauxval(AT_HWCAP2);   <span class="comment">// HWCAP2_SVE2：仅 SVE2 置位（V1 不置位）</span></span><br><span class="line"><span class="keyword">if</span>      (hw2 &amp; HWCAP2_SVE2) gemm_sve_8xvl(A,B,C,...);   <span class="comment">// X2/V2/X4（SVE2：同份 FP32 内核 + 额外 int8 svdot）</span></span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (hw  &amp; HWCAP_SVE)    gemm_sve_8xvl(A,B,C,...);   <span class="comment">// V1（基础 SVE，VL=8）</span></span><br><span class="line"><span class="keyword">else</span>                         gemm_neon_8x4(A,B,C,...);    <span class="comment">// A76/A78/X1</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>编译（关键：基础 SVE 与 SVE2 各自独立编译单元，避免污染 NEON 路）：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># NEON 路（守住老核 A76/A78/X1）</span></span><br><span class="line">aarch64-linux-gnu-g++ -O3 -march=armv8-a+simd   -c neon_gemm_neon.cpp</span><br><span class="line"><span class="comment"># 基础 SVE 路（V1，Armv8.4-A+SVE）</span></span><br><span class="line">aarch64-linux-gnu-g++ -O3 -march=armv8.4-a+sve  -c neon_gemm_sve.cpp</span><br><span class="line"><span class="comment"># SVE2 路（新核 X2/V2/X4，单独 TU）</span></span><br><span class="line">aarch64-linux-gnu-g++ -O3 -march=armv9-a+sve2  -c neon_gemm_sve2.cpp</span><br><span class="line"><span class="comment"># 链接</span></span><br><span class="line">aarch64-linux-gnu-g++ -O3 neon_gemm_neon.o neon_gemm_sve.o neon_gemm_sve2.o main.o -o gemm</span><br></pre></td></tr></tbody></table></figure>
+<p>或用 GCC/Clang 的 <strong>函数多版本化</strong>：基础 SVE 用 <code>__attribute__((target("sve")))</code>、SVE2 用 <code>__attribute__((target("sve2")))</code>，分发由 <code>if (host_has_sve2()) / else if (host_has_sve())</code> 完成。</p>
+<div align="center">
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 300" font-family="Menlo, Consolas, monospace" font-size="12">
+  <rect x="0" y="0" width="680" height="300" fill="#fbfcfe"></rect>
+  <text x="20" y="22" font-size="14" font-weight="bold" fill="#1f2933">图四：三路分发 —— HWCAP 决定走 NEON / 基础 SVE(V1) / SVE2</text>
+
+  <rect x="240" y="36" width="200" height="38" rx="6" fill="#fff" stroke="#475569"></rect>
+  <text x="340" y="60" fill="#334155" text-anchor="middle">getauxval(AT_HWCAP/2)</text>
+
+  <defs>
+    <marker id="dm" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#475569"></path></marker>
+  </defs>
+  <line x1="280" y1="74" x2="130" y2="118" stroke="#475569" stroke-width="1.6" marker-end="url(#dm)"></line>
+  <line x1="340" y1="74" x2="340" y2="118" stroke="#475569" stroke-width="1.6" marker-end="url(#dm)"></line>
+  <line x1="400" y1="74" x2="550" y2="118" stroke="#475569" stroke-width="1.6" marker-end="url(#dm)"></line>
+
+</svg><p>  <text x="130" y="112" fill="#b91c1c" text-anchor="middle">皆无 SVE</text><br>  <text x="340" y="112" fill="#0891b2" text-anchor="middle">HWCAP_SVE（非 SVE2）</text><br>  <text x="550" y="112" fill="#047857" text-anchor="middle">HWCAP2_SVE2</text></p>
+  <rect x="40" y="124" width="180" height="120" rx="6" fill="#fff7ed" stroke="#fb923c">
+  <text x="130" y="150" fill="#9a3412" font-weight="bold" text-anchor="middle">NEON 内核</text>
+  <text x="130" y="176" fill="#7c2d12" text-anchor="middle">A76 / A78 / X1</text>
+  <text x="130" y="200" fill="#7c2d12" text-anchor="middle">-march=armv8-a+simd</text>
+  <text x="130" y="224" fill="#7c2d12" text-anchor="middle">固定 128-bit，逐代手写</text>
+
+  <rect x="250" y="124" width="180" height="120" rx="6" fill="#e0f2fe" stroke="#0891b2">
+  <text x="340" y="150" fill="#0e7490" font-weight="bold" text-anchor="middle">基础 SVE 内核</text>
+  <text x="340" y="176" fill="#155e75" text-anchor="middle">Neoverse-V1（VL=8）</text>
+  <text x="340" y="200" fill="#155e75" text-anchor="middle">-march=armv8.4-a+sve</text>
+  <text x="340" y="224" fill="#155e75" text-anchor="middle">FP32 VLA 同份内核</text>
+
+  <rect x="460" y="124" width="180" height="120" rx="6" fill="#ecfdf5" stroke="#10b981">
+  <text x="550" y="150" fill="#065f46" font-weight="bold" text-anchor="middle">SVE2 内核</text>
+  <text x="550" y="176" fill="#065f46" text-anchor="middle">X2 / V2 / X4 / N2</text>
+  <text x="550" y="200" fill="#065f46" text-anchor="middle">-march=armv9-a+sve2</text>
+  <text x="550" y="224" fill="#065f46" text-anchor="middle">同份 FP32 + 额外 svdot</text>
+
+
+</rect></rect></rect></div>
+
+<hr>
+<h2 id="六、从-NEON-8×4-到-SVE-VLA-的-10-步清单"><a href="#六、从-NEON-8×4-到-SVE-VLA-的-10-步清单" class="headerlink" title="六、从 NEON 8×4 到 SVE VLA 的 10 步清单"></a>六、从 NEON 8×4 到 SVE VLA 的 10 步清单</h2><table>
+<thead>
+<tr>
+<th>#</th>
+<th>维度</th>
+<th>NEON 8×4</th>
+<th>SVE VLA（基础 SVE，V1/X2+ 通用）</th>
+<th>SVE2（Armv9 超集）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>头文件</td>
+<td><code>&lt;arm_neon.h&gt;</code></td>
+<td>追加 <code>&lt;arm_sve.h&gt;</code></td>
+<td>同左</td>
+</tr>
+<tr>
+<td>2</td>
+<td>编译</td>
+<td><code>-march=armv8-a+simd</code></td>
+<td><code>-march=armv8.4-a+sve</code>（V1）</td>
+<td><code>-march=armv9-a+sve2</code>（X2/V2/X4）</td>
+</tr>
+<tr>
+<td>3</td>
+<td>类型</td>
+<td><code>float32x4_t</code></td>
+<td><code>svfloat32_t</code>（不透明）</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>4</td>
+<td>块尺寸</td>
+<td><code>NR</code> 写死 4</td>
+<td><code>NR = svcntw()</code>（运行时）</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>5</td>
+<td>载入</td>
+<td><code>vld1q_f32</code></td>
+<td><code>svld1_f32(pg, ...)</code></td>
+<td>同左</td>
+</tr>
+<tr>
+<td>6</td>
+<td>乘加</td>
+<td><code>vmlaq_f32</code></td>
+<td><code>svmla_f32(pg, ...)</code></td>
+<td>同左</td>
+</tr>
+<tr>
+<td>7</td>
+<td>广播</td>
+<td><code>vdupq_n_f32</code></td>
+<td><code>svdup_n_f32</code>（语义一致）</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>8</td>
+<td>尾部</td>
+<td>手写 <code>for</code> 补 N%4</td>
+<td><code>svwhilelt_b32</code> 掩掉，主循环一体</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>9</td>
+<td>分发</td>
+<td>—</td>
+<td>三路：<code>HWCAP2_SVE2</code>→SVE2 / <code>HWCAP_SVE</code>→基础SVE / 否→NEON</td>
+<td>同左（SVE2 优先级最高）</td>
+</tr>
+<tr>
+<td>10</td>
+<td>收益</td>
+<td>每代重写</td>
+<td>一份 VLA 内核覆盖 <strong>V1(8)/X2(4)/X4(16)</strong></td>
+<td>同份 FP32 内核 + <strong>额外 int8 <code>svdot</code> 矩阵乘</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="七、收口：L3-四部分全串联"><a href="#七、收口：L3-四部分全串联" class="headerlink" title="七、收口：L3 四部分全串联"></a>七、收口：L3 四部分全串联</h2><ul>
+<li><strong>第一部分（手写汇编/调度/寄存器）</strong>：你掌控 V0–V31、AAPCS 免保存区、ILP 调度。→ SVE/SVE2 里寄存器仍 32 个、调度同理，但<strong>你不再为每代手敲 asm</strong>。</li>
+<li><strong>第二部分（微架构 ILP/带宽）</strong>：累加器数 ≥ 端口数、工作集进 L1。→ SVE/SVE2 里 <code>svcntw()</code> 直接告诉你端口能吃多宽，<code>MR</code> 仍由你把工作集压进 L1。</li>
+<li><strong>第三部分（GEMM 微内核）</strong>：8×4 喂满 A76 双管、16×4 喂满 X1 四管、分块+打包。→ SVE/SVE2 把”8×4 / 16×4 两个手写内核”合并成”一份 8×VL”，NR 随核自适应。</li>
+<li><strong>第四部分（SVE/SVE2 迁移）</strong>：VLA + 谓词 + 三路分发，一份源码跨 V1→X4 及 Neoverse，免逐代汇编。</li>
+</ul>
+<blockquote>
+<p>一句话肌肉记忆：<strong>SVE 不是”更宽的 NEON”，是”长度未知 + 谓词执行”的编程模型升级。基础 SVE 从 Armv8.2 起就可选（V1 = Armv8.4-A+SVE），SVE2 才是 Armv9 超集（额外给 int8 <code>svdot</code>）；V1 走基础 SVE、X2/V2/X4 走 SVE2，A76/A78/X1 仍交给 NEON——工程上用 HWCAP 三路分发，一份 VLA 内核（基础 SVE 指令）让 V1(8)/X2(4)/X4(16) 通吃。</strong></p>
+</blockquote>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/neon_demo/">NEON_DEMO</a></li>
+            <li>NEON_L3_SVE2</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

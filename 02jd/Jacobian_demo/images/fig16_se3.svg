@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#ffffff"/>
+
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L3.5 SE(3) 完整位姿雅可比：刚体运动的李群与伴随</text>
+  <text x="20" y="56" font-size="12" fill="#555">刚体位姿 T=(R,p)∈SE(3)，运动用 twist ξ=(ω,v)∈se(3) 经 exp/log 互转；伴随 Ad(T) 把 body 系 twist 映射到 world 系</text>
+
+  <!-- world + body frames -->
+  <g transform="translate(40,90)">
+    <!-- world frame -->
+    <line x1="30" y1="120" x2="90" y2="120" stroke="#dc2626" stroke-width="3" marker-end="url(#arW)"/>
+    <text x="92" y="124" font-size="11" fill="#991b1b">X</text>
+    <line x1="30" y1="120" x2="30" y2="60" stroke="#059669" stroke-width="3" marker-end="url(#arW)"/>
+    <text x="34" y="58" font-size="11" fill="#065f46">Y</text>
+    <!-- translation vector p -->
+    <line x1="30" y1="120" x2="150" y2="70" stroke="#92400e" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arP)"/>
+    <text x="78" y="92" font-size="10" fill="#92400e">p</text>
+    <!-- body frame at end of p -->
+    <line x1="150" y1="70" x2="200" y2="70" stroke="#2563eb" stroke-width="3" marker-end="url(#arB)"/>
+    <text x="202" y="74" font-size="11" fill="#1e40af">x</text>
+    <line x1="150" y1="70" x2="150" y2="20" stroke="#2563eb" stroke-width="3" marker-end="url(#arB)"/>
+    <text x="154" y="18" font-size="11" fill="#1e40af">y</text>
+    <circle cx="150" cy="70" r="5" fill="#1d4ed8"/>
+    <text x="158" y="84" font-size="10" fill="#1d4ed8">Body</text>
+    <text x="10" y="140" font-size="10" fill="#64748b">World</text>
+  </g>
+  <defs>
+    <marker id="arW" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#475569"/></marker>
+    <marker id="arB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="arP" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#92400e"/></marker>
+  </defs>
+
+  <!-- formula block -->
+  <g transform="translate(330,90)" font-size="13" fill="#222">
+    <rect x="-10" y="-14" width="360" height="150" rx="8" fill="#f8fafc" stroke="#e5e7eb"/>
+    <text x="0" y="6" font-weight="bold" fill="#1e40af">指数 / 对数</text>
+    <text x="0" y="28">T = exp_se3(ξ)   ,   ξ = log_se3(T)</text>
+    <text x="0" y="54" font-weight="bold" fill="#92400e">伴随 Ad(T)</text>
+    <text x="0" y="76">Ad(T) ξ = [ R   0  ] [ ω ]</text>
+    <text x="34" y="94">      [ [p]R  R ] [ v ]</text>
+    <text x="0" y="118" font-weight="bold" fill="#059669">点作用雅可比</text>
+    <text x="0" y="140">∂(T x)/∂ξ = [ −R[x]^  R ] · J_r(ξ)</text>
+  </g>
+
+  <!-- bottom identity band -->
+  <g transform="translate(40,270)" font-size="12" fill="#444">
+    <text x="0" y="0">① 指数映射 exp_se3：用 Rodrigues 公式算 R，V 矩阵算平移；验证 roundtrip ||log(exp(ξ))−ξ|| ≈ 1e-16</text>
+    <text x="0" y="22">② 共轭恒等式：d/dt Log(T₂ exp(tξ) T₂⁻¹)|₀ = Ad(T₂)·ξ  （约 5e-17）</text>
+    <text x="0" y="44">③ 右雅可比 J_r(ξ)=∂Log(exp(ξ)exp(δ))/∂δ|₀，决定姿态对 twist 扰动的线性化</text>
+  </g>
+</svg>

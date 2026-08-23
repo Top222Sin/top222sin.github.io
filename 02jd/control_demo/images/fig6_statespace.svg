@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 340" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="340" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L2.1 状态空间与 e^{At}</text>
+  <defs><marker id="a3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#555"/></marker></defs>
+  <rect x="40" y="55" width="300" height="120" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="190.0" y="81" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">x' = Ax + Bu</text>
+  <text x="190.0" y="103" font-size="12.5" font-weight="normal" fill="#1e3a8a" text-anchor="middle">通用语言：MIMO/内部状态/数字实现</text>
+  <text x="190.0" y="125" font-size="12.5" font-weight="normal" fill="#1e3a8a" text-anchor="middle">Ad=e^{AT}, Bd=∫e^{Aτ}dτ·B (ZOH)</text>
+  <rect x="360" y="55" width="300" height="120" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="510.0" y="81" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">demo 验证</text>
+  <text x="510.0" y="103" font-size="12.5" font-weight="normal" fill="#14532d" text-anchor="middle">旋转矩阵 1e-16 · 双积分器精确</text>
+  <text x="510.0" y="125" font-size="12.5" font-weight="normal" fill="#14532d" text-anchor="middle">ZOH vs RK4: 3e-13（300 步）</text>
+  <rect x="40" y="200" width="610" height="110" rx="9" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="345.0" y="226" font-size="13" font-weight="bold" fill="#7f1d1d" text-anchor="middle">⚠ 坑：Bd 级数分母是 (k+1)·k! 而非 (k+1)</text>
+  <text x="345.0" y="248" font-size="12.5" font-weight="normal" fill="#7f1d1d" text-anchor="middle">漏 k! → k=2 项差 2 倍, 藏在 1e-5 量级</text>
+  <text x="345.0" y="270" font-size="12.5" font-weight="normal" fill="#7f1d1d" text-anchor="middle">靠 A⁻¹(Ad−I)B 精确式交叉对拍抓出</text>
+</svg>

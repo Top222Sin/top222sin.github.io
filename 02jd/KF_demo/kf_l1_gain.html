@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L1.3 增益 K 的物理意义：边界行为与稳态 一句话：K ∈ (0,1) 是”信观测还是信模型”的旋钮——r→0 时 K→1（全信观测），r→∞ 时 K→0（全信模型）；稳态 K∞ 由 Riccati 方程唯一决定，与初值无关。   一、K 是什么一维下 K &#x3D; p⁻&#x2F;(p⁻+r)：先验方差占创新方差的比例。直观读法：  K&#x3D;0.8：修正量的 80% 来自观测（观测很准&#x2F;模型很烂） K&#x3D;0.1：">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L1.3 增益 K 的物理意义：边界行为与稳态">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/KF_demo/kf_l1_gain.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L1.3 增益 K 的物理意义：边界行为与稳态 一句话：K ∈ (0,1) 是”信观测还是信模型”的旋钮——r→0 时 K→1（全信观测），r→∞ 时 K→0（全信模型）；稳态 K∞ 由 Riccati 方程唯一决定，与初值无关。   一、K 是什么一维下 K &#x3D; p⁻&#x2F;(p⁻+r)：先验方差占创新方差的比例。直观读法：  K&#x3D;0.8：修正量的 80% 来自观测（观测很准&#x2F;模型很烂） K&#x3D;0.1：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/KF_demo/images/fig3_gain.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.940Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/KF_demo/images/fig3_gain.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/KF_demo/kf_l1_gain">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/KF_demo/kf_l1_gain.html","path":"02jd/KF_demo/kf_l1_gain.html","title":"L1.3 增益 K 的物理意义：边界行为与稳态"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L1.3 增益 K 的物理意义：边界行为与稳态 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L1-3-%E5%A2%9E%E7%9B%8A-K-%E7%9A%84%E7%89%A9%E7%90%86%E6%84%8F%E4%B9%89%EF%BC%9A%E8%BE%B9%E7%95%8C%E8%A1%8C%E4%B8%BA%E4%B8%8E%E7%A8%B3%E6%80%81"><span class="nav-number">1.</span> <span class="nav-text">L1.3 增益 K 的物理意义：边界行为与稳态</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81K-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">1.1.</span> <span class="nav-text">一、K 是什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#K-%E7%9A%84%E6%8E%A8%E5%AF%BC%E7%9B%B4%E8%A7%89%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF-p%E2%81%BB-p%E2%81%BB-r-%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">K 的推导直觉（为什么是 p⁻&#x2F;(p⁻+r)）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E7%A8%B3%E6%80%81%EF%BC%9ARiccati-%E6%96%B9%E7%A8%8B"><span class="nav-number">1.2.</span> <span class="nav-text">二、稳态：Riccati 方程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A8%B3%E6%80%81-Riccati-%E4%B8%8D%E5%8A%A8%E7%82%B9%E7%9A%84%E8%A7%A3%E6%9E%90%E8%A7%A3%EF%BC%88%E4%B8%80%E7%BB%B4%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">稳态 Riccati 不动点的解析解（一维）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81demo-%E7%9A%84-r-%E6%89%AB%E6%8F%8F%E8%A1%A8"><span class="nav-number">1.3.</span> <span class="nav-text">三、demo 的 r 扫描表</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-K%E2%88%9E-%E9%9A%8F-q-%E4%B8%8A%E5%8D%87%EF%BC%88%E6%A8%A1%E5%9E%8B%E5%8F%AF%E4%BF%A1%E5%BA%A6%E7%9A%84%E5%8F%A6%E4%B8%80%E9%9D%A2%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">为什么 K∞ 随 q 上升（模型可信度的另一面）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88kf-l1-gain-cpp%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、代码走读（kf_l1_gain.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.5.</span> <span class="nav-text">五、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">六、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.7.</span> <span class="nav-text">七、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.8.</span> <span class="nav-text">八、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L1.3 增益 K 的物理意义：边界行为与稳态
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L1_GAIN</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L1-3-增益-K-的物理意义：边界行为与稳态"><a href="#L1-3-增益-K-的物理意义：边界行为与稳态" class="headerlink" title="L1.3 增益 K 的物理意义：边界行为与稳态"></a>L1.3 增益 K 的物理意义：边界行为与稳态</h1><blockquote>
+<p>一句话：<strong>K ∈ (0,1) 是”信观测还是信模型”的旋钮</strong>——r→0 时 K→1（全信观测），r→∞ 时 K→0（全信模型）；稳态 K∞ 由 Riccati 方程唯一决定，与初值无关。</p>
+</blockquote>
+<hr>
+<h2 id="一、K-是什么"><a href="#一、K-是什么" class="headerlink" title="一、K 是什么"></a>一、K 是什么</h2><p>一维下 K = p⁻/(p⁻+r)：<strong>先验方差占创新方差的比例</strong>。直观读法：</p>
+<ul>
+<li>K=0.8：修正量的 80% 来自观测（观测很准/模型很烂）</li>
+<li>K=0.1：只修 10%（观测很烂/模型很准）</li>
+</ul>
+<p>极端边界（demo 验证到 1e-9 精度）：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>K</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>r→0（观测无噪声）</td>
+<td>→1</td>
+<td>x 完全跳到观测值 z</td>
+</tr>
+<tr>
+<td>r→∞（观测全是噪声）</td>
+<td>→0</td>
+<td>完全忽略观测，纯预测</td>
+</tr>
+</tbody></table>
+<h3 id="K-的推导直觉（为什么是-p⁻-p⁻-r-）"><a href="#K-的推导直觉（为什么是-p⁻-p⁻-r-）" class="headerlink" title="K 的推导直觉（为什么是 p⁻/(p⁻+r)）"></a>K 的推导直觉（为什么是 p⁻/(p⁻+r)）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">创新 ν = z − x⁻ 的方差 = Var(z) + Var(x⁻) = r + p⁻（独立，L1.2 卷积）</span><br><span class="line">最优修正 = "先验对创新方差的贡献占比" × 创新：</span><br><span class="line">K = p⁻/(p⁻+r)   ← 谁的方差占比大，修正就偏向谁</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>另一种等价读法</strong>（精度视角）：K = 观测精度 / (先验精度 + 观测精度) = (1/r)/(1/p⁻ + 1/r)。<strong>增益 = 观测信息的相对权重</strong>——与 L1.2 的”精度加权平均”完全一致。</p>
+<h2 id="二、稳态：Riccati-方程"><a href="#二、稳态：Riccati-方程" class="headerlink" title="二、稳态：Riccati 方程"></a>二、稳态：Riccati 方程</h2><p>迭代 p ← (1−K)(p+q)，K=(p+q)/(p+q+r) 收敛到唯一不动点 p∞（demo 中 2000 次迭代内收敛，K_k 单调收敛到 K∞，差 &lt; 1e-12）。</p>
+<p><strong>关键结论：K∞ 与初始 p₀ 无关</strong>——滤波器”忘记”初值。这就是工程上敢用固定增益（≈Wiener 滤波器）的理由，L2.1 展开。</p>
+<h3 id="稳态-Riccati-不动点的解析解（一维）"><a href="#稳态-Riccati-不动点的解析解（一维）" class="headerlink" title="稳态 Riccati 不动点的解析解（一维）"></a>稳态 Riccati 不动点的解析解（一维）</h3><p>设稳态<strong>后验</strong>方差 p∞，预测方差 m = p∞+q，增益 K∞ = m/(m+r)。稳态条件：更新后回到 p∞：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">p∞ = (1−K∞)·m  = m·r/(m+r)    代入 m = p∞+q:</span><br><span class="line">p∞(p∞+q+r) = r(p∞+q)  →  p∞² + q·p∞ − r·q = 0</span><br><span class="line">p∞ = (−q + √(q²+4rq))/2   (正根)</span><br><span class="line">K∞ = (p∞+q)/(p∞+q+r)     ← 注意分子是"预测方差"不是 p∞!</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>验证</strong>：q=0.1, r=1 → p∞ = (−0.1+√0.41)/2 = 0.270156，m = 0.370156，K∞ = 0.370156/1.370156 = 0.270156（r=1 时数值上恰有 p∞=K∞；<strong>一般 r≠1 时两者不等</strong>）。demo 输出 0.270297 是迭代 2000 步的浮点收敛值，与解析值差 ~5e-5（收敛判据精度内）——<strong>这是面试高频手算题</strong>：记住 <code>p∞² + q·p∞ − r·q = 0</code> 和 <code>K∞ = (p∞+q)/(p∞+q+r)</code>。</p>
+<h2 id="三、demo-的-r-扫描表"><a href="#三、demo-的-r-扫描表" class="headerlink" title="三、demo 的 r 扫描表"></a>三、demo 的 r 扫描表</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">r      K∞      直觉</span><br><span class="line">0.01   0.9161  紧贴观测</span><br><span class="line">0.1    0.6180  折中</span><br><span class="line">1.0    0.2702  折中</span><br><span class="line">10.0   0.0951  紧贴模型</span><br><span class="line">100.0  0.0311  紧贴模型</span><br></pre></td></tr></tbody></table></figure>
+
+<p>q 固定时 K∞ 随 r 单调下降——调 R 就是在调”滤波器带宽”。</p>
+<h3 id="为什么-K∞-随-q-上升（模型可信度的另一面）"><a href="#为什么-K∞-随-q-上升（模型可信度的另一面）" class="headerlink" title="为什么 K∞ 随 q 上升（模型可信度的另一面）"></a>为什么 K∞ 随 q 上升（模型可信度的另一面）</h3><p>q 大 = 模型噪声大 = 模型不可信 → 相对更信观测 → K 上升。<strong>K 是一个比值旋钮，q/r 一起决定它</strong>——调参时”调 Q 或调 R”是同一根旋钮的两个把手（L1.5 展开）。</p>
+<h2 id="四、代码走读（kf-l1-gain-cpp）"><a href="#四、代码走读（kf-l1-gain-cpp）" class="headerlink" title="四、代码走读（kf_l1_gain.cpp）"></a>四、代码走读（kf_l1_gain.cpp）</h2><ul>
+<li>稳态迭代 + 单调性检查 + 边界极限 + r 扫描表，无随机数（纯确定性分析）。</li>
+</ul>
+<h2 id="五、你会看到什么"><a href="#五、你会看到什么" class="headerlink" title="五、你会看到什么"></a>五、你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">=== L1.3 增益 K：边界行为与稳态 ===</span><br><span class="line">  [demo] p_ss=0.270297  K_inf=0.270297  (q=0.10 r=1.00)</span><br><span class="line">  K_k 收敛到 K∞                       err=0.0e+00 tol=1e-12  PASS</span><br><span class="line">  K 单调(本例递减)                     err=0.0e+00 tol=5e-01  PASS</span><br><span class="line">  r→0  ⇒ K→1 (全信观测)              err=2.7e-09 tol=1e-06  PASS</span><br><span class="line">  r→∞  ⇒ K→0 (全信模型)              err=3.7e-10 tol=1e-06  PASS</span><br><span class="line">=== 4 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img src="/02jd/KF_demo/images/fig3_gain.svg" alt="L1.3 增益 K 的物理意义"></p>
+<h2 id="六、工程落点（真实项目）"><a href="#六、工程落点（真实项目）" class="headerlink" title="六、工程落点（真实项目）"></a>六、工程落点（真实项目）</h2><ul>
+<li><strong>固定增益滤波器（稳态 KF）</strong>：嵌入式里预计算 K∞ 写死，省掉每拍矩阵运算——L2.1 专讲。手机 IMU 姿态、简单温控都是这种。</li>
+<li><strong>调 R 的工程直觉</strong>：GPS 精度标称 2m → R≈4；视觉定位噪声更大 → R 更大。传感器融合的”信任度”就是 R⁻¹。</li>
+<li><strong>自适应增益</strong>：GPS 卫星数变化 → R 实时变化 → K 自适应（L2.1 的”时变 R 场景”）。这也是为什么”固定 K”在真机不总是够用。</li>
+</ul>
+<h2 id="七、自检"><a href="#七、自检" class="headerlink" title="七、自检"></a>七、自检</h2><ul>
+<li>把 q 改大，观察 K∞ 上升（模型更不可信 → 更依赖观测）。</li>
+<li>思考：为什么 K_k 会收敛而不会振荡？（Riccati 是压缩映射）</li>
+<li>手算：q=0.05, r=0.25 的稳态 p∞ 与 K∞（p∞²+0.05p∞−0.0125=0 → p∞≈0.08956，K∞=(0.13956)/(0.38956)≈0.35826——demo 的 K_inf=0.3583 即此）</li>
+</ul>
+<h2 id="八、下一步"><a href="#八、下一步" class="headerlink" title="八、下一步"></a>八、下一步</h2><p>进入 <a href="/02jd/KF_demo/kf_l1_cv.html">L1.4 常速模型 CV-KF</a>——把五公式升级到矩阵形式。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L1_GAIN</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

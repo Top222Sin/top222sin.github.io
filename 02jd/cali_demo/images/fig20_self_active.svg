@@ -1,0 +1,95 @@
+<svg viewBox="0 0 680 300" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,'Microsoft YaHei',sans-serif">
+  <text x="340" y="26" text-anchor="middle" font-size="15" font-weight="500" fill="#1a202c">L4.3 自标定 / 主动标定（无需标定板 + D-最优运动规划）</text>
+
+  <defs>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#5f5e5a"/></marker>
+    <marker id="arB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#185FA5"/></marker>
+    <marker id="arR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#A32D2D"/></marker>
+    <marker id="arG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#3B6D11"/></marker>
+  </defs>
+
+  <!-- ============ Panel A: 自标定原理 ============ -->
+  <text x="175" y="52" text-anchor="middle" font-size="11" fill="#0c447c">① 自标定：旋转相机 → ∞ 单应 H∞ 只含内参 K</text>
+
+  <!-- 旋转轨迹圆 -->
+  <ellipse cx="150" cy="135" rx="78" ry="55" fill="none" stroke="#cbd5e0" stroke-width="1" stroke-dasharray="4 3"/>
+  <!-- 相机本体 -->
+  <rect x="118" y="112" width="64" height="46" rx="6" fill="#E6F0FA" stroke="#185FA5" stroke-width="1.4"/>
+  <circle cx="150" cy="135" r="15" fill="#ffffff" stroke="#185FA5" stroke-width="1.4"/>
+  <circle cx="150" cy="135" r="5" fill="#185FA5"/>
+  <text x="150" y="180" text-anchor="middle" font-size="9" fill="#0c447c">相机绕光心旋转（内部结构固定）</text>
+
+  <!-- 三组旋转箭头 + 轴标 -->
+  <path d="M150 80 A55 55 0 0 1 197 107" fill="none" stroke="#185FA5" stroke-width="2" marker-end="url(#arB)"/>
+  <text x="206" y="96" font-size="9" fill="#0c447c">Rz(0.30)</text>
+  <path d="M205 135 A55 40 0 0 1 205 175" fill="none" stroke="#3B6D11" stroke-width="2" marker-end="url(#arG)"/>
+  <text x="214" y="158" font-size="9" fill="#27500a">Rx(0.43)</text>
+  <path d="M150 190 A78 55 0 0 1 110 158" fill="none" stroke="#A32D2D" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="78" y="200" font-size="9" fill="#a32d2d">Ry(0.25)</text>
+
+  <!-- 方程盒 -->
+  <rect x="40" y="210" width="230" height="26" rx="6" fill="#E6F0FA" stroke="#185FA5"/>
+  <text x="155" y="227" text-anchor="middle" font-size="10" fill="#0c447c">H∞ = K·R·K⁻¹  ⇒  K·R = H∞·K</text>
+  <rect x="40" y="244" width="230" height="40" rx="6" fill="#EAF3DE" stroke="#3B6D11"/>
+  <text x="155" y="262" text-anchor="middle" font-size="9.5" fill="#27500a">3 组异轴旋转 → 线性方程回收 (fx,fy,cx,cy)</text>
+  <text x="155" y="277" text-anchor="middle" font-size="9.5" fill="#27500a">闭环残差 ~5.7e-14（无需标定板）</text>
+
+  <!-- ============ Panel B: 主动标定 / D-最优 ============ -->
+  <text x="505" y="52" text-anchor="middle" font-size="11" fill="#0c447c">② 主动标定 / D-最优运动规划（观测矩阵秩）</text>
+
+  <!-- 同 z 轴（退化） -->
+  <rect x="355" y="70" width="140" height="64" rx="6" fill="#FBEAEA" stroke="#A32D2D"/>
+  <text x="425" y="90" text-anchor="middle" font-size="10" fill="#a32d2d">同 z 轴（退化）</text>
+  <text x="425" y="107" text-anchor="middle" font-size="9" fill="#a32d2d">σ_min = 0</text>
+  <text x="425" y="123" text-anchor="middle" font-size="9" fill="#a32d2d">亏秩 = 1（一自由度不可观）</text>
+  <!-- 4×4 矩阵字形（末行灰=秩亏） -->
+  <g transform="translate(383,146)">
+    <rect x="0"  y="0"  width="11" height="11" fill="#A32D2D"/>
+    <rect x="11" y="0"  width="11" height="11" fill="#A32D2D"/>
+    <rect x="22" y="0"  width="11" height="11" fill="#A32D2D"/>
+    <rect x="33" y="0"  width="11" height="11" fill="#A32D2D"/>
+    <rect x="0"  y="11" width="11" height="11" fill="#A32D2D"/>
+    <rect x="11" y="11" width="11" height="11" fill="#A32D2D"/>
+    <rect x="22" y="11" width="11" height="11" fill="#A32D2D"/>
+    <rect x="33" y="11" width="11" height="11" fill="#A32D2D"/>
+    <rect x="0"  y="22" width="11" height="11" fill="#A32D2D"/>
+    <rect x="11" y="22" width="11" height="11" fill="#A32D2D"/>
+    <rect x="22" y="22" width="11" height="11" fill="#A32D2D"/>
+    <rect x="33" y="22" width="11" height="11" fill="#A32D2D"/>
+    <rect x="0"  y="33" width="11" height="11" fill="#e2c9c9"/>
+    <rect x="11" y="33" width="11" height="11" fill="#e2c9c9"/>
+    <rect x="22" y="33" width="11" height="11" fill="#e2c9c9"/>
+    <rect x="33" y="33" width="11" height="11" fill="#e2c9c9"/>
+  </g>
+  <text x="425" y="214" text-anchor="middle" font-size="8" fill="#5f5e5a">AᵀA 秩 = 3</text>
+
+  <!-- 异轴（满秩） -->
+  <rect x="505" y="70" width="140" height="64" rx="6" fill="#EAF3DE" stroke="#3B6D11"/>
+  <text x="575" y="90" text-anchor="middle" font-size="10" fill="#27500a">异轴 z+x+y（满秩）</text>
+  <text x="575" y="107" text-anchor="middle" font-size="9" fill="#27500a">σ_min = 0.42</text>
+  <text x="575" y="123" text-anchor="middle" font-size="9" fill="#27500a">4 自由度全部可观</text>
+  <g transform="translate(533,146)">
+    <rect x="0"  y="0"  width="11" height="11" fill="#3B6D11"/>
+    <rect x="11" y="0"  width="11" height="11" fill="#3B6D11"/>
+    <rect x="22" y="0"  width="11" height="11" fill="#3B6D11"/>
+    <rect x="33" y="0"  width="11" height="11" fill="#3B6D11"/>
+    <rect x="0"  y="11" width="11" height="11" fill="#3B6D11"/>
+    <rect x="11" y="11" width="11" height="11" fill="#3B6D11"/>
+    <rect x="22" y="11" width="11" height="11" fill="#3B6D11"/>
+    <rect x="33" y="11" width="11" height="11" fill="#3B6D11"/>
+    <rect x="0"  y="22" width="11" height="11" fill="#3B6D11"/>
+    <rect x="11" y="22" width="11" height="11" fill="#3B6D11"/>
+    <rect x="22" y="22" width="11" height="11" fill="#3B6D11"/>
+    <rect x="33" y="22" width="11" height="11" fill="#3B6D11"/>
+    <rect x="0"  y="33" width="11" height="11" fill="#3B6D11"/>
+    <rect x="11" y="33" width="11" height="11" fill="#3B6D11"/>
+    <rect x="22" y="33" width="11" height="11" fill="#3B6D11"/>
+    <rect x="33" y="33" width="11" height="11" fill="#3B6D11"/>
+  </g>
+  <text x="575" y="214" text-anchor="middle" font-size="8" fill="#5f5e5a">AᵀA 秩 = 4</text>
+
+  <!-- 结论条 -->
+  <rect x="355" y="232" width="290" height="50" rx="6" fill="#E6F0FA" stroke="#185FA5"/>
+  <text x="500" y="251" text-anchor="middle" font-size="9.5" fill="#0c447c">det 比（异轴/同z）&gt; 10× → 信息量差一个数量级</text>
+  <text x="500" y="268" text-anchor="middle" font-size="9.5" fill="#0c447c">三组异轴 &gt; 两组：主动规划让标定更稳更准</text>
+</svg>

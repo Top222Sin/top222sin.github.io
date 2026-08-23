@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L2.5 误差校验方案（Error check）⭐ L1 让你”能跑通五个标定”。L2.1–L2.4 让你”知道误差从哪来”。但标完之后，怎么用一句话回答”这套参数到底准不准”？ 本篇给出一套可落地的量化指标，并在合成数据上闭环对拍。   一、为什么要专门做误差校验标定算法（无论是 OpenCV 的 calibrateCamera 还是自写的 solveHandEye）都会返回一个”解”。但：">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L2.5 误差校验方案（Error check）⭐">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cali_demo/cali_l2_error_check.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L2.5 误差校验方案（Error check）⭐ L1 让你”能跑通五个标定”。L2.1–L2.4 让你”知道误差从哪来”。但标完之后，怎么用一句话回答”这套参数到底准不准”？ 本篇给出一套可落地的量化指标，并在合成数据上闭环对拍。   一、为什么要专门做误差校验标定算法（无论是 OpenCV 的 calibrateCamera 还是自写的 solveHandEye）都会返回一个”解”。但：">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.910Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cali_demo/cali_l2_error_check">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cali_demo/cali_l2_error_check.html","path":"02jd/cali_demo/cali_l2_error_check.html","title":"L2.5 误差校验方案（Error check）⭐"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L2.5 误差校验方案（Error check）⭐ | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L2-5-%E8%AF%AF%E5%B7%AE%E6%A0%A1%E9%AA%8C%E6%96%B9%E6%A1%88%EF%BC%88Error-check%EF%BC%89%E2%AD%90"><span class="nav-number">1.</span> <span class="nav-text">L2.5 误差校验方案（Error check）⭐</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E4%B8%93%E9%97%A8%E5%81%9A%E8%AF%AF%E5%B7%AE%E6%A0%A1%E9%AA%8C"><span class="nav-number">1.1.</span> <span class="nav-text">一、为什么要专门做误差校验</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AF%E5%B7%AE%E6%A0%A1%E9%AA%8C%E7%9A%84%E2%80%9D%E5%88%86%E5%B7%A5%E2%80%9D%EF%BC%88%E6%AF%8F%E4%B8%AA%E6%8C%87%E6%A0%87%E5%9B%9E%E7%AD%94%E4%BB%80%E4%B9%88%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">误差校验的”分工”（每个指标回答什么）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%9B%9B%E7%B1%BB%E6%8C%87%E6%A0%87"><span class="nav-number">1.2.</span> <span class="nav-text">二、四类指标</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%91%A0-%E5%86%85%E5%8F%82%E8%AF%AF%E5%B7%AE%EF%BC%9A%E9%80%90%E5%9B%BE%E9%87%8D%E6%8A%95%E5%BD%B1%E8%AF%AF%E5%B7%AE"><span class="nav-number">1.2.1.</span> <span class="nav-text">① 内参误差：逐图重投影误差</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%91%A1-%E6%89%8B%E7%9C%BC%E8%AF%AF%E5%B7%AE%EF%BC%9AAX-XB-%E4%B8%80%E8%87%B4%E6%80%A7%E6%AE%8B%E5%B7%AE-%E7%9C%9F%E5%80%BC%E6%AF%94%E5%AF%B9"><span class="nav-number">1.2.2.</span> <span class="nav-text">② 手眼误差：AX&#x3D;XB 一致性残差 + 真值比对</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%91%A2-TCP-%E8%AF%AF%E5%B7%AE%EF%BC%9A%E5%A4%9A%E7%82%B9%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">1.2.3.</span> <span class="nav-text">③ TCP 误差：多点一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%91%A3-%E7%B3%BB%E7%BB%9F%E6%80%A7-vs-%E9%9A%8F%E6%9C%BA%E6%AE%8B%E5%B7%AE%EF%BC%9A%E6%8C%89%E5%8D%8A%E5%BE%84%E5%88%86%E7%AE%B1-%E2%AD%90%EF%BC%88%E6%9C%AC%E7%AF%87%E6%A0%B8%E5%BF%83%EF%BC%89"><span class="nav-number">1.2.4.</span> <span class="nav-text">④ 系统性 vs 随机残差：按半径分箱 ⭐（本篇核心）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%8F%E6%9C%BA%E5%99%AA%E5%A3%B0%E2%80%9D%E4%B8%AD%E5%BF%83%E2%89%88%E8%BE%B9%E7%BC%98%E2%80%9D%E7%9A%84%E9%80%82%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="nav-number">1.2.5.</span> <span class="nav-text">随机噪声”中心≈边缘”的适用条件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E7%B3%BB%E7%BB%9F%E6%80%A7-vs-%E9%9A%8F%E6%9C%BA%EF%BC%9A%E5%B7%A5%E7%A8%8B%E6%84%8F%E4%B9%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、系统性 vs 随机：工程意义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88cali-l2-error-check-cpp%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、代码走读（cali_l2_error_check.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.6.</span> <span class="nav-text">六、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L2.5 误差校验方案（Error check）⭐
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L2_ERROR_CHECK</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L2-5-误差校验方案（Error-check）⭐"><a href="#L2-5-误差校验方案（Error-check）⭐" class="headerlink" title="L2.5 误差校验方案（Error check）⭐"></a>L2.5 误差校验方案（Error check）⭐</h1><blockquote>
+<p>L1 让你”能跑通五个标定”。L2.1–L2.4 让你”知道误差从哪来”。但<strong>标完之后，怎么用一句话回答”这套参数到底准不准”？</strong> 本篇给出一套可落地的量化指标，并在合成数据上闭环对拍。</p>
+</blockquote>
+<hr>
+<h2 id="一、为什么要专门做误差校验"><a href="#一、为什么要专门做误差校验" class="headerlink" title="一、为什么要专门做误差校验"></a>一、为什么要专门做误差校验</h2><p>标定算法（无论是 OpenCV 的 <code>calibrateCamera</code> 还是自写的 <code>solveHandEye</code>）都会返回一个”解”。但：</p>
+<ul>
+<li>重投影误差 <code>0.3 px</code> 不代表末端引导误差 <code>0.3 mm</code>——两者量纲和单位都不同。</li>
+<li>一个小的<strong>系统性</strong>残差（如边缘径向残差偏大）比一个大的<strong>随机</strong>残差更危险：它意味着<strong>模型本身就错了</strong>（畸变阶数不够、板不平、相机非理想针孔）。</li>
+<li>不同环节（内参 / 手眼 / TCP）的误差会<strong>层层传递</strong>，需要各自的指标分别监控。</li>
+</ul>
+<p>本 demo 把四个环节的误差指标化，全部用合成数据 + 真值对拍，跑完即出 <code>PASS/FAIL</code>。</p>
+<h3 id="误差校验的”分工”（每个指标回答什么）"><a href="#误差校验的”分工”（每个指标回答什么）" class="headerlink" title="误差校验的”分工”（每个指标回答什么）"></a>误差校验的”分工”（每个指标回答什么）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">内参指标: "相机投影模型对不对"（重投影误差, 像素单位）</span><br><span class="line">手眼指标: "X 自洽吗/与真值差多少"（AX=XB 残差, °/mm）</span><br><span class="line">TCP 指标: "尖点真的共点吗"（多点一致性, mm）</span><br><span class="line">系统性检验: "模型对还是纯噪声"（中心 vs 边缘分箱）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程认知</strong>：四类指标缺一不可——只看 RMS 会被过拟合骗（L2.1），只看真值对拍需要合成数据（真机没真值），只看自洽会被”都错但自洽”骗（噪声大时 AX=XB 残差小但 X 偏）。</p>
+<h2 id="二、四类指标"><a href="#二、四类指标" class="headerlink" title="二、四类指标"></a>二、四类指标</h2><h3 id="①-内参误差：逐图重投影误差"><a href="#①-内参误差：逐图重投影误差" class="headerlink" title="① 内参误差：逐图重投影误差"></a>① 内参误差：逐图重投影误差</h3><figure class="highlight text"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">逐图重投影误差 = mean ‖ projectPoints(K,D,obj,rvec,tvec) - 检测角点 ‖</span><br><span class="line">               ├─ 均值（整体水平）</span><br><span class="line">               ├─ 最大（最差一帧）</span><br><span class="line">               └─ 标准差（是否稳定）</span><br></pre></td></tr></tbody></table></figure>
+<p><code>calibrateCamera</code> 返回的全局 RMS 是所有观测点重投影残差的均方根（<code>RMS = sqrt(Σ‖eᵢ‖²/N)</code>，按点聚合而非简单逐图平均）；<strong>逐图统计</strong>能暴露”某一帧异常”。本 demo 同时报均值 / 最大 / 总体 RMS，并断言 <code>RMS&lt;2px &amp;&amp; max&lt;3px</code>（示例阈值，实际应按图像分辨率/视场/应用容差标定）。</p>
+<h3 id="②-手眼误差：AX-XB-一致性残差-真值比对"><a href="#②-手眼误差：AX-XB-一致性残差-真值比对" class="headerlink" title="② 手眼误差：AX=XB 一致性残差 + 真值比对"></a>② 手眼误差：AX=XB 一致性残差 + 真值比对</h3><p>手眼解 <code>X</code> 必须使所有相对运动满足 <code>A_i · X ≈ X · B_i</code>。定义一致性残差：</p>
+<figure class="highlight text"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">E_i = A_i · X · B_i⁻¹ · X⁻¹</span><br><span class="line">旋转残差 = ‖log(E_i.R)‖ (°)</span><br><span class="line">平移残差 = ‖E_i.t‖ (mm)</span><br></pre></td></tr></tbody></table></figure>
+<ul>
+<li><strong>一致性残差</strong>（不依赖真值）：验证你解出来的 <code>X</code> 内部自洽。</li>
+<li><strong>真值比对</strong>（需合成真值）：<code>X_est</code> 与 <code>X_gt</code> 直接比，给出”绝对误差”。<br>本 demo 同时打印两者，证明”自洽”≠”正确”的边界（噪声大时两者都会涨）。</li>
+</ul>
+<h3 id="③-TCP-误差：多点一致性"><a href="#③-TCP-误差：多点一致性" class="headerlink" title="③ TCP 误差：多点一致性"></a>③ TCP 误差：多点一致性</h3><p>四点法求出的 <code>x</code>（TCP）应满足：任意法兰位姿 <code>R_i,t_i</code> 下，尖点都落在世界同一点：</p>
+<figure class="highlight text"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">p_world ≈ R_i · x + t_i   (∀ i)</span><br><span class="line">TCP 误差 = max_i ‖(R_i·x+t_i) - (R_0·x+t_0)‖</span><br></pre></td></tr></tbody></table></figure>
+<p>本 demo 用 8 个姿态求 <code>x</code>，再算最远两点尖点距离，断言 <code>&lt;1mm</code>。</p>
+<h3 id="④-系统性-vs-随机残差：按半径分箱-⭐（本篇核心）"><a href="#④-系统性-vs-随机残差：按半径分箱-⭐（本篇核心）" class="headerlink" title="④ 系统性 vs 随机残差：按半径分箱 ⭐（本篇核心）"></a>④ 系统性 vs 随机残差：按半径分箱 ⭐（本篇核心）</h3><p>这是区分”模型错”与”纯噪声”的关键手法：</p>
+<ol>
+<li>计算每检测角点到主点 <code>(cx,cy)</code> 的归一化半径 <code>r = ‖p-(cx,cy)‖ / R_max</code>。</li>
+<li>分箱：<strong>中心</strong> <code>r&lt;0.35</code> vs <strong>边缘</strong> <code>r&gt;0.7</code>。</li>
+<li>比较两组重投影误差：<ul>
+<li><strong>随机噪声</strong>（模型对、只有检测噪声）→ 中心与边缘误差<strong>相近</strong>（均匀）。</li>
+<li><strong>模型错</strong>（如真实 6 参畸变却只标 4 参）→ 边缘误差<strong>远大于</strong>中心（系统性，呈径向趋势）。</li>
+</ul>
+</li>
+</ol>
+<h3 id="随机噪声”中心≈边缘”的适用条件"><a href="#随机噪声”中心≈边缘”的适用条件" class="headerlink" title="随机噪声”中心≈边缘”的适用条件"></a>随机噪声”中心≈边缘”的适用条件</h3><p>该结论只在<strong>同方差像素噪声 + 角点检测精度与位置无关 + 分箱样本充足</strong>的仿真/理想条件下成立；真实场景中边缘角点常因畸变、模糊、斜视而随机误差更大——“中心≈边缘”应作为<strong>合成同方差噪声下的基线判据</strong>，实机应用需谨慎。</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">随机噪声: 角点检测噪声与位置无关 → 中心/边缘残差同分布 → 比值≈1</span><br><span class="line">模型错: 真实畸变含更高阶项(r⁶), 模型没它 → 残差随半径高次增长</span><br><span class="line">        → 边缘(r→1)显著高于中心(r&lt;0.35) → 比值 &gt;&gt; 1</span><br><span class="line">        （具体比值取决于畸变系数/图像尺寸/噪声, 不是固定"数十倍"）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程价值</strong>：这是”诊断”而非”验收”——比值大说明<strong>换模型</strong>（加畸变项），比值≈1 说明<strong>加帧/降噪</strong>。把”该换模型”和”该加数据”区分开，是标定调试的核心技能（注意：主点偏移通常表现为整图偏置残差场而非单纯径向趋势，诊断要结合残差矢量图，不只看半径分箱）。</p>
+<h2 id="三、系统性-vs-随机：工程意义"><a href="#三、系统性-vs-随机：工程意义" class="headerlink" title="三、系统性 vs 随机：工程意义"></a>三、系统性 vs 随机：工程意义</h2><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>含义</th>
+<th>处置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>残差大但中心≈边缘</td>
+<td>纯随机噪声（角点检测、机器人读数）</td>
+<td>加帧 / 降噪，无法靠换模型改善</td>
+</tr>
+<tr>
+<td>边缘 ≫ 中心</td>
+<td>径向系统性残差（畸变阶数不足 / 板不平 / 主点偏）</td>
+<td><strong>换更全的畸变模型</strong>、查标定板平整度</td>
+</tr>
+<tr>
+<td>某方向系统性偏大</td>
+<td>切向/薄棱镜项或相机非正</td>
+<td>加切向参数、检查相机安装</td>
+</tr>
+<tr>
+<td>单图异常大</td>
+<td>该帧检测/读数坏点</td>
+<td>进 L3.2 鲁棒剔除</td>
+</tr>
+</tbody></table>
+<h2 id="四、代码走读（cali-l2-error-check-cpp）"><a href="#四、代码走读（cali-l2-error-check-cpp）" class="headerlink" title="四、代码走读（cali_l2_error_check.cpp）"></a>四、代码走读（cali_l2_error_check.cpp）</h2><ul>
+<li>顶部复用 <code>solveHandEye</code>（Park–Martin 式单位四元数分离求解；<strong>不是 Daniilidis 对偶四元数</strong>，术语见 L1.5/L2.2 注记）。</li>
+<li>① <code>calibrateCamera</code> → 逐图 <code>projectPoints</code> 残差（mean/max/std）。</li>
+<li>② 合成 <code>X_gt</code>，配 <code>A_i=G_i⁻¹G_{i+1}</code>、<code>B_i=T_iT_{i+1}⁻¹</code>（眼在手上配对方向），解 <code>X_est</code> 后算一致性残差 + 真值误差。</li>
+<li>③ 四点法解 <code>x</code>，算多点尖点最大距离。</li>
+<li>④ <code>radialTest(lambda)</code>：参数化真实畸变 <code>dreal</code> 与是否加随机噪声，分箱报中心/边缘误差，<code>C++ lambda</code> 实现可复用。</li>
+</ul>
+<h2 id="五、工程落点（真实项目）"><a href="#五、工程落点（真实项目）" class="headerlink" title="五、工程落点（真实项目）"></a>五、工程落点（真实项目）</h2><ul>
+<li><strong>easy_handeye</strong>：标定后输出 <code>hand-eye error</code>（AX=XB 残差）——就是本 demo 的指标②。</li>
+<li><strong>Halcon</strong> <code>calibration report</code>：每图残差 + 总体 RMS——指标①的行业版。</li>
+<li><strong>机器人产线验收</strong>：端到端”够取验证”（L3.1）才是最终指标——本 demo 的指标是”中间体检”，L3.1 是”期末考”。</li>
+<li><strong>与 08robot</strong>：手眼标定后，用”机器人照着标定结果去抓一个已知点”验证——误差 &lt;1mm 才上线（L3.1 的够取验证就是它）。</li>
+</ul>
+<h2 id="六、下一步"><a href="#六、下一步" class="headerlink" title="六、下一步"></a>六、下一步</h2><p>进 <a href="/02jd/cali_demo/cali_l3_validation.html">L3.1 验证方案 ⭐</a>：把”参数准不准”升级为”机器人按这套参数干活，实际偏差多少”的端到端验证。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L2_ERROR_CHECK</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

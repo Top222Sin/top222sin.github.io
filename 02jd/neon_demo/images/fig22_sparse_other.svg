@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 250">
+  <rect width="680" height="250" fill="#fbfdff"/>
+  <text x="20" y="28" font-size="15" font-weight="bold" fill="#1a2b4a">图四 · 稀疏矩阵：gather 难矢量化 → 结构化(块/BSR) 救场</text>
+  <g font-size="11" fill="#22324f">
+    <rect x="30" y="55" width="180" height="70" rx="6" fill="#fee2e2" stroke="#ef4444"/>
+    <text x="120" y="78" text-anchor="middle" font-weight="bold" fill="#b91c1c">CSR SpMV（标量）</text>
+    <text x="120" y="98" text-anchor="middle">y[r]=Σ val[p]·x[col[p]]</text>
+    <text x="120" y="116" text-anchor="middle">gather 不连续 → NEON 用不上</text>
+    <rect x="250" y="55" width="200" height="70" rx="6" fill="#eafaf0" stroke="#22c55e"/>
+    <text x="350" y="78" text-anchor="middle" font-weight="bold" fill="#15803d">BSR 4×4 块稀疏（NEON）</text>
+    <text x="350" y="98" text-anchor="middle">块内稠密 → vld1q + vmlaq</text>
+    <text x="350" y="116" text-anchor="middle">4 路点积并行，重新吃饱</text>
+    <rect x="480" y="55" width="180" height="70" rx="6" fill="#f3e8ff" stroke="#a855f7"/>
+    <text x="570" y="78" text-anchor="middle" font-weight="bold" fill="#7e22ce">2:4 结构化稀疏</text>
+    <text x="570" y="98" text-anchor="middle">每 4 保 2，规则可矢量化</text>
+    <text x="570" y="116" text-anchor="middle">NCNN/MNN 推理常用</text>
+  </g>
+  <text x="20" y="155" font-size="11" fill="#445">其他典型 NEON 数学（§六对照）：</text>
+  <g font-size="10.5" fill="#22324f">
+    <text x="20" y="178">• softmax：neon_exp（2^(x)=2^ix·2^frac 位技巧） + vaddvq 规约 + vdivq</text>
+    <text x="20" y="196">• layer_norm：vaddvq 求均值 → vmlaq 求方差 → vrsqrteq + 牛顿 → vmlaq/vaddq 仿射</text>
+    <text x="20" y="214">• sigmoid：1/(1+exp(−x))；relu：vmaxq_n(0)；L2：vsubq→vmlaq→vaddvq→sqrt</text>
+    <text x="20" y="232">• 快速倒数：vrecpeq + vrecpsq（1~2 次牛顿），归一化/缩放免除法</text>
+  </g>
+</svg>

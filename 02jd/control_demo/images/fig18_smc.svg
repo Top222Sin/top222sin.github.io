@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L3 滑模控制 SMC：等效控制 + 切换 + 边界层 + 匹配扰动不变性</text>
+  <defs><marker id="a18" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#555"/></marker></defs>
+
+  <rect x="30" y="50" width="290" height="105" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="45" y="74" font-size="13" font-weight="bold" fill="#1e3a8a">二阶对象 + 滑模面</text>
+  <text x="45" y="96" font-size="12" fill="#1e3a8a">ẍ = −2ẋ + u + d(t)</text>
+  <text x="45" y="116" font-size="12" fill="#1e3a8a">s = ẋ + λx  (λ=3)</text>
+  <text x="45" y="138" font-size="12" font-weight="bold" fill="#1e3a8a">d 匹配(经控制通道)</text>
+
+  <rect x="360" y="50" width="290" height="105" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="375" y="74" font-size="13" font-weight="bold" fill="#14532d">控制律</text>
+  <text x="375" y="96" font-size="12" fill="#14532d">u = u_eq + u_sw</text>
+  <text x="375" y="116" font-size="12" fill="#14532d">u_eq=−ẋ ; u_sw=−η·sat(s/φ)</text>
+  <text x="375" y="138" font-size="12" font-weight="bold" fill="#14532d">η=1 &gt; |d| ⇒ 到达</text>
+
+  <path d="M320,102 L360,102" stroke="#555" stroke-width="2" fill="none" marker-end="url(#a18)"/>
+  <text x="322" y="96" font-size="11" fill="#555">设计</text>
+
+  <rect x="30" y="200" width="290" height="105" rx="9" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="45" y="224" font-size="13" font-weight="bold" fill="#78350f">到达 + 抖振抑制</text>
+  <text x="45" y="246" font-size="12" fill="#78350f">s·ṡ&lt;0 ⇒ 滑向 s=0</text>
+  <text x="45" y="266" font-size="12" fill="#78350f">边界层 φ=0.1 柔化切换</text>
+  <text x="45" y="288" font-size="12" font-weight="bold" fill="#78350f">抖振 RMS ↓3.7×</text>
+
+  <rect x="360" y="200" width="290" height="105" rx="9" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+  <text x="375" y="224" font-size="13" font-weight="bold" fill="#581c87">匹配扰动不变性</text>
+  <text x="375" y="246" font-size="12" fill="#581c87">滑模面 s=0 上 d 被完全抵消</text>
+  <text x="375" y="266" font-size="12" fill="#581c87">末半程 max|x|: SMC 0.017</text>
+  <text x="375" y="288" font-size="12" font-weight="bold" fill="#581c87">PD 留稳态偏移 0.056</text>
+
+  <path d="M175,155 L175,200" stroke="#555" stroke-width="2" fill="none" marker-end="url(#a18)"/>
+  <path d="M505,155 L505,200" stroke="#555" stroke-width="2" fill="none" marker-end="url(#a18)"/>
+</svg>

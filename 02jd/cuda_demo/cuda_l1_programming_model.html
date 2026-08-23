@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="一、理解编程模型：kernel、grid&#x2F;block&#x2F;thread、SIMT 对应笔记本：01CUDA基础学习.docx → L1 能跑（入门） → 1、理解编程模型：kernel、grid&#x2F;block&#x2F;thread、SIMT配套代码：cuda_l1_programming_model.cpp（向量加 + 索引演示两个 kernel，注释即讲解）双轨：本篇以 CUDA 为主，OpenCL 对照见第">
+<meta property="og:type" content="website">
+<meta property="og:title" content="一、理解编程模型：kernel、grid&#x2F;block&#x2F;thread、SIMT">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l1_programming_model.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="一、理解编程模型：kernel、grid&#x2F;block&#x2F;thread、SIMT 对应笔记本：01CUDA基础学习.docx → L1 能跑（入门） → 1、理解编程模型：kernel、grid&#x2F;block&#x2F;thread、SIMT配套代码：cuda_l1_programming_model.cpp（向量加 + 索引演示两个 kernel，注释即讲解）双轨：本篇以 CUDA 为主，OpenCL 对照见第">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/cuda_demo/images/fig1_programming_model.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/cuda_demo/images/fig1_programming_model.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l1_programming_model">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cuda_demo/cuda_l1_programming_model.html","path":"02jd/cuda_demo/cuda_l1_programming_model.html","title":"一、理解编程模型：kernel、grid/block/thread、SIMT"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>一、理解编程模型：kernel、grid/block/thread、SIMT | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E7%90%86%E8%A7%A3%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B%EF%BC%9Akernel%E3%80%81grid-block-thread%E3%80%81SIMT"><span class="nav-number">1.</span> <span class="nav-text">一、理解编程模型：kernel、grid&#x2F;block&#x2F;thread、SIMT</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81Kernel-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">1.1.</span> <span class="nav-text">一、Kernel 是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E4%B8%89%E5%B1%82%E5%B1%82%E6%AC%A1%EF%BC%9AGrid-Block-Thread"><span class="nav-number">1.2.</span> <span class="nav-text">二、三层层次：Grid &#x2F; Block &#x2F; Thread</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF%E4%B8%89%E5%B1%82"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 为什么是三层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E7%BB%B4%E5%BA%A6"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 维度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E5%85%A8%E5%B1%80%E7%B4%A2%E5%BC%95%E5%85%AC%E5%BC%8F%EF%BC%88%E5%BF%85%E8%83%8C%EF%BC%89"><span class="nav-number">1.2.3.</span> <span class="nav-text">2.3 全局索引公式（必背）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E4%B8%80%E5%BC%A0%E5%9B%BE%E7%9C%8B%E6%B8%85%E5%B1%82%E6%AC%A1-SIMT"><span class="nav-number">1.2.4.</span> <span class="nav-text">2.4 一张图看清层次 + SIMT</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81SIMT%EF%BC%9A%E5%92%8C-SIMD-%E5%88%B0%E5%BA%95%E5%B7%AE%E5%9C%A8%E5%93%AA"><span class="nav-number">1.3.</span> <span class="nav-text">三、SIMT：和 SIMD 到底差在哪</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6"><span class="nav-number">1.3.1.</span> <span class="nav-text">3.1 核心机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-SIMT-vs-SIMD%EF%BC%88%E8%80%83%E8%AF%95-%E9%9D%A2%E8%AF%95%E5%B8%B8%E9%97%AE%EF%BC%89"><span class="nav-number">1.3.2.</span> <span class="nav-text">3.2 SIMT vs SIMD（考试&#x2F;面试常问）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%88%86%E6%94%AF%E5%8F%91%E6%95%A3%EF%BC%88divergence%EF%BC%89%E2%80%94%E2%80%94-SIMT-%E7%89%B9%E6%9C%89%E7%9A%84%E5%9D%91"><span class="nav-number">1.3.3.</span> <span class="nav-text">3.3 分支发散（divergence）—— SIMT 特有的坑</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-%E4%B8%BA%E4%BB%80%E4%B9%88-SIMT-%E9%80%82%E5%90%88-GPU"><span class="nav-number">1.3.4.</span> <span class="nav-text">3.4 为什么 SIMT 适合 GPU</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81OpenCL-%E5%AF%B9%E7%85%A7%EF%BC%88%E4%BD%A0%E8%BF%99%E6%AC%A1%E8%A6%81%E5%8F%8C%E8%BD%A8%E5%AD%A6%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、OpenCL 对照（你这次要双轨学）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E7%AC%AC%E4%B8%80%E4%B8%AA-kernel-%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB"><span class="nav-number">1.5.</span> <span class="nav-text">五、第一个 kernel 代码走读</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80%EF%BC%88%E5%AD%A6%E5%AE%8C%E5%BA%94%E8%83%BD%E7%AD%94%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">六、自检（学完应能答）</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">一、理解编程模型：kernel、grid/block/thread、SIMT
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L1_PROGRAMMING_MODEL</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="一、理解编程模型：kernel、grid-block-thread、SIMT"><a href="#一、理解编程模型：kernel、grid-block-thread、SIMT" class="headerlink" title="一、理解编程模型：kernel、grid/block/thread、SIMT"></a>一、理解编程模型：kernel、grid/block/thread、SIMT</h1><blockquote>
+<p>对应笔记本：<code>01CUDA基础学习.docx</code> → <strong>L1 能跑（入门）</strong> → <code>1、理解编程模型：kernel、grid/block/thread、SIMT</code><br>配套代码：<code>cuda_l1_programming_model.cpp</code>（向量加 + 索引演示两个 kernel，注释即讲解）<br>双轨：本篇以 <strong>CUDA</strong> 为主，<strong>OpenCL</strong> 对照见第四节。</p>
+</blockquote>
+<hr>
+<h2 id="一、Kernel-是什么"><a href="#一、Kernel-是什么" class="headerlink" title="一、Kernel 是什么"></a>一、Kernel 是什么</h2><p><strong>Kernel = 在 GPU 上被成千上万个线程”同时各跑一遍”的函数。</strong></p>
+<ul>
+<li>用 <code>__global__</code> 声明（CUDA）；OpenCL 用 <code>__kernel</code>。</li>
+<li>它由 <strong>CPU（host）</strong> 调用一次，却在 <strong>GPU（device）</strong> 上被无数线程并行执行。</li>
+<li>你写的 kernel 里是”<strong>一条线程的逻辑</strong>“——比如 <code>C[i] = A[i] + B[i]</code>；GPU 负责把它复制成 N 份、让 N 个线程各用各的 <code>i</code> 跑。</li>
+<li>kernel <strong>没有返回值</strong>（<code>void</code>），结果通过写入 device 指针（或 shared/local 内存）带出来。</li>
+</ul>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">__global__ <span class="type">void</span> <span class="title">vecAdd</span><span class="params">(<span class="type">const</span> <span class="type">float</span>* A, <span class="type">const</span> <span class="type">float</span>* B, <span class="type">float</span>* C, <span class="type">int</span> n)</span> </span>{</span><br><span class="line">    <span class="type">int</span> i = blockIdx.x * blockDim.x + threadIdx.x;  <span class="comment">// 这条线程负责第 i 个元素</span></span><br><span class="line">    <span class="keyword">if</span> (i &lt; n) C[i] = A[i] + B[i];</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<hr>
+<h2 id="二、三层层次：Grid-Block-Thread"><a href="#二、三层层次：Grid-Block-Thread" class="headerlink" title="二、三层层次：Grid / Block / Thread"></a>二、三层层次：Grid / Block / Thread</h2><p>CUDA 把”并行”组织成三层金字塔：</p>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>是什么</th>
+<th>能做什么</th>
+<th>怎么编号</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Thread</strong></td>
+<td>单个执行单元，跑一遍 kernel</td>
+<td>算 1 份数据</td>
+<td><code>threadIdx.x/y/z</code></td>
+</tr>
+<tr>
+<td><strong>Block</strong></td>
+<td>一组线程（最多 1024 个，CC 相关）</td>
+<td>线程间可共享 <code>shared memory</code>、可 <code>__syncthreads()</code> 同步</td>
+<td><code>blockIdx.x/y/z</code></td>
+</tr>
+<tr>
+<td><strong>Grid</strong></td>
+<td>所有 block 的集合</td>
+<td>一次 kernel 启动的全部并行工作</td>
+<td><code>gridDim.x/y/z</code></td>
+</tr>
+</tbody></table>
+<h3 id="2-1-为什么是三层"><a href="#2-1-为什么是三层" class="headerlink" title="2.1 为什么是三层"></a>2.1 为什么是三层</h3><ul>
+<li><strong>Thread</strong> 是算力的最小粒度的执行。</li>
+<li><strong>Block</strong> 给”需要协作”的线程一个共享上下文（shared memory + 同步），比如做归约、矩阵分块。</li>
+<li><strong>Grid</strong> 是这一次 launch 的全体，网格可以很大（上百万线程）。</li>
+</ul>
+<h3 id="2-2-维度"><a href="#2-2-维度" class="headerlink" title="2.2 维度"></a>2.2 维度</h3><p>三者都可以是 <strong>1D / 2D / 3D</strong>（<code>dim3</code> 类型）。矩阵常用 2D：<code>blockIdx.x/y</code>、<code>threadIdx.x/y</code>。<br>本篇先用最容易懂的 1D。</p>
+<h3 id="2-3-全局索引公式（必背）"><a href="#2-3-全局索引公式（必背）" class="headerlink" title="2.3 全局索引公式（必背）"></a>2.3 全局索引公式（必背）</h3><p>一维时，第 <code>i</code> 个线程的全局下标：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">i = blockIdx.x * blockDim.x + threadIdx.x</span><br></pre></td></tr></tbody></table></figure>
+<ul>
+<li><code>blockDim.x</code> = 每 block 线程数（启动时定，CUDA 里是 <code>blockSize</code>）</li>
+<li><code>gridDim.x * blockDim.x</code> = 总线程数</li>
+</ul>
+<p><strong>向上取整</strong>定 grid 是固定套路：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> gridSize = (n + blockSize - <span class="number">1</span>) / blockSize;   <span class="comment">// ceil(n / blockSize)</span></span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="2-4-一张图看清层次-SIMT"><a href="#2-4-一张图看清层次-SIMT" class="headerlink" title="2.4 一张图看清层次 + SIMT"></a>2.4 一张图看清层次 + SIMT</h3><p><img src="/02jd/cuda_demo/images/fig1_programming_model.svg" alt="CUDA 编程模型：Grid → Block → Thread → Warp"></p>
+<hr>
+<h2 id="三、SIMT：和-SIMD-到底差在哪"><a href="#三、SIMT：和-SIMD-到底差在哪" class="headerlink" title="三、SIMT：和 SIMD 到底差在哪"></a>三、SIMT：和 SIMD 到底差在哪</h2><p><strong>SIMT = Single Instruction, Multiple Threads（单指令多线程）。</strong></p>
+<h3 id="3-1-核心机制"><a href="#3-1-核心机制" class="headerlink" title="3.1 核心机制"></a>3.1 核心机制</h3><ul>
+<li>GPU 硬件把 <strong>32 条连续线程</strong> 编成一个 <strong>warp</strong>（NVIDIA 固定 32；AMD 叫 wavefront，大小由设备/实现决定，常见 32/64）。</li>
+<li>一个 warp 内的 32 条线程，<strong>未发散时同一条指令驱动全部 lane</strong>（SIMT 调度），但<strong>各用各的数据</strong>（各自的寄存器、各自的 <code>i</code>）。</li>
+<li>⚠ <strong>“锁步”是教学近似</strong>：Volta 及以后架构引入<strong>独立线程调度（Independent Thread Scheduling）</strong>——发散的分支不再严格串行化整个 warp，而是按线程独立调度；<code>__syncthreads()</code> 的语义也基于此。<strong>编程时不能依赖隐式锁步</strong>：需要跨线程同步时显式用 barrier/shuffle/协作原语。</li>
+<li>这就是”单指令、多线程”：一条指令流，多份线程上下文。</li>
+</ul>
+<h3 id="3-2-SIMT-vs-SIMD（考试-面试常问）"><a href="#3-2-SIMT-vs-SIMD（考试-面试常问）" class="headerlink" title="3.2 SIMT vs SIMD（考试/面试常问）"></a>3.2 SIMT vs SIMD（考试/面试常问）</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>SIMD（如 NEON/SSE/AVX）</th>
+<th>SIMT（CUDA/OpenCL）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>编程视角</td>
+<td>显式向量：<code>float32x4_t</code>，手动管 4 个 lane</td>
+<td>写<strong>标量</strong>线程代码，硬件自动组 warp</td>
+</tr>
+<tr>
+<td>谁管”并行”</td>
+<td>程序员（用 intrinsics 编排 lane）</td>
+<td>硬件调度器（Automatic）</td>
+</tr>
+<tr>
+<td>分支</td>
+<td>整条向量同一条指令</td>
+<td>warp 内可<strong>分支发散</strong>（见下）</td>
+</tr>
+<tr>
+<td>粒度</td>
+<td>数据级（1 条向量指令）</td>
+<td>线程级（成百上千线程）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>一句话：<strong>NEON 是你手动把 4 个数塞进一个向量；CUDA 是你写”一条线程怎么算”，硬件自动把 32 条线程绑成 warp 一起跑。</strong>（OpenCL 的 wavefront/sub-group 大小与执行模型由设备决定，与 NVIDIA SIMT 是”实现相关”的对照，非完全等同。）</p>
+</blockquote>
+<h3 id="3-3-分支发散（divergence）——-SIMT-特有的坑"><a href="#3-3-分支发散（divergence）——-SIMT-特有的坑" class="headerlink" title="3.3 分支发散（divergence）—— SIMT 特有的坑"></a>3.3 分支发散（divergence）—— SIMT 特有的坑</h3><p>如果同一个 warp 内的线程走了 <code>if/else</code> 的不同分支：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (threadIdx.x % <span class="number">2</span> == <span class="number">0</span>) A[i] *= <span class="number">2</span>;   <span class="comment">// 偶数线程</span></span><br><span class="line"><span class="keyword">else</span>                      A[i] += <span class="number">1</span>;   <span class="comment">// 奇数线程</span></span><br></pre></td></tr></tbody></table></figure>
+<p>warp <strong>不能</strong>同时跑两条路，只能<strong>串行化</strong>：先让偶数线程那一半执行、奇数那一半禁用，再反过来。<strong>两条分支都执行 → 吞吐减半。</strong></p>
+<ul>
+<li>避免：让 warp 内（连续 32 线程）走同一分支；用 <code>i</code> 的<strong>块级</strong>而非线程级条件。</li>
+<li>OpenCL 的 wavefront 发散同理。</li>
+</ul>
+<h3 id="3-4-为什么-SIMT-适合-GPU"><a href="#3-4-为什么-SIMT-适合-GPU" class="headerlink" title="3.4 为什么 SIMT 适合 GPU"></a>3.4 为什么 SIMT 适合 GPU</h3><p>GPU 有上千核心，但控制逻辑极简——把”取指/译码”在 warp 级别共享，32 线程共用一套指令，省下的晶体管全砸在 ALU 和显存带宽上。这正是 GPU 算力碾压 CPU 的根本。</p>
+<hr>
+<h2 id="四、OpenCL-对照（你这次要双轨学）"><a href="#四、OpenCL-对照（你这次要双轨学）" class="headerlink" title="四、OpenCL 对照（你这次要双轨学）"></a>四、OpenCL 对照（你这次要双轨学）</h2><p>同一个向量加，OpenCL 概念与 CUDA <strong>一一对应</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>CUDA</th>
+<th>OpenCL</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>__global__ void k()</code></td>
+<td><code>__kernel void k()</code></td>
+<td>kernel 声明</td>
+</tr>
+<tr>
+<td><code>&lt;&lt;&lt;grid, block&gt;&gt;&gt;</code> 启动</td>
+<td><code>clEnqueueNDRangeKernel(..., gws, lws)</code></td>
+<td>gws=总线程，lws=block 大小</td>
+</tr>
+<tr>
+<td><code>blockIdx.x</code></td>
+<td><code>get_group_id(0)</code></td>
+<td>第几个 block / work-group</td>
+</tr>
+<tr>
+<td><code>threadIdx.x</code></td>
+<td><code>get_local_id(0)</code></td>
+<td>block 内第几个 thread / work-item</td>
+</tr>
+<tr>
+<td><code>blockDim.x</code></td>
+<td><code>get_local_size(0)</code></td>
+<td>block 大小</td>
+</tr>
+<tr>
+<td>全局下标 <code>blockIdx.x*blockDim.x+threadIdx.x</code></td>
+<td><code>get_global_id(0)</code></td>
+<td>全局编号</td>
+</tr>
+<tr>
+<td><strong>warp（32）</strong></td>
+<td><strong>wavefront（32/64）</strong></td>
+<td>SIMT 执行单元，概念完全一致</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>OpenCL 的”一次启动”叫 <strong>NDRange</strong>（N-Dimensional Range），<code>global_work_size / local_work_size</code> 正好对应 CUDA 的 <code>gridDim*blockDim / blockDim</code>。底层 SIMT 模型完全相同，差异主要在 API 与跨平台运行时。</p>
+</blockquote>
+<hr>
+<h2 id="五、第一个-kernel-代码走读"><a href="#五、第一个-kernel-代码走读" class="headerlink" title="五、第一个 kernel 代码走读"></a>五、第一个 kernel 代码走读</h2><p>配套 <code>cuda_l1_programming_model.cpp</code> 里有两个 kernel：</p>
+<ol>
+<li><strong><code>vecAdd</code></strong> —— 经典向量加。<code>i = blockIdx.x*blockDim.x+threadIdx.x</code> 取全局下标，<code>if(i&lt;n)</code> 做边界保护（总线程常比 n 多）。</li>
+<li><strong><code>indexDemo</code></strong> —— 把每个线程的 <code>(全局i, blockIdx, threadIdx)</code> 写进数组，host 端打印，直观看到 16 个元素被 4 个 block × 4 线程编号铺开。</li>
+</ol>
+<p><code>&lt;&lt;&lt;gridSize, blockSize&gt;&gt;&gt;</code> 就是”把 kernel 按这个网格铺到 GPU”。编译需 <code>nvcc</code>，沙箱无 GPU 故仅作教材；逻辑与真机一致。</p>
+<hr>
+<h2 id="六、自检（学完应能答）"><a href="#六、自检（学完应能答）" class="headerlink" title="六、自检（学完应能答）"></a>六、自检（学完应能答）</h2><ul>
+<li><input disabled="" type="checkbox"> kernel 为什么没有返回值？结果怎么带出来？</li>
+<li><input disabled="" type="checkbox"> 一维全局下标公式能默写吗？</li>
+<li><input disabled="" type="checkbox"> grid / block / thread 各层”能协作什么”？</li>
+<li><input disabled="" type="checkbox"> warp 是多少线程？SIMT 与 SIMD 的本质区别？</li>
+<li><input disabled="" type="checkbox"> 分支发散为什么会拖慢？怎么避免？</li>
+<li><input disabled="" type="checkbox"> OpenCL 里 <code>get_global_id(0)</code> 对应 CUDA 的哪串表达式？</li>
+</ul>
+<blockquote>
+<p>下一步（L1.2）：会写简单 kernel + 配置 launch bounds + 用 <code>cudaMalloc</code> / <code>cudaMemcpy</code>。</p>
+</blockquote>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L1_PROGRAMMING_MODEL</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

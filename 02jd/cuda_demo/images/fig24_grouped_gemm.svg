@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 590" font-family="Segoe UI, Arial, sans-serif">
+  <rect x="0" y="0" width="680" height="590" fill="#fafbfc"/>
+  <text x="340" y="24" font-size="15" font-weight="bold" fill="#1f2d3d" text-anchor="middle">L4 grouped GEMM：异构 M/N/K 分组矩阵乘 + launch 开销摊销（四联图）</text>
+
+  <!-- Panel 1: concept -->
+  <rect x="14" y="40" width="320" height="245" rx="8" fill="#fff" stroke="#ced4da"/>
+  <text x="30" y="64" font-size="13" font-weight="bold" fill="#4c6ef5">① 概念：一批形状各异的 GEMM</text>
+  <text x="30" y="88" font-size="10.5" fill="#495057">MoE / 多专家 / 长尾 kernel：每专家形状不同</text>
+  <rect x="34" y="100" width="280" height="24" rx="4" fill="#e7f0ff" stroke="#4c6ef5"/>
+  <text x="44" y="116" font-size="10" fill="#1f2d3d" font-family="Consolas,monospace">g0:(64,128,32)  g1:(32,32,64)</text>
+  <rect x="34" y="128" width="280" height="24" rx="4" fill="#e7f0ff" stroke="#4c6ef5"/>
+  <text x="44" y="144" font-size="10" fill="#1f2d3d" font-family="Consolas,monospace">g2:(128,64,16)  g3:(16,16,48)</text>
+  <rect x="34" y="160" width="280" height="1" fill="#e9ecef"/>
+  <text x="30" y="182" font-size="10.5" fill="#2f9e44" font-weight="bold">grouped_gemm</text>
+  <text x="30" y="200" font-size="10.5" fill="#495057">一次遍历整批：for g in groups: C_g = A_g·B_g</text>
+  <text x="30" y="218" font-size="10.5" fill="#495057">真机 = 1 次 kernel launch 处理所有 group</text>
+  <text x="30" y="242" font-size="10" fill="#868e96">退化形状也支持：K=1 / (1×1)</text>
+
+  <!-- Panel 2: correctness -->
+  <rect x="346" y="40" width="320" height="245" rx="8" fill="#fff" stroke="#ced4da"/>
+  <text x="362" y="64" font-size="13" font-weight="bold" fill="#2f9e44">② 正确性核验</text>
+  <text x="362" y="88" font-size="10.5" fill="#495057">grouped 输出 == 逐 group 参考 GEMM</text>
+  <text x="362" y="106" font-size="10.5" fill="#1f2d3d" font-family="Consolas,monospace">max|Δ| &lt; 1e-9（异构 4 组）</text>
+  <rect x="362" y="120" width="280" height="1" fill="#e9ecef"/>
+  <text x="362" y="140" font-size="10.5" fill="#495057">✓ 异构 M/N/K 全部正确</text>
+  <text x="362" y="158" font-size="10.5" fill="#495057">✓ 重跑确定性（逐位一致）</text>
+  <text x="362" y="176" font-size="10.5" fill="#495057">✓ 退化形状 K=1 / (1×1) 正确</text>
+  <text x="362" y="194" font-size="10.5" fill="#495057">✓ FLOPs == Σ 2·Mᵢ·Nᵢ·Kᵢ</text>
+  <text x="362" y="218" font-size="10.5" fill="#495057">C = Σ_k A_g[i,k]·B_g[k,j]（double 固定序）</text>
+  <text x="362" y="242" font-size="10" fill="#868e96">受管 Python 双复核 5/5 PASS</text>
+
+  <!-- Panel 3: launch model -->
+  <rect x="14" y="306" width="320" height="245" rx="8" fill="#fff" stroke="#ced4da"/>
+  <text x="30" y="330" font-size="13" font-weight="bold" fill="#e8590c">③ launch 开销摊销</text>
+  <text x="30" y="354" font-size="10.5" fill="#495057">朴素：N 次独立 cublasGemm = N 次 launch</text>
+  <text x="30" y="372" font-size="10.5" fill="#495057">grouped：1 次 launch 处理整批</text>
+  <rect x="34" y="386" width="280" height="40" rx="4" fill="#fff0e6" stroke="#e8590c"/>
+  <text x="44" y="404" font-size="10" fill="#1f2d3d" font-family="Consolas,monospace">N=4: launch 4x ↓ (20.0 → 5.0 µs)</text>
+  <text x="44" y="420" font-size="10" fill="#1f2d3d" font-family="Consolas,monospace">总墙钟 20.20 → 5.20 µs</text>
+  <rect x="34" y="432" width="280" height="1" fill="#e9ecef"/>
+  <text x="30" y="452" font-size="10.5" fill="#495057">launch 开销按 N 倍摊销（1 vs N 次）</text>
+  <text x="30" y="470" font-size="10.5" fill="#495057">计算量两种路径相同 → 仅 launch 不同</text>
+  <text x="30" y="494" font-size="10" fill="#868e96">MoE step 里专家数 = N，收益即 N 倍</text>
+
+  <!-- Panel 4: 应用 -->
+  <rect x="346" y="306" width="320" height="245" rx="8" fill="#fff" stroke="#ced4da"/>
+  <text x="362" y="330" font-size="13" font-weight="bold" fill="#1f2d3d">④ 应用指向 + 真机 API</text>
+  <text x="362" y="354" font-size="10.5" fill="#495057">· MoE / 多专家前向（每专家 GEMM 形状不同）</text>
+  <text x="362" y="372" font-size="10.5" fill="#495057">· 长尾 / 变长序列的批量矩阵乘</text>
+  <text x="362" y="390" font-size="10.5" fill="#495057">· persistent kernel（常驻 SM 流式取任务）</text>
+  <rect x="362" y="404" width="280" height="1" fill="#e9ecef"/>
+  <text x="362" y="424" font-size="10.5" fill="#2b8a3e" font-weight="bold">真机</text>
+  <text x="362" y="442" font-size="10.5" fill="#1f2d3d" font-family="Consolas,monospace">cublasGemmBatchedEx</text>
+  <text x="362" y="460" font-size="10.5" fill="#1f2d3d" font-family="Consolas,monospace"> / 分组 API：指针数组+形状数组</text>
+  <text x="362" y="478" font-size="10.5" fill="#1f2d3d" font-family="Consolas,monospace"> + 1 次 launch 替代 N 次</text>
+  <text x="362" y="502" font-size="10" fill="#868e96">__CUDACC__ 守护（见 cpp）</text>
+
+  <text x="14" y="582" font-size="10" fill="#adb5bd">纯 C++ 可跑（g++）；受管 Python 双复核 5/5 PASS。配色沿用 cuda_demo L4 规范。</text>
+</svg>

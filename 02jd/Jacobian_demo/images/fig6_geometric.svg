@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#ffffff"/>
+
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L2.1 几何（旋量）雅可比 vs 解析雅可比 · 表示奇异</text>
+  <text x="20" y="56" font-size="12" fill="#555">解析 J 用最小坐标描述姿态，欧拉角在 β→90° 含 1/cosβ 爆炸；几何 J 不受此限</text>
+
+  <g transform="translate(50,80)">
+    <circle cx="0" cy="170" r="6" fill="#475569"/>
+    <line x1="0" y1="170" x2="95" y2="95" stroke="#2563eb" stroke-width="5"/>
+    <circle cx="95" cy="95" r="6" fill="#1d4ed8"/>
+    <line x1="95" y1="95" x2="195" y2="45" stroke="#2563eb" stroke-width="5"/>
+    <circle cx="195" cy="45" r="7" fill="#dc2626"/>
+    <text x="200" y="49" font-size="10" fill="#991b1b">末端</text>
+    <!-- 几何 J 的列 = 各关节轴产生末端速度 -->
+    <line x1="95" y1="95" x2="95" y2="150" stroke="#059669" stroke-width="2" marker-end="url(#arr6g)"/>
+    <text x="100" y="150" font-size="9" fill="#065f46">J·第1列</text>
+    <line x1="195" y1="45" x2="195" y2="100" stroke="#059669" stroke-width="2" marker-end="url(#arr6g)"/>
+    <text x="200" y="100" font-size="9" fill="#065f46">J·第2列</text>
+  </g>
+  <defs><marker id="arr6g" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#059669"/></marker></defs>
+
+  <g transform="translate(330,90)" font-size="12" fill="#222">
+    <text x="0" y="0" font-weight="bold" fill="#dc2626">解析雅可比（欧拉角）</text>
+    <text x="0" y="26">含 1/cosβ 项</text>
+    <text x="0" y="48" fill="#dc2626">β→90° 时 → ∞  (表示奇异)</text>
+    <text x="0" y="86" font-weight="bold" fill="#059669">几何雅可比（旋量）</text>
+    <text x="0" y="112">描述速度旋量 [v;ω]</text>
+    <text x="0" y="134" fill="#059669">恒有界，无表示奇异</text>
+  </g>
+
+  <text x="20" y="350" font-size="11" fill="#666">要点：几何雅可比按关节旋量轴拼装，物理上对应"仅转动该关节时末端的线/角速度"，因此不受欧拉角表示奇点影响 —— 更适合实时控制。</text>
+</svg>

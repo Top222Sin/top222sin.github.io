@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L3.4 capstone：多传感器融合流水线 + NEES 验收闸门</text>
+  <defs>
+    <marker id="arrF" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#555"/>
+    </marker>
+  </defs>
+  <!-- 流水线 -->
+  <g transform="translate(40,60)">
+    <rect x="0" y="20" width="130" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="65" y="44" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">预测</text>
+    <text x="65" y="64" font-size="11.5" fill="#1e3a8a" text-anchor="middle">x=[px,py,vx,vy]</text>
+    <line x1="130" y1="50" x2="180" y2="50" stroke="#555" stroke-width="2" marker-end="url(#arrF)"/>
+    <rect x="180" y="0" width="170" height="48" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="265" y="20" font-size="12.5" font-weight="bold" fill="#14532d" text-anchor="middle">更新① 雷达 (r, θ)</text>
+    <text x="265" y="40" font-size="11.5" fill="#14532d" text-anchor="middle">H 含 1/r, 1/r²；θ 残差缠绕</text>
+    <rect x="180" y="56" width="170" height="48" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="265" y="76" font-size="12.5" font-weight="bold" fill="#14532d" text-anchor="middle">更新② 里程计 (vx,vy)</text>
+    <text x="265" y="96" font-size="11.5" fill="#14532d" text-anchor="middle">线性 H=[0,0,I]（补航向通道）</text>
+    <line x1="350" y1="50" x2="400" y2="50" stroke="#555" stroke-width="2" marker-end="url(#arrF)"/>
+    <rect x="400" y="20" width="120" height="60" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="460" y="44" font-size="13" font-weight="bold" fill="#78350f" text-anchor="middle">NEES 闸门</text>
+    <text x="460" y="64" font-size="11.5" fill="#78350f" text-anchor="middle">eᵀP⁻¹e ∈ (2, 5.5)?</text>
+    <line x1="520" y1="50" x2="570" y2="50" stroke="#555" stroke-width="2" marker-end="url(#arrF)"/>
+    <rect x="570" y="20" width="80" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="610" y="46" font-size="12.5" font-weight="bold" fill="#14532d" text-anchor="middle">出厂 ✅</text>
+    <text x="610" y="66" font-size="11" fill="#14532d" text-anchor="middle">5 次 MC 验收</text>
+  </g>
+  <!-- 装配清单 -->
+  <rect x="40" y="180" width="610" height="100" rx="10" fill="#f3e8ff" stroke="#9333ea" stroke-width="1.5"/>
+  <text x="345" y="206" font-size="13" font-weight="bold" fill="#581c87" text-anchor="middle">装配清单（从 L1~L3 运来的零件）</text>
+  <text x="345" y="230" font-size="12" fill="#581c87" text-anchor="middle">Joseph 更新（L1.4）· 精确离散 Q（L1.4）· 观测雅可比（L2.5/Jacobian_demo）</text>
+  <text x="345" y="254" font-size="12" fill="#581c87" text-anchor="middle">NEES 闸门（L2.4）· 初始误差 ~ N(0,P₀)（L2.4 的教训）· 顺序无关性（高斯乘积可交换）</text>
+  <text x="345" y="276" font-size="11.5" fill="#555" text-anchor="middle">两个雷区：方位角缠绕到 [−π,π]；路标贴脸 1/r² 病态（demo 都踩过并修复）</text>
+  <!-- 结果 -->
+  <rect x="40" y="295" width="610" height="50" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="345" y="316" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">demo：融合 RMSE 0.262 &lt; 仅雷达 0.264，NEES=3.69（期望 4）✅ 一致</text>
+  <text x="345" y="337" font-size="12" fill="#14532d" text-anchor="middle">滤波器不仅准，而且诚实——误差与自报 P 匹配</text>
+</svg>

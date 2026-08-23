@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 340" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="340" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L2.5 LQR：Riccati 与最优性证书</text>
+  <defs><marker id="a3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#555"/></marker></defs>
+  <rect x="40" y="55" width="300" height="130" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="190.0" y="81" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">min ∫(xᵀQx+uᵀRu)dt</text>
+  <text x="190.0" y="103" font-size="12.5" font-weight="normal" fill="#1e3a8a" text-anchor="middle">u=−R⁻¹BᵀP·x</text>
+  <text x="190.0" y="125" font-size="12.5" font-weight="normal" fill="#1e3a8a" text-anchor="middle">ARE: AᵀP+PA−PBR⁻¹BᵀP+Q=0</text>
+  <text x="190.0" y="147" font-size="12.5" font-weight="normal" fill="#1e3a8a" text-anchor="middle">Kleinman 迭代 5 步收敛</text>
+  <rect x="360" y="55" width="300" height="130" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="510.0" y="81" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">最优性证书</text>
+  <text x="510.0" y="103" font-size="12.5" font-weight="normal" fill="#14532d" text-anchor="middle">仿真代价 = x₀ᵀPx₀（差 0.01%）</text>
+  <text x="510.0" y="125" font-size="12.5" font-weight="normal" fill="#14532d" text-anchor="middle">Q↑跟得狠 R↑省着用</text>
+  <text x="510.0" y="147" font-size="12.5" font-weight="normal" fill="#14532d" text-anchor="middle">附赠 PM≥60°, GM=∞</text>
+  <rect x="40" y="215" width="610" height="95" rx="9" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="345.0" y="241" font-size="13" font-weight="bold" fill="#78350f" text-anchor="middle">调参：Q=I,R=1 起步 → 不满意的状态加 Qᵢᵢ → 饱和就加 R</text>
+  <text x="345.0" y="263" font-size="12.5" font-weight="normal" fill="#78350f" text-anchor="middle">单状态 K 与 √Qᵢᵢ 成正比（平方根规律）</text>
+</svg>

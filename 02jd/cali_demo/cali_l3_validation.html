@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3.1 验证方案（Validation）⭐ L2.5 回答”参数准不准（残差层面）”。L3.1 升级为：标完这套参数，机器人按它干活，实际偏差多少？ 这是标定真正要兑现的承诺。   一、为什么需要端到端验证重投影误差 0.3 px 看起来很美，但：  它是内参+外参的混合残差，不直接对应机器人末端偏差。 真实工况下，误差会沿 内参 K → 手眼 X → TCP 整条链放大&#x2F;耦合。 客户&#x2F;产线要的">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3.1 验证方案（Validation）⭐">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cali_demo/cali_l3_validation.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3.1 验证方案（Validation）⭐ L2.5 回答”参数准不准（残差层面）”。L3.1 升级为：标完这套参数，机器人按它干活，实际偏差多少？ 这是标定真正要兑现的承诺。   一、为什么需要端到端验证重投影误差 0.3 px 看起来很美，但：  它是内参+外参的混合残差，不直接对应机器人末端偏差。 真实工况下，误差会沿 内参 K → 手眼 X → TCP 整条链放大&#x2F;耦合。 客户&#x2F;产线要的">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.910Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cali_demo/cali_l3_validation">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cali_demo/cali_l3_validation.html","path":"02jd/cali_demo/cali_l3_validation.html","title":"L3.1 验证方案（Validation）⭐"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3.1 验证方案（Validation）⭐ | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-1-%E9%AA%8C%E8%AF%81%E6%96%B9%E6%A1%88%EF%BC%88Validation%EF%BC%89%E2%AD%90"><span class="nav-number">1.</span> <span class="nav-text">L3.1 验证方案（Validation）⭐</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E7%AB%AF%E5%88%B0%E7%AB%AF%E9%AA%8C%E8%AF%81"><span class="nav-number">1.1.</span> <span class="nav-text">一、为什么需要端到端验证</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AE%8B%E5%B7%AE%E5%B1%82%E9%9D%A2-vs-%E7%AB%AF%E5%88%B0%E7%AB%AF%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%AD%E9%97%B4%E6%8C%87%E6%A0%87%E4%B8%8D%E5%A4%9F%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">残差层面 vs 端到端（为什么中间指标不够）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E4%B8%A4%E7%B1%BB%E9%AA%8C%E8%AF%81%E6%8C%87%E6%A0%87"><span class="nav-number">1.2.</span> <span class="nav-text">二、两类验证指标</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%91%A0-%E6%8A%95%E5%BD%B1%E9%AA%8C%E8%AF%81%EF%BC%88%E5%B7%B2%E7%9F%A5-3D-%E7%9B%AE%E6%A0%87-%E2%86%92-%E5%83%8F%E7%B4%A0%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">① 投影验证（已知 3D 目标 → 像素）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%91%A1-%E9%97%AD%E7%8E%AF%E5%A4%9F%E5%8F%96%E9%AA%8C%E8%AF%81%EF%BC%88%E5%83%8F%E7%B4%A0-%E2%86%92-%E5%A4%9F%E5%88%B0%E7%82%B9%EF%BC%89%E2%AD%90%EF%BC%88%E6%9C%AC%E7%AF%87%E6%A0%B8%E5%BF%83%EF%BC%89"><span class="nav-number">1.2.2.</span> <span class="nav-text">② 闭环够取验证（像素 → 够到点）⭐（本篇核心）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9F%E5%8F%96%E9%AA%8C%E8%AF%81%E7%9A%84%E8%AF%AF%E5%B7%AE%E6%BA%90%E5%88%86%E8%A7%A3%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E5%A5%BD%E6%A0%87%E5%AE%9A"><span class="nav-number">1.2.3.</span> <span class="nav-text">够取验证的误差源分解（为什么好标定 &lt;2mm）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%B7%A5%E7%A8%8B%E5%90%AB%E4%B9%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、工程含义</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%8A%E6%96%AD%E6%A0%91%EF%BC%88%E6%80%8E%E4%B9%88%E8%AF%BB%E9%AA%8C%E8%AF%81%E7%BB%93%E6%9E%9C%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">诊断树（怎么读验证结果）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88cali-l3-validation-cpp%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、代码走读（cali_l3_validation.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.6.</span> <span class="nav-text">六、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3.1 验证方案（Validation）⭐
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L3_VALIDATION</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-1-验证方案（Validation）⭐"><a href="#L3-1-验证方案（Validation）⭐" class="headerlink" title="L3.1 验证方案（Validation）⭐"></a>L3.1 验证方案（Validation）⭐</h1><blockquote>
+<p>L2.5 回答”参数准不准（残差层面）”。L3.1 升级为：<strong>标完这套参数，机器人按它干活，实际偏差多少？</strong> 这是标定真正要兑现的承诺。</p>
+</blockquote>
+<hr>
+<h2 id="一、为什么需要端到端验证"><a href="#一、为什么需要端到端验证" class="headerlink" title="一、为什么需要端到端验证"></a>一、为什么需要端到端验证</h2><p>重投影误差 <code>0.3 px</code> 看起来很美，但：</p>
+<ul>
+<li>它是<strong>内参+外参</strong>的混合残差，不直接对应机器人末端偏差。</li>
+<li>真实工况下，误差会沿 <code>内参 K → 手眼 X → TCP</code> 整条链放大/耦合。</li>
+<li>客户/产线要的是一句话：”用这套参数引导机器人到目标，偏差 &lt; X mm”。</li>
+</ul>
+<p>所以验证必须<strong>端到端</strong>：用估计参数驱动一次”看—算—动”闭环，量实际偏差。</p>
+<h3 id="残差层面-vs-端到端（为什么中间指标不够）"><a href="#残差层面-vs-端到端（为什么中间指标不够）" class="headerlink" title="残差层面 vs 端到端（为什么中间指标不够）"></a>残差层面 vs 端到端（为什么中间指标不够）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">残差层面（L2.5）: 每个环节各自的误差 —— "分科体检"</span><br><span class="line">端到端（L3.1）: 完整链路的最终偏差 —— "期末考"</span><br><span class="line">两类偏差的关系: 端到端误差 ≈ 各环节误差经几何放大/耦合（一阶线性化 δy ≈ J_KδK + J_Xδξ_X + J_TCPδξ_TCP,</span><br><span class="line">          协方差 Σ_y ≈ JΣJᵀ; 各误差不完全独立, 不能简单相加）</span><br><span class="line">例: 手眼旋转错 0.5° × 工作距离 0.5m → 横向偏移 ~4.4mm（小角度近似, 数量级估计非精确公式）</span><br><span class="line">    —— 即使内参/重投影误差很小, 手眼的小角度误差也会放大成毫米级</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程结论</strong>：中间指标”全 PASS”不代表端到端”能干活”——距离/几何把角度误差放大成位置误差。这就是为什么 L3.1 的够取验证是”出厂标准”。</p>
+<blockquote>
+<p><strong>两级验证的界定（重要）</strong>：本文的”投影验证 + 够取验证”属于<strong>模型链验证</strong>（用估计参数做前向/反投影计算，仿真闭环）；<strong>真正的机器人端到端验证</strong>还需包含：机器人执行、TCP 运动、外部测量实际到达点、时间同步等——合成数据只能证明”模型链在给定噪声模型下自洽”，不能替代实机验收（L3.4 同理）。</p>
+</blockquote>
+<h2 id="二、两类验证指标"><a href="#二、两类验证指标" class="headerlink" title="二、两类验证指标"></a>二、两类验证指标</h2><h3 id="①-投影验证（已知-3D-目标-→-像素）"><a href="#①-投影验证（已知-3D-目标-→-像素）" class="headerlink" title="① 投影验证（已知 3D 目标 → 像素）"></a>① 投影验证（已知 3D 目标 → 像素）</h3><p>已知世界点 <code>P</code>（如标定板上某角点的真实坐标），用<strong>估计参数</strong> <code>K_est, X_est</code> 把它投成像素 <code>u_est</code>，与相机<strong>实际观测</strong>到的像素 <code>u_true</code> 比较：</p>
+<figure class="highlight text"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">投影验证误差 = ‖ u_est - u_true ‖ (px)</span><br></pre></td></tr></tbody></table></figure>
+<p>它等价于”把标定结果拿去重投影一个<strong>全新</strong>的已知点”，比用标定帧自身的重投影更严格（不沾训练集）。</p>
+<h3 id="②-闭环够取验证（像素-→-够到点）⭐（本篇核心）"><a href="#②-闭环够取验证（像素-→-够到点）⭐（本篇核心）" class="headerlink" title="② 闭环够取验证（像素 → 够到点）⭐（本篇核心）"></a>② 闭环够取验证（像素 → 够到点）⭐（本篇核心）</h3><p>模拟一次视觉引导抓取：</p>
+<ol>
+<li>相机看到目标像素 <code>u</code>（由真值链生成，当作”检测到的像素”）。</li>
+<li>系统用<strong>估计参数</strong> <code>K_est, X_est</code> 把 <code>u</code> 反投影到<strong>已知高度平面</strong> <code>z=z_t</code>（<code>u</code> 本身无深度，靠已知目标高度补）。</li>
+<li>指挥 TCP 移动到该 3D 点。</li>
+<li>比较<strong>到达点</strong>与<strong>真值目标</strong>的 3D 偏差：<figure class="highlight text"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">够取误差 = ‖ p_reach - P ‖ (mm)</span><br></pre></td></tr></tbody></table></figure></li>
+</ol>
+<p>本 demo 用两组标定质量对比：</p>
+<ul>
+<li><strong>好标定</strong>：手眼旋转扰动 ≈0.3°、平移 ≈0.5 mm，焦距偏 0.5%。</li>
+<li><strong>差标定</strong>：旋转 ≈3°、平移 ≈5 mm，焦距偏 5%。</li>
+</ul>
+<p>结果应显示：好标定两类误差都小（&lt;2 px / &lt;2 mm），差标定的误差明显更大（&gt;2×）。</p>
+<h3 id="够取验证的误差源分解（为什么好标定"><a href="#够取验证的误差源分解（为什么好标定" class="headerlink" title="够取验证的误差源分解（为什么好标定 <2mm）"></a>够取验证的误差源分解（为什么好标定 &lt;2mm）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">够取误差的贡献:</span><br><span class="line">  手眼旋转误差 × 工作距离（0.3°×0.5m ≈ 2.6mm? 不——0.3°=0.0052rad × 0.5m=2.6mm）</span><br><span class="line">  → 所以"好标定"的标准是旋转误差 &lt;0.1° 量级（0.1°×0.5m=0.9mm）</span><br><span class="line">  平移误差直接加（0.5mm）</span><br><span class="line">  焦距误差 → 深度方向（z=z_t 平面假设吸收一部分）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程洞察</strong>：够取误差 ≈ 手眼旋转误差×距离 + 平移误差（一阶近似）——<strong>旋转误差被距离放大</strong>，这就是为什么手眼标定的验收阈值（如 L2.5 的 0.5°，需结合工作距离/目标容差确定，非脱离工况的固定值）通常很严苛。</p>
+<h2 id="三、工程含义"><a href="#三、工程含义" class="headerlink" title="三、工程含义"></a>三、工程含义</h2><table>
+<thead>
+<tr>
+<th>验证结果</th>
+<th>解读</th>
+<th>处置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>投影 &amp; 够取误差都小</td>
+<td>标定可用，进入产线</td>
+<td>记录为基线，定期复测</td>
+</tr>
+<tr>
+<td>投影小但够取大</td>
+<td>手眼/外参误差被内参”掩盖”</td>
+<td>查 L1.5/L2.2 手眼标定</td>
+</tr>
+<tr>
+<td>两者都大</td>
+<td>标定整体失败</td>
+<td>重标，查 L2.3 退化 / L3.2 坏帧</td>
+</tr>
+<tr>
+<td>多次复测漂移</td>
+<td>温漂/负载漂移</td>
+<td>触发 L3.2/L3.3 在线再标定</td>
+</tr>
+</tbody></table>
+<h3 id="诊断树（怎么读验证结果）"><a href="#诊断树（怎么读验证结果）" class="headerlink" title="诊断树（怎么读验证结果）"></a>诊断树（怎么读验证结果）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">投影误差小 + 够取误差大 → 手眼 X 错（内参好, 外参偏）</span><br><span class="line">投影误差大 + 够取误差小 → 内参偏但恰好补偿（罕见, 但说明耦合）</span><br><span class="line">两者都大 → 链条整体问题（采集/模型/退化）</span><br><span class="line">趋势: 好→差随时间 → 温漂/磨损 → 在线再标定（L3.3）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程价值</strong>：端到端验证不只是”过/不过”——它是<strong>诊断工具</strong>：投影 vs 够取的分裂模式直接指向出错环节（这也是为什么两个指标都要测，缺一个就失去诊断力）。</p>
+<h2 id="四、代码走读（cali-l3-validation-cpp）"><a href="#四、代码走读（cali-l3-validation-cpp）" class="headerlink" title="四、代码走读（cali_l3_validation.cpp）"></a>四、代码走读（cali_l3_validation.cpp）</h2><ul>
+<li><code>projectPx()</code>：完整链 <code>world → (inv(G·X)) → cam → 像素</code>。</li>
+<li><code>backprojPlane()</code>：像素 <code>u</code> 经 <code>K_est⁻¹</code> 得相机系射线，用 <code>T_cam2base_est</code> 转到基座系，与 <code>z=z_t</code> 平面求交得 3D 点。</li>
+<li><code>validate()</code>：对 N 个目标分别算投影误差与够取误差的均值。</li>
+<li>主函数：造好/差两组 <code>X/K</code>，调用 <code>validate</code>，断言好标定误差小、坏标定误差明显更大。</li>
+</ul>
+<h2 id="五、工程落点（真实项目）"><a href="#五、工程落点（真实项目）" class="headerlink" title="五、工程落点（真实项目）"></a>五、工程落点（真实项目）</h2><ul>
+<li><strong>产线验收标准</strong>：”视觉引导抓取重复精度 ±1mm”——就是用 L3.1 的够取验证测出来的。</li>
+<li><strong>easy_handeye</strong>：标定后建议做”验证序列”（新姿态集上测手眼残差）——就是本 demo 的投影验证。</li>
+<li><strong>UR+相机集成</strong>：<code>Vision Guide</code> 应用里的”验证点”流程 = 本 demo 的够取闭环。</li>
+<li><strong>与 08robot</strong>：UR5e 视觉抓取的出厂测试 = 放一个已知工件，机器人”看-算-够”，量偏差——L3.1 的完整落地。</li>
+</ul>
+<h2 id="六、下一步"><a href="#六、下一步" class="headerlink" title="六、下一步"></a>六、下一步</h2><p>进 <a href="/02jd/cali_demo/cali_l3_robust.html">L3.2 鲁棒估计与退化自适应 ⭐</a>：当采集数据里混有坏帧/坏角点时，怎么仍稳。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L3_VALIDATION</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#ffffff"/>
+
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L3.2 运动控制：线性化雅可比 A/B 与 MPC 灵敏度</text>
+  <text x="20" y="56" font-size="12" fill="#555">非线性系统沿标称轨迹线性化为 xₖ₊₁≈A xₖ+B uₖ；MPC 最优控制对状态的灵敏度 S=∂u*/∂x</text>
+
+  <g transform="translate(50,90)">
+    <rect x="0" y="40" width="80" height="44" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="18" y="66" font-size="11" fill="#1e40af">状态 xₖ</text>
+    <rect x="160" y="40" width="80" height="44" rx="6" fill="#dcfce7" stroke="#059669"/>
+    <text x="180" y="66" font-size="11" fill="#065f46">xₖ₊₁</text>
+    <rect x="80" y="110" width="80" height="36" rx="6" fill="#fef3c7" stroke="#d97706"/>
+    <text x="100" y="132" font-size="11" fill="#92400e">控制 uₖ</text>
+    <line x1="80" y1="62" x2="160" y2="62" stroke="#475569" marker-end="url(#arr13)"/>
+    <text x="96" y="56" font-size="9" fill="#2563eb">A</text>
+    <line x1="120" y1="110" x2="120" y2="84" stroke="#475569" marker-end="url(#arr13)"/>
+    <text x="124" y="100" font-size="9" fill="#92400e">B</text>
+  </g>
+  <defs><marker id="arr13" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#475569"/></marker></defs>
+
+  <g transform="translate(330,100)" font-size="13" fill="#222">
+    <text x="0" y="0">A = ∂f/∂x , B = ∂f/∂u</text>
+    <text x="0" y="28" fill="#d97706">u* = −(BᵀQB+ρI)⁻¹BᵀQ(Ax−x_g)</text>
+    <text x="0" y="56" fill="#2563eb">S = ∂u*/∂x</text>
+    <text x="20" y="80" fill="#2563eb">= −(BᵀQB+ρI)⁻¹ BᵀQ A</text>
+  </g>
+
+  <text x="20" y="350" font-size="11" fill="#666">要点：MPC 每一步都把非线性模型在状态 xₖ 处用雅可比 A,B 线性化，再解一个二次规划。灵敏度 S 揭示"状态稍变时最优控制该如何随之调整"，是 LQR 增益的来源。</text>
+</svg>

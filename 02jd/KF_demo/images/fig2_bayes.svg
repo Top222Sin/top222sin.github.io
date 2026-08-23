@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L1.2 贝叶斯视角：更新=高斯乘积，预测=卷积</text>
+  <defs>
+    <marker id="arr2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#555"/>
+    </marker>
+  </defs>
+  <!-- 更新：乘积 -->
+  <rect x="40" y="60" width="280" height="140" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="180" y="85" font-size="14" font-weight="bold" fill="#14532d" text-anchor="middle">更新 = 先验 × 似然（积）</text>
+  <text x="180" y="112" font-size="13" fill="#14532d" text-anchor="middle">N(μ₁,σ₁²) × N(μ₂,σ₂²) → N(μ,σ²)</text>
+  <text x="180" y="137" font-size="13" fill="#14532d" text-anchor="middle">μ = (μ₁σ₂²+μ₂σ₁²)/(σ₁²+σ₂²)</text>
+  <text x="180" y="162" font-size="13" fill="#14532d" text-anchor="middle">1/σ² = 1/σ₁² + 1/σ₂² （精度相加）</text>
+  <text x="180" y="187" font-size="12" fill="#555" text-anchor="middle">方差一定变小：信息变多</text>
+  <!-- 预测：卷积 -->
+  <rect x="360" y="60" width="280" height="140" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="500" y="85" font-size="14" font-weight="bold" fill="#1e3a8a" text-anchor="middle">预测 = x + w（卷积）</text>
+  <text x="500" y="112" font-size="13" fill="#1e3a8a" text-anchor="middle">Var(x+w) = Var(x) + Var(w)</text>
+  <text x="500" y="137" font-size="13" fill="#1e3a8a" text-anchor="middle">对应 p⁻ = p + q</text>
+  <text x="500" y="162" font-size="12" fill="#555" text-anchor="middle">方差一定变大：没有新信息</text>
+  <!-- 两个高斯相乘示意 -->
+  <g transform="translate(60,230)">
+    <path d="M0,90 Q45,0 90,90" fill="none" stroke="#2563eb" stroke-width="2"/>
+    <path d="M130,90 Q175,25 220,90" fill="none" stroke="#16a34a" stroke-width="2"/>
+    <path d="M70,90 Q95,10 120,90" fill="none" stroke="#d97706" stroke-width="3"/>
+    <text x="45" y="108" font-size="12" fill="#2563eb" text-anchor="middle">先验</text>
+    <text x="175" y="108" font-size="12" fill="#16a34a" text-anchor="middle">似然</text>
+    <text x="95" y="30" font-size="12" fill="#d97706" text-anchor="middle">后验(更窄)</text>
+  </g>
+  <!-- 信息形式 -->
+  <rect x="360" y="230" width="280" height="100" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="500" y="255" font-size="13" font-weight="bold" fill="#78350f" text-anchor="middle">信息形式（伏笔 L2.2）</text>
+  <text x="500" y="280" font-size="13" fill="#78350f" text-anchor="middle">Ω = P⁻¹，更新 Ω = Ω⁻ + HᵀR⁻¹H</text>
+  <text x="500" y="304" font-size="12" fill="#78350f" text-anchor="middle">更新只是加法 → SLAM 因子图的秘密</text>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 270" width="680" height="270" font-family="Menlo, Consolas, monospace" font-size="12">
+  <rect x="0" y="0" width="680" height="270" fill="#fbfcfe"/>
+  <text x="20" y="22" font-size="14" font-weight="bold" fill="#1f2933">图一：推理引擎后端分层 —— "这层"= 最底的手调微内核</text>
+  <rect x="200" y="40" width="280" height="34" rx="6" fill="#fff" stroke="#64748b"/>
+  <text x="340" y="62" fill="#334155" text-anchor="middle">应用 / 模型 (ResNet, LLM...)</text>
+  <rect x="200" y="86" width="280" height="34" rx="6" fill="#fff" stroke="#64748b"/>
+  <text x="340" y="108" fill="#334155" text-anchor="middle">NCNN / MNN 图调度 + 内存管理</text>
+  <rect x="160" y="132" width="360" height="90" rx="6" fill="#eef2ff" stroke="#6366f1"/>
+  <text x="340" y="152" fill="#3730a3" font-weight="bold" text-anchor="middle">← 这层：ARM 微内核 (ukernel)</text>
+  <g font-size="11">
+    <rect x="176" y="160" width="104" height="26" fill="#fff" stroke="#6366f1"/><text x="228" y="177" fill="#3730a3" text-anchor="middle">GEMM 矩阵乘</text>
+    <rect x="288" y="160" width="104" height="26" fill="#fff" stroke="#6366f1"/><text x="340" y="177" fill="#3730a3" text-anchor="middle">变换(FFT/Winograd)</text>
+    <rect x="400" y="160" width="104" height="26" fill="#fff" stroke="#6366f1"/><text x="452" y="177" fill="#3730a3" text-anchor="middle">量化编解码</text>
+  </g>
+  <text x="340" y="210" fill="#4338ca" text-anchor="middle">MNN 此层直接复用 KleidiAI 的 kai ukernels</text>
+  <rect x="200" y="234" width="280" height="28" rx="6" fill="#ecfdf5" stroke="#10b981"/>
+  <text x="340" y="253" fill="#065f46" text-anchor="middle">硅：NEON(128b) / SVE2 / SME2</text>
+  <defs><marker id="sm" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#475569"/></marker></defs>
+  <line x1="340" y1="222" x2="340" y2="234" stroke="#475569" stroke-width="1.4" marker-end="url(#sm)"/>
+  <line x1="340" y1="120" x2="340" y2="132" stroke="#475569" stroke-width="1.4" marker-end="url(#sm)"/>
+  <line x1="340" y1="74" x2="340" y2="86" stroke="#475569" stroke-width="1.4" marker-end="url(#sm)"/>
+</svg>

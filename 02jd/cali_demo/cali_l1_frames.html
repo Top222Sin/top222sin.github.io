@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L1.1 坐标变换与刚体变换基础 标定要解决的核心问题只有一个：把”相机看到的”和”机械臂知道的”放进同一个坐标系。这第一步不晕坐标，后面手眼标定、TCP 标定全是它的延伸。   一、标定涉及的四大坐标系   坐标系 符号约定 说明    世界 &#x2F; 标定板系 target 标定板所在，作为参考真值   相机系 cam 原点在光心，Z 轴沿光轴   机器人基座系 base 机械臂控制器知道的”家”">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L1.1 坐标变换与刚体变换基础">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cali_demo/cali_l1_frames.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L1.1 坐标变换与刚体变换基础 标定要解决的核心问题只有一个：把”相机看到的”和”机械臂知道的”放进同一个坐标系。这第一步不晕坐标，后面手眼标定、TCP 标定全是它的延伸。   一、标定涉及的四大坐标系   坐标系 符号约定 说明    世界 &#x2F; 标定板系 target 标定板所在，作为参考真值   相机系 cam 原点在光心，Z 轴沿光轴   机器人基座系 base 机械臂控制器知道的”家”">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/cali_demo/images/fig1_frames.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.910Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/cali_demo/images/fig1_frames.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cali_demo/cali_l1_frames">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cali_demo/cali_l1_frames.html","path":"02jd/cali_demo/cali_l1_frames.html","title":"L1.1 坐标变换与刚体变换基础"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L1.1 坐标变换与刚体变换基础 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L1-1-%E5%9D%90%E6%A0%87%E5%8F%98%E6%8D%A2%E4%B8%8E%E5%88%9A%E4%BD%93%E5%8F%98%E6%8D%A2%E5%9F%BA%E7%A1%80"><span class="nav-number">1.</span> <span class="nav-text">L1.1 坐标变换与刚体变换基础</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E6%A0%87%E5%AE%9A%E6%B6%89%E5%8F%8A%E7%9A%84%E5%9B%9B%E5%A4%A7%E5%9D%90%E6%A0%87%E7%B3%BB"><span class="nav-number">1.1.</span> <span class="nav-text">一、标定涉及的四大坐标系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E9%BD%90%E6%AC%A1%E5%8F%98%E6%8D%A2%E7%9F%A9%E9%98%B5-T-R-t-0-1"><span class="nav-number">1.2.</span> <span class="nav-text">二、齐次变换矩阵 T &#x3D; [R t; 0 1]</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%8D%E5%90%88%E9%A1%BA%E5%BA%8F%E7%9A%84%E6%8E%A8%E5%AF%BC%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E2%80%9D%E4%BB%8E%E5%8F%B3%E5%BE%80%E5%B7%A6%E4%B9%98%E2%80%9D%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">复合顺序的推导（为什么”从右往左乘”）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%9B%9B%E7%A7%8D%E6%97%8B%E8%BD%AC%E8%A1%A8%E7%A4%BA%EF%BC%88%E4%BD%95%E6%97%B6%E7%94%A8%E5%93%AA%E4%B8%AA%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、四种旋转表示（何时用哪个）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%8B%E8%BD%AC%E8%A1%A8%E7%A4%BA%E7%9A%84%E9%80%89%E6%8B%A9%E5%86%B3%E7%AD%96%E8%A1%A8%EF%BC%88%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">旋转表示的选择决策表（面试高频）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88cali-l1-frames-cpp%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、代码走读（cali_l1_frames.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.6.</span> <span class="nav-text">六、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.7.</span> <span class="nav-text">七、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L1.1 坐标变换与刚体变换基础
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L1_FRAMES</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L1-1-坐标变换与刚体变换基础"><a href="#L1-1-坐标变换与刚体变换基础" class="headerlink" title="L1.1 坐标变换与刚体变换基础"></a>L1.1 坐标变换与刚体变换基础</h1><blockquote>
+<p>标定要解决的核心问题只有一个：<strong>把”相机看到的”和”机械臂知道的”放进同一个坐标系</strong>。<br>这第一步不晕坐标，后面手眼标定、TCP 标定全是它的延伸。</p>
+</blockquote>
+<hr>
+<h2 id="一、标定涉及的四大坐标系"><a href="#一、标定涉及的四大坐标系" class="headerlink" title="一、标定涉及的四大坐标系"></a>一、标定涉及的四大坐标系</h2><table>
+<thead>
+<tr>
+<th>坐标系</th>
+<th>符号约定</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>世界 / 标定板系</td>
+<td><code>target</code></td>
+<td>标定板所在，作为参考真值</td>
+</tr>
+<tr>
+<td>相机系</td>
+<td><code>cam</code></td>
+<td>原点在光心，Z 轴沿光轴</td>
+</tr>
+<tr>
+<td>机器人基座系</td>
+<td><code>base</code></td>
+<td>机械臂控制器知道的”家”</td>
+</tr>
+<tr>
+<td>工具 / 末端系</td>
+<td><code>gripper</code></td>
+<td>法兰盘或手爪，TCP 在其上</td>
+</tr>
+</tbody></table>
+<p><strong>记号约定（全文统一）</strong>：<code>T_A2B</code> 表示<strong>把 A 系坐标变换到 B 系的矩阵</strong>（A 在 B 下的位姿）：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">p_B = T_A2B · p_A          （点变换: A 系点 → B 系坐标）</span><br><span class="line">T_A2C = T_B2C · T_A2B      （复合: 先 A→B 再 B→C, 左乘）</span><br><span class="line">例: T_target2cam = 标定板（target）在相机（cam）系下的位姿</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p><strong>记号易混淆提醒</strong>：有的资料写 <code>T_AB</code> 表示”A 到 B 的变换”（方向同本文），有的写”B 在 A 下的位姿”（方向相反）——读任何手眼标定代码前，先确认它的记号约定，否则 AX=XB 的方向会差一个对称。<strong>本文的检验法</strong>：<code>T_A2B</code> 的”上标”是源系 A、”下标”是目标系 B；链式复合时，<strong>左侧矩阵的目标系 = 右侧矩阵的源系</strong>（B2C 的目标 C 接 A2B 的源 A 之间靠 B 衔接）。</p>
+</blockquote>
+<h2 id="二、齐次变换矩阵-T-R-t-0-1"><a href="#二、齐次变换矩阵-T-R-t-0-1" class="headerlink" title="二、齐次变换矩阵 T = [R t; 0 1]"></a>二、齐次变换矩阵 T = [R t; 0 1]</h2><p>刚体位姿用一个 4×4 矩阵表示：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">T = [ R   t ]      R ∈ SO(3) 旋转,  t ∈ R³ 平移</span><br><span class="line">    [ 0   1 ]</span><br></pre></td></tr></tbody></table></figure>
+
+<p>三条铁律（务必记牢，按本文 <code>T_A2B</code> 记法）：</p>
+<ul>
+<li><strong>点变换</strong>：<code>p_B = T_A2B · p_A</code>（A 系点 → B 系坐标）</li>
+<li><strong>复合</strong>：<code>T_A2C = T_B2C · T_A2B</code>（先 A→B 再 B→C，左乘）</li>
+<li><strong>求逆</strong>：<code>T_A2B⁻¹ = T_B2A = [ Rᵀ  -Rᵀ·t ; 0  1 ]</code>（闭式最直观且严格保持刚体结构；<code>cv::invert</code> SVD 版是通用矩阵求逆，不保证 SO(3) 结构，逆变换优先用闭式）</li>
+</ul>
+<p>本 demo 的测试 3 就验证了坐标链：<br><code>T_target2base = T_gripper2base · T_cam2gripper · T_target2cam</code></p>
+<h3 id="复合顺序的推导（为什么”从右往左乘”）"><a href="#复合顺序的推导（为什么”从右往左乘”）" class="headerlink" title="复合顺序的推导（为什么”从右往左乘”）"></a>复合顺序的推导（为什么”从右往左乘”）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">p_cam = T_target2cam · p_target     （板系→相机系）</span><br><span class="line">p_gripper = T_cam2gripper · p_cam   （相机系→法兰系）</span><br><span class="line">p_base = T_gripper2base · p_gripper （法兰系→基座系）</span><br><span class="line">代入: p_base = T_gripper2base · T_cam2gripper · T_target2cam · p_target</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>记忆口诀</strong>：链式变换从右往左读，<strong>左侧矩阵的目标系 = 右侧矩阵的源系</strong>（<code>T_cam2gripper</code> 的目标 gripper 接 <code>T_gripper2base</code> 的源 gripper）。写链时把”谁在谁的系里”标出来，错不了。</p>
+<h2 id="三、四种旋转表示（何时用哪个）"><a href="#三、四种旋转表示（何时用哪个）" class="headerlink" title="三、四种旋转表示（何时用哪个）"></a>三、四种旋转表示（何时用哪个）</h2><table>
+<thead>
+<tr>
+<th>表示</th>
+<th>参数</th>
+<th>优点</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>旋转矩阵 R</td>
+<td>9</td>
+<td>直接构造变换，无奇点</td>
+<td>内部计算、组装 T</td>
+</tr>
+<tr>
+<td>轴角 / 旋转向量</td>
+<td>3（轴×角）</td>
+<td>紧凑、连续、OpenCV 默认</td>
+<td><code>Rodrigues</code> 互转、优化变量</td>
+</tr>
+<tr>
+<td>四元数 q</td>
+<td>4（w,x,y,z）</td>
+<td>无万向锁、球面插值稳</td>
+<td>姿态插值、SLAM、滤波</td>
+</tr>
+<tr>
+<td>欧拉角</td>
+<td>3（yaw/pitch/roll）</td>
+<td>人类可读</td>
+<td>示教器显示、调试</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>关键认知：<strong>欧拉角有奇点（万向锁）</strong>，优化和组合变换里永远用 R / 四元数 / 旋转向量，欧拉角只用于”给人看”。</p>
+</blockquote>
+<h3 id="旋转表示的选择决策表（面试高频）"><a href="#旋转表示的选择决策表（面试高频）" class="headerlink" title="旋转表示的选择决策表（面试高频）"></a>旋转表示的选择决策表（面试高频）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">需要链式相乘 / 求逆 / 组装 T  →  旋转矩阵 R（最直接）</span><br><span class="line">需要作为优化变量（手眼/位姿图）→  轴角/旋转向量（3 参数无约束）</span><br><span class="line">需要插值 / 滤波（四元数球面线性插值）→  四元数（无万向锁）</span><br><span class="line">需要给人看 / 示教器显示 →  欧拉角（只在最后一步转换）</span><br><span class="line">需要计算雅可比（SE(3) 扰动）→  旋量/李代数（Jacobian_demo L3.5）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程结论</strong>：机器人/视觉代码内部清一色 R 和四元数，欧拉角只在 UI 层出现——你在 08robot 的 URDF/控制器里看到的姿态几乎全是四元数或旋转矩阵。</p>
+<h2 id="四、代码走读（cali-l1-frames-cpp）"><a href="#四、代码走读（cali-l1-frames-cpp）" class="headerlink" title="四、代码走读（cali_l1_frames.cpp）"></a>四、代码走读（cali_l1_frames.cpp）</h2><ul>
+<li><code>randPose()</code>：小幅随机旋转（Rodrigues）+ 随机平移，造一个 <code>T</code>。</li>
+<li><code>inv44()</code> / <code>applyPose()</code>：求逆、点变换。</li>
+<li><code>rvec2quat / quat2R / R2euler / euler2R</code>：四种表示的互转（手写，看清数学）。</li>
+<li>三个测试：① T·T⁻¹=I（20 组）② 旋转表示互转闭环（20 组）③ 坐标链一致性。</li>
+<li>全部 <code>norm(err) &lt; 1e-6</code> 才打印 <code>[PASS]</code>。</li>
+</ul>
+<h2 id="五、工程落点（真实项目）"><a href="#五、工程落点（真实项目）" class="headerlink" title="五、工程落点（真实项目）"></a>五、工程落点（真实项目）</h2><ul>
+<li><strong>OpenCV</strong> <code>cv::Rodrigues</code>（旋转向量↔矩阵）、<code>cv::composeRT</code>（链式组合）、<code>cv::invert</code>（SVD 求逆）——本 demo 的互转/求逆全部有 OpenCV 对应函数。</li>
+<li><strong>Eigen</strong> <code>Isometry3d</code> / <code>AngleAxis</code> / <code>Quaterniond</code>：机器人代码里的事实标准（URDF 解析、moveit 全是它）。</li>
+<li>**ROS <code>tf2</code>**：<code>transform</code> 消息、<code>lookupTransform</code>、<code>doTransform</code>——坐标系图（frame graph）的运行时管理，标定结果最终发布为静态 tf。</li>
+<li><strong>UR/协作臂 SDK</strong>：<code>get_actual_tcp_pose</code> 返回的就是 <code>T_tcp2base</code>（工具在基座下的位姿）——与本文 T_A2B 记号一致。</li>
+</ul>
+<h2 id="六、自检"><a href="#六、自检" class="headerlink" title="六、自检"></a>六、自检</h2><ul>
+<li>改 <code>randPose()</code> 的旋转角到接近 π，看欧拉互转是否出现数值抖动（体会奇点）。</li>
+<li>把坐标链顺序写错成 <code>T_cam2gripper · T_gripper2base · T_target2cam</code>，测试 3 是否立刻 FAIL（验证你真的懂左乘顺序）。</li>
+<li>挑战：<code>T_ab</code> 的逆为什么是 <code>[Rᵀ, −Rᵀt]</code>？（因为逆变换 = 把 b 系坐标变回 a 系——R 的转置是旋转的逆，−Rᵀt 是”原点的位移”在新系下的坐标）</li>
+</ul>
+<p><img src="/02jd/cali_demo/images/fig1_frames.svg" alt="L1.1 坐标变换与坐标链"></p>
+<h2 id="七、下一步"><a href="#七、下一步" class="headerlink" title="七、下一步"></a>七、下一步</h2><p>进入 <a href="/02jd/cali_demo/cali_l1_board.html">L1.2 标定板</a>：没有板，就没有 <code>T_target2cam</code> 这个输入。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L1_FRAMES</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

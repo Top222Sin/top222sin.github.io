@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L2.4 递推最小二乘 RLS（&#x3D;q→0 的 KF） 一句话：来一个数据算一次，答案 &#x3D; 攒齐了一起算——RLS 与批量 LS 逐位一致；加上过程噪声（Q&gt;0）就是 KF，一家人。   一、递推公式参数 θ 的批量 LS 需要所有数据到齐。RLS 每来一个观测 (hᵀ, y) 增量更新：  预测：ŷ &#x3D; hᵀθₖ₋₁增益：K &#x3D; P⁻h &#x2F; (hᵀP⁻h + R)更新：θₖ &#x3D; θₖ₋₁ +">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L2.4 递推最小二乘 RLS（&#x3D;q→0 的 KF）">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l2_rls.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L2.4 递推最小二乘 RLS（&#x3D;q→0 的 KF） 一句话：来一个数据算一次，答案 &#x3D; 攒齐了一起算——RLS 与批量 LS 逐位一致；加上过程噪声（Q&gt;0）就是 KF，一家人。   一、递推公式参数 θ 的批量 LS 需要所有数据到齐。RLS 每来一个观测 (hᵀ, y) 增量更新：  预测：ŷ &#x3D; hᵀθₖ₋₁增益：K &#x3D; P⁻h &#x2F; (hᵀP⁻h + R)更新：θₖ &#x3D; θₖ₋₁ +">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/images/fig9_rls.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.950Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/images/fig9_rls.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l2_rls">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l2_rls.html","path":"02jd/Least_squares_method_demo/ls_l2_rls.html","title":"L2.4 递推最小二乘 RLS（=q→0 的 KF）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L2.4 递推最小二乘 RLS（=q→0 的 KF） | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L2-4-%E9%80%92%E6%8E%A8%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98-RLS%EF%BC%88-q%E2%86%920-%E7%9A%84-KF%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">L2.4 递推最小二乘 RLS（&#x3D;q→0 的 KF）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E9%80%92%E6%8E%A8%E5%85%AC%E5%BC%8F"><span class="nav-number">1.1.</span> <span class="nav-text">一、递推公式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E4%B8%8E-KF-%E7%9A%84%E8%A1%80%E7%BC%98"><span class="nav-number">1.2.</span> <span class="nav-text">二、与 KF 的血缘</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RLS-%E5%85%AC%E5%BC%8F%E7%9A%84%E6%8E%A8%E5%AF%BC%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E5%A2%9E%E7%9B%8A-P%E2%81%BBh-h%E1%B5%80P%E2%81%BBh-R-%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">RLS 公式的推导（为什么增益 &#x3D; P⁻h&#x2F;(hᵀP⁻h+R)）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81demo-%E8%AE%BE%E5%AE%9A"><span class="nav-number">1.3.</span> <span class="nav-text">三、demo 设定</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88ls-l2-rls-cpp%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、代码走读（ls_l2_rls.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.5.</span> <span class="nav-text">五、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.6.</span> <span class="nav-text">六、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.7.</span> <span class="nav-text">七、下一步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%84%E5%BC%9F%E4%BB%93%E5%BA%93%E8%81%94%E7%B3%BB"><span class="nav-number">1.8.</span> <span class="nav-text">兄弟仓库联系</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L2.4 递推最小二乘 RLS（=q→0 的 KF）
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Least_squares_method_demo/">LEAST_SQUARES_METHOD_DEMO</a></li>
+            <li>LS_L2_RLS</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L2-4-递推最小二乘-RLS（-q→0-的-KF）"><a href="#L2-4-递推最小二乘-RLS（-q→0-的-KF）" class="headerlink" title="L2.4 递推最小二乘 RLS（=q→0 的 KF）"></a>L2.4 递推最小二乘 RLS（=q→0 的 KF）</h1><blockquote>
+<p>一句话：<strong>来一个数据算一次，答案 = 攒齐了一起算</strong>——RLS 与批量 LS 逐位一致；加上过程噪声（Q&gt;0）就是 KF，一家人。</p>
+</blockquote>
+<hr>
+<h2 id="一、递推公式"><a href="#一、递推公式" class="headerlink" title="一、递推公式"></a>一、递推公式</h2><p>参数 <code>θ</code> 的批量 LS 需要所有数据到齐。RLS 每来一个观测 <code>(hᵀ, y)</code> 增量更新：</p>
+<blockquote>
+<p>预测：ŷ = hᵀθₖ₋₁<br>增益：K = P⁻h / (hᵀP⁻h + R)<br>更新：θₖ = θₖ₋₁ + K(y − ŷ)<br>协方差：P = (I−Khᵀ)P⁻(I−Khᵀ)ᵀ + KRKᵀ  （Joseph 形式，保正定）</p>
+</blockquote>
+<p><code>P⁻</code> 是上一步的先验协方差。<code>R</code> 是观测噪声方差——必须与真实 σ² 一致，否则滤波器错信观测。</p>
+<h2 id="二、与-KF-的血缘"><a href="#二、与-KF-的血缘" class="headerlink" title="二、与 KF 的血缘"></a>二、与 KF 的血缘</h2><p>RLS 是<strong>过程噪声 Q=0 的 KF</strong>：参数恒定（无过程模型），只靠观测修正。一旦 <code>Q&gt;0</code>（参数允许漂移），就成了 KF——KF_demo L1.1 的同款结论。遗忘因子 <code>λ</code> 是”软 Q”：<code>P⁻ = P/λ</code> 等价于给旧信息指数降权，<code>λ&lt;1</code> 时跟踪时变参数。</p>
+<blockquote>
+<p><strong>等价条件（重要）</strong>：RLS 与<strong>无正则批量 LS</strong> 逐位一致需要 <strong>P₀⁻¹→0（无穷大先验）</strong> + λ=1 + 噪声权重一致——有限 P₀ 相当于额外先验/正则（MAP 估计）。demo 中若 P₀ 很大（先验弱）则接近批量 LS；严格逐位一致需说明初始化。遗忘因子 λ 的”软 Q”是<strong>近似直觉</strong>：<code>P⁻=P/λ</code> 等价于协方差膨胀，对应状态相关的过程噪声 Q=(1/λ−1)P（不是固定 Q）。另注意：标准确定性 RLS 递推用 <code>K=P⁻h/(λ+hᵀP⁻h)</code>（λ 在分母），本文 <code>hᵀP⁻h+R</code> 是随机/KF 形式（R 是噪声方差）——两种写法对应不同参数化，需明确所用形式。</p>
+</blockquote>
+<h3 id="RLS-公式的推导（为什么增益-P⁻h-hᵀP⁻h-R-）"><a href="#RLS-公式的推导（为什么增益-P⁻h-hᵀP⁻h-R-）" class="headerlink" title="RLS 公式的推导（为什么增益 = P⁻h/(hᵀP⁻h+R)）"></a>RLS 公式的推导（为什么增益 = P⁻h/(hᵀP⁻h+R)）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">参数恒定模型: θₖ = θₖ₋₁（无过程噪声）; 观测 yₖ = hₖᵀθ + vₖ</span><br><span class="line">贝叶斯更新（高斯乘积, KF_demo L1.2）:</span><br><span class="line">  先验 θ ~ N(θₖ₋₁, P⁻); 似然 yₖ ~ N(hᵀθ, R)</span><br><span class="line">  后验 = 乘积 → 均值更新 = 先验 + 增益×创新</span><br><span class="line">  增益 K = P⁻h/(hᵀP⁻h + R)（= L1.3 的 K 公式矩阵版!）</span><br><span class="line">  协方差 P = (I−Khᵀ)P⁻（+ Joseph 修正保正定）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>核心洞察</strong>：RLS 的增益公式与一维 KF 的 <code>K = p⁻/(p⁻+r)</code> <strong>逐符号同构</strong>（标量→矩阵）——这不是巧合，是同一个高斯贝叶斯更新在参数估计场景的重写。<strong>RLS=KF 的边界条件 Q=0</strong>：加 Q 就是 KF，拿掉 Q 就是 RLS——一条血缘链。<strong>记号统一</strong>：Joseph 更新里 <code>P=(I−Khᵀ)P⁻(I−Khᵀ)ᵀ+KRKᵀ</code> 的右侧 <code>P⁻</code> 是<strong>更新前</strong>的先验协方差（代码走读里写 <code>P</code> 是省略下标，易误实现，务必注意）。</p>
+<h2 id="三、demo-设定"><a href="#三、demo-设定" class="headerlink" title="三、demo 设定"></a>三、demo 设定</h2><p>① 批量一致性：n=60 点，直线 <code>y=1.5x+0.5</code>，σ=0.2（R=0.04），比较 RLS 终值与批量闭式解。<br>② 遗忘因子：30 步后斜率从 1.0 突变到 3.0，比较 <code>λ=0.9</code> 与 <code>λ=1.0</code> 的跟踪误差。</p>
+<h2 id="四、代码走读（ls-l2-rls-cpp）"><a href="#四、代码走读（ls-l2-rls-cpp）" class="headerlink" title="四、代码走读（ls_l2_rls.cpp）"></a>四、代码走读（ls_l2_rls.cpp）</h2><ul>
+<li>第 20–48 行：<code>track(lam)</code> 函数——带遗忘因子的 RLS，n=60，第 29 行斜率 30 步后突变。</li>
+<li>第 31–37 行：核心递推——<code>P⁻=P/λ</code>（第 32 行）、<code>K=P⁻h/S</code>（第 35 行）、<code>θ+=K·e</code>（第 37 行）。</li>
+<li>第 38–44 行：<strong>Joseph 更新</strong> <code>P=(I−Khᵀ)P(I−Khᵀ)ᵀ+KRKᵀ</code>——比 <code>P−KSKᵀ</code> 的简写形式数值稳定，保正定。</li>
+<li>第 58–88 行：① RLS vs 批量 LS——同样的数据，RLS 递推（第 73–86 行，Joseph 更新第 80–85 行）与批量闭式解（第 68–69 行）比对，第 87 行 <code>chk tol=1e-8</code>。</li>
+<li>第 89–92 行：② <code>track(0.9)</code> vs <code>track(1.0)</code>，λ=0.9 跟踪误差应 &lt; λ=1.0 的 75%。</li>
+</ul>
+<h2 id="五、你会看到什么"><a href="#五、你会看到什么" class="headerlink" title="五、你会看到什么"></a>五、你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">=== L2.4 递推最小二乘 RLS ===</span><br><span class="line">  RLS = 批量 LS(逐位)           err=4.3e-10 tol=1e-08  PASS</span><br><span class="line">  [demo] RLS θ=[1.48973, 0.54156] = 批量 [1.48973, 0.54156]</span><br><span class="line">  遗忘因子 RLS 跟踪突变          err=0.0e+00 tol=5e-01  PASS</span><br><span class="line">  [demo] 参数突变后跟踪误差: λ=0.9 → 0.658 vs λ=1.0 → 1.332</span><br><span class="line">  [结论] RLS 来一个数据算一次,答案=攒齐了一起算(KF_demo L1.1 同款结论);</span><br><span class="line">        遗忘因子=指数降权旧数据,突变后 ~1/(1−λ) 步跟上。</span><br><span class="line">=== 2 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>RLS 与批量 LS 的差 ~7e-9（仅浮点累积误差，代数上应恒等）。λ=1.0 时旧数据不降权，突变后参数”记忆”太长，跟踪误差 ~1.4；λ=0.9 时有效记忆 ~1/(1−0.9)=10 步，突变后快速跟上，误差 ~0.4。噪声随机，每次略异。</p>
+</blockquote>
+<p><img src="/02jd/Least_squares_method_demo/images/fig9_rls.svg" alt="L2.4 递推最小二乘 RLS（=q→0 的 KF）"></p>
+<h2 id="六、自检"><a href="#六、自检" class="headerlink" title="六、自检"></a>六、自检</h2><ul>
+<li>⚠ 开发踩坑：把 R 调到 1.0（远大于真实 σ²=0.04），看 RLS 是否变迟钝（滤波器太不信观测）。</li>
+<li>思考：为什么 Joseph 形式 <code>P=(I−Khᵀ)P(I−Khᵀ)ᵀ+KRKᵀ</code> 比简写 <code>P−KSKᵀ</code> 更稳？（后者可能因数值误差失对称/非正定。）</li>
+<li>λ 调到 0.5（激进遗忘），看稳态噪声是否变大（跟踪快但方差大）——偏差-方差权衡。</li>
+</ul>
+<h2 id="七、下一步"><a href="#七、下一步" class="headerlink" title="七、下一步"></a>七、下一步</h2><p>进入 <a href="/02jd/Least_squares_method_demo/ls_l2_constraint.html">L2.5 等式约束最小二乘</a>——当参数有先验约束（如已知增益比），用 KKT 把约束硬塞进解。</p>
+<h2 id="兄弟仓库联系"><a href="#兄弟仓库联系" class="headerlink" title="兄弟仓库联系"></a>兄弟仓库联系</h2><p>RLS + 过程噪声 = <a href="/02jd/KF_demo/README.html">KF</a> L1.1（血缘关系）；<a href="/02jd/control_demo/README.html">control</a> 的自适应滤波、<a href="/02jd/cali_demo/README.html">cali</a> 的在线标定都是 RLS 的变体；Joseph 更新是 KF 协方差更新的标准形式。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Least_squares_method_demo/">LEAST_SQUARES_METHOD_DEMO</a></li>
+            <li>LS_L2_RLS</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

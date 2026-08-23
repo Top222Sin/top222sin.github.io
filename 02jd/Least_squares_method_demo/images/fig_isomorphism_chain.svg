@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 440" font-family="Segoe UI, Arial, sans-serif">
+  <!-- 背景 -->
+  <rect x="0" y="0" width="680" height="440" fill="#f7f9fc"/>
+  <!-- 标题 -->
+  <text x="340" y="22" text-anchor="middle" font-size="15" font-weight="bold" fill="#0c447c">跨篇同构链：LS / KF / neon / cali 共享「逐外积累加 → 解 M·δ=g」</text>
+
+  <!-- ============ 顶部 5 张变体卡 ============ -->
+  <!-- 卡1 LS·GN-LM (L2.1) -->
+  <rect x="12" y="34" width="124" height="150" rx="8" fill="#ffffff" stroke="#185FA5" stroke-width="1.2"/>
+  <text x="74" y="52" text-anchor="middle" font-size="11" font-weight="bold" fill="#185FA5">LS · GN/LM</text>
+  <text x="74" y="65" text-anchor="middle" font-size="9" fill="#5b6770">L2.1 雅可比</text>
+  <rect x="24" y="78" width="100" height="44" rx="4" fill="#eef4fb"/>
+  <text x="74" y="98" text-anchor="middle" font-size="12" fill="#0c447c">H ≈ JᵀJ</text>
+  <text x="74" y="113" text-anchor="middle" font-size="8.5" fill="#0c447c">法方程黑塞</text>
+  <text x="74" y="140" text-anchor="middle" font-size="8.5" fill="#5b6770">单个残差向量</text>
+  <text x="74" y="153" text-anchor="middle" font-size="8.5" fill="#5b6770">的二次型</text>
+  <text x="74" y="176" text-anchor="middle" font-size="8" fill="#A32D2D">→ 法方程 AᵀAx=Aᵀb</text>
+
+  <!-- 卡2 LS·BA/Schur (L4.10) -->
+  <rect x="140" y="34" width="124" height="150" rx="8" fill="#ffffff" stroke="#185FA5" stroke-width="1.2"/>
+  <text x="202" y="52" text-anchor="middle" font-size="11" font-weight="bold" fill="#185FA5">LS · BA/Schur</text>
+  <text x="202" y="65" text-anchor="middle" font-size="9" fill="#5b6770">L4.10 块法方程</text>
+  <rect x="152" y="78" width="100" height="44" rx="4" fill="#eef4fb"/>
+  <text x="202" y="98" text-anchor="middle" font-size="11.5" fill="#0c447c">H=ΣᵢJᵢᵀJᵢ</text>
+  <text x="202" y="113" text-anchor="middle" font-size="8.5" fill="#0c447c">逐残差外积累加</text>
+  <text x="202" y="140" text-anchor="middle" font-size="8.5" fill="#5b6770">边缘化 3D 点</text>
+  <text x="202" y="153" text-anchor="middle" font-size="8.5" fill="#5b6770">→ Schur 约化</text>
+  <text x="202" y="176" text-anchor="middle" font-size="8" fill="#A32D2D">S·δc=bc−Hcp·Hpp⁻¹·bp</text>
+
+  <!-- 卡3 LS·PCA (L4.9) -->
+  <rect x="268" y="34" width="124" height="150" rx="8" fill="#ffffff" stroke="#3B6D11" stroke-width="1.2"/>
+  <text x="330" y="52" text-anchor="middle" font-size="11" font-weight="bold" fill="#3B6D11">LS · PCA</text>
+  <text x="330" y="65" text-anchor="middle" font-size="9" fill="#5b6770">L4.9 低秩近似</text>
+  <rect x="280" y="78" width="100" height="44" rx="4" fill="#eef6ee"/>
+  <text x="330" y="98" text-anchor="middle" font-size="11" fill="#3B6D11">C=XᵀX=Σxₖxₖᵀ</text>
+  <text x="330" y="113" text-anchor="middle" font-size="8.5" fill="#3B6D11">协方差/Gram</text>
+  <text x="330" y="140" text-anchor="middle" font-size="8.5" fill="#5b6770">最佳秩-k 截断</text>
+  <text x="330" y="153" text-anchor="middle" font-size="8.5" fill="#5b6770">→ Eckart-Young</text>
+  <text x="330" y="176" text-anchor="middle" font-size="8" fill="#A32D2D">重建误差=被舍λ之和</text>
+
+  <!-- 卡4 KF·因子图 (KF_demo) -->
+  <rect x="396" y="34" width="124" height="150" rx="8" fill="#ffffff" stroke="#185FA5" stroke-width="1.2"/>
+  <text x="458" y="52" text-anchor="middle" font-size="11" font-weight="bold" fill="#185FA5">KF · 因子图</text>
+  <text x="458" y="65" text-anchor="middle" font-size="9" fill="#5b6770">KF_demo 批优化</text>
+  <rect x="408" y="78" width="100" height="44" rx="4" fill="#eef4fb"/>
+  <text x="458" y="96" text-anchor="middle" font-size="11" fill="#0c447c">Λ=ΣᵢJᵢᵀΩᵢJᵢ</text>
+  <text x="458" y="111" text-anchor="middle" font-size="8.5" fill="#0c447c">信息矩阵</text>
+  <text x="458" y="140" text-anchor="middle" font-size="8.5" fill="#5b6770">因子累加进 Inform.</text>
+  <text x="458" y="153" text-anchor="middle" font-size="8.5" fill="#5b6770">→ 信息滤波</text>
+  <text x="458" y="176" text-anchor="middle" font-size="8" fill="#A32D2D">≡ 批量贝叶斯 LS</text>
+
+  <!-- 卡5 neon·SME (neon_demo) -->
+  <rect x="524" y="34" width="124" height="150" rx="8" fill="#ffffff" stroke="#185FA5" stroke-width="1.2"/>
+  <text x="586" y="52" text-anchor="middle" font-size="11" font-weight="bold" fill="#185FA5">neon · SME</text>
+  <text x="586" y="65" text-anchor="middle" font-size="9" fill="#5b6770">neon_demo GEMM</text>
+  <rect x="536" y="78" width="100" height="44" rx="4" fill="#eef4fb"/>
+  <text x="586" y="98" text-anchor="middle" font-size="13" fill="#0c447c">ZA 外积</text>
+  <text x="586" y="113" text-anchor="middle" font-size="8.5" fill="#0c447c">累加进大矩阵</text>
+  <text x="586" y="140" text-anchor="middle" font-size="8.5" fill="#5b6770">SME 仅换数据复用</text>
+  <text x="586" y="153" text-anchor="middle" font-size="8.5" fill="#5b6770">不改结果</text>
+  <text x="586" y="176" text-anchor="middle" font-size="8" fill="#A32D2D">≡ GEMM 的 Σaᵢbᵢᵀ</text>
+
+  <!-- ============ 箭头汇流 ============ -->
+  <g stroke="#5b6770" stroke-width="1.4" fill="none">
+    <path d="M74,184 L74,214 L340,214"/>
+    <path d="M202,184 L202,206 L340,206"/>
+    <path d="M330,184 L330,206 L340,206"/>
+    <path d="M458,184 L458,214 L340,214"/>
+    <path d="M586,184 L586,214 L340,214"/>
+  </g>
+  <polygon points="340,206 332,200 332,212" fill="#5b6770"/>
+
+  <!-- ============ 底部统一范式框 ============ -->
+  <rect x="60" y="222" width="560" height="138" rx="10" fill="#0c447c" stroke="#0c447c" stroke-width="1.5"/>
+  <text x="340" y="244" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">统一范式（同构）：不同的物理，同一套线性代数</text>
+
+  <rect x="78" y="256" width="160" height="92" rx="6" fill="#ffffff"/>
+  <text x="158" y="276" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#0c447c">① 逐外积累加</text>
+  <text x="158" y="295" text-anchor="middle" font-size="9.5" fill="#0c447c">M = Σ aᵢaᵢᵀ</text>
+  <text x="158" y="309" text-anchor="middle" font-size="9.5" fill="#0c447c">（+信息 Ωᵢ：</text>
+  <text x="158" y="322" text-anchor="middle" font-size="9.5" fill="#0c447c"> JᵢᵀΩᵢJᵢ）</text>
+  <text x="158" y="338" text-anchor="middle" font-size="8" fill="#5b6770">SPD 对称正定</text>
+
+  <text x="266" y="300" text-anchor="middle" font-size="22" fill="#ffffff">→</text>
+
+  <rect x="286" y="256" width="160" height="92" rx="6" fill="#ffffff"/>
+  <text x="366" y="276" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#0c447c">② 解线性系统</text>
+  <text x="366" y="295" text-anchor="middle" font-size="11" fill="#0c447c">M · δ = g</text>
+  <text x="366" y="312" text-anchor="middle" font-size="8.8" fill="#0c447c">法方程 / 约化</text>
+  <text x="366" y="324" text-anchor="middle" font-size="8.8" fill="#0c447c">/ 信息滤波 / SME</text>
+  <text x="366" y="338" text-anchor="start" font-size="8" fill="#5b6770">QR/Cholesky/LDLᵀ</text>
+
+  <text x="454" y="300" text-anchor="middle" font-size="22" fill="#ffffff">→</text>
+
+  <rect x="474" y="256" width="128" height="92" rx="6" fill="#3B6D11"/>
+  <text x="538" y="276" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#ffffff">③ 增量/更新</text>
+  <text x="538" y="296" text-anchor="middle" font-size="9" fill="#ffffff">δ = 状态修正</text>
+  <text x="538" y="310" text-anchor="middle" font-size="9" fill="#ffffff">/ 主轴 / 权重</text>
+  <text x="538" y="324" text-anchor="middle" font-size="9" fill="#ffffff">/ 梯度步</text>
+  <text x="538" y="338" text-anchor="middle" font-size="8" fill="#d7eccf">dδ→0 即收敛</text>
+
+  <!-- ============ 互引链 ============ -->
+  <rect x="60" y="372" width="560" height="50" rx="8" fill="#ffffff" stroke="#185FA5" stroke-width="1"/>
+  <text x="340" y="390" text-anchor="middle" font-size="10" font-weight="bold" fill="#185FA5">互引链（同一范式，跨仓互证）</text>
+  <text x="340" y="406" text-anchor="middle" font-size="9" fill="#5b6770">L4.10 Schur BA ⇄ L4.9 PCA ⇄ KF 因子图信息矩阵 ⇄ neon SME ZA ⇄ Jacobian/cali 的 BA 重投影残差</text>
+  <text x="340" y="418" text-anchor="middle" font-size="8.5" fill="#A32D2D">核心不变量：Σᵢ Jᵢᵀ(·)Jᵢ 是「把局部信息累加进一个全局 SPD 矩阵」的通用写法</text>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L4 MPC：滚动时域 + 约束，且退化为 LQR</text>
+  <defs><marker id="a4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#555"/></marker></defs>
+
+  <!-- 上排：LQR vs MPC -->
+  <rect x="30" y="50" width="200" height="95" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="130" y="76" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">L2.5 LQR</text>
+  <text x="130" y="98" font-size="12" fill="#1e3a8a" text-anchor="middle">固定增益 u=−Kx</text>
+  <text x="130" y="118" font-size="12" fill="#1e3a8a" text-anchor="middle">无约束 · 闭环恒定</text>
+  <text x="130" y="138" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">K=[2.762,2.508]</text>
+
+  <rect x="450" y="50" width="200" height="95" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="550" y="76" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">L4 MPC</text>
+  <text x="550" y="98" font-size="12" fill="#14532d" text-anchor="middle">每步解 N 步 QP</text>
+  <text x="550" y="118" font-size="12" fill="#14532d" text-anchor="middle">滚动时域 · 含约束</text>
+  <text x="550" y="138" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">k_mpc=[2.762,2.508]</text>
+
+  <path d="M230,97 L450,97" stroke="#555" stroke-width="2" fill="none" marker-end="url(#a4)"/>
+  <text x="340" y="90" font-size="12" fill="#555" text-anchor="middle">加约束 + 反复求解</text>
+
+  <!-- 等价桥 -->
+  <rect x="160" y="165" width="360" height="46" rx="9" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="340" y="183" font-size="12.5" font-weight="bold" fill="#78350f" text-anchor="middle">终端代价 = P(DARE) ⇒ k_mpc ≡ K</text>
+  <text x="340" y="202" font-size="12" fill="#78350f" text-anchor="middle">对拍误差 1.3e-15 · 无约束 MPC == LQR</text>
+
+  <!-- 滚动时域闭环 -->
+  <rect x="30" y="240" width="110" height="70" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="85" y="268" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">量测</text>
+  <text x="85" y="288" font-size="12" fill="#1e3a8a" text-anchor="middle">x(t)</text>
+  <rect x="190" y="240" width="120" height="70" rx="9" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+  <text x="250" y="264" font-size="12" font-weight="bold" fill="#581c87" text-anchor="middle">解 QP</text>
+  <text x="250" y="284" font-size="12" fill="#581c87" text-anchor="middle">U* = −H⁻¹M x0</text>
+  <rect x="370" y="240" width="110" height="70" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="425" y="268" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">执行 u0</text>
+  <text x="425" y="288" font-size="12" fill="#14532d" text-anchor="middle">clip ±u_max</text>
+  <rect x="530" y="240" width="120" height="70" rx="9" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="590" y="264" font-size="12" font-weight="bold" fill="#78350f" text-anchor="middle">对象</text>
+  <text x="590" y="284" font-size="12" fill="#78350f" text-anchor="middle">x(t+1)</text>
+  <path d="M140,275 L190,275" stroke="#555" stroke-width="2" fill="none" marker-end="url(#a4)"/>
+  <path d="M310,275 L370,275" stroke="#555" stroke-width="2" fill="none" marker-end="url(#a4)"/>
+  <path d="M480,275 L530,275" stroke="#555" stroke-width="2" fill="none" marker-end="url(#a4)"/>
+  <path d="M530,310 C400,345 200,345 85,310" stroke="#555" stroke-width="2" fill="none" marker-end="url(#a4)"/>
+  <text x="305" y="338" font-size="12" fill="#555" text-anchor="middle">滚动：t→t+1 重新量测，再解一次</text>
+</svg>

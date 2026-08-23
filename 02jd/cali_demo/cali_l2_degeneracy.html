@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L2.3 退化（Degeneracy） ⭐ 标定里最隐蔽的坑：算法不报错，但结果完全不可信。退化就是”数据采集的运动模式不够”，导致某些自由度在数学上根本解不出来。   一、什么是退化手眼标定解的是 6 自由度 X。如果采集的运动只激活了其中一部分自由度，其余自由度”没被任何方程约束”，就出现：  系数矩阵 秩亏（rank-deficient） SVD 出现接近 0 的奇异值 求解器给出一个任意值">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L2.3 退化（Degeneracy） ⭐">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cali_demo/cali_l2_degeneracy.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L2.3 退化（Degeneracy） ⭐ 标定里最隐蔽的坑：算法不报错，但结果完全不可信。退化就是”数据采集的运动模式不够”，导致某些自由度在数学上根本解不出来。   一、什么是退化手眼标定解的是 6 自由度 X。如果采集的运动只激活了其中一部分自由度，其余自由度”没被任何方程约束”，就出现：  系数矩阵 秩亏（rank-deficient） SVD 出现接近 0 的奇异值 求解器给出一个任意值">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.910Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cali_demo/cali_l2_degeneracy">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cali_demo/cali_l2_degeneracy.html","path":"02jd/cali_demo/cali_l2_degeneracy.html","title":"L2.3 退化（Degeneracy） ⭐"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L2.3 退化（Degeneracy） ⭐ | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L2-3-%E9%80%80%E5%8C%96%EF%BC%88Degeneracy%EF%BC%89-%E2%AD%90"><span class="nav-number">1.</span> <span class="nav-text">L2.3 退化（Degeneracy） ⭐</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E9%80%80%E5%8C%96"><span class="nav-number">1.1.</span> <span class="nav-text">一、什么是退化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%80%E5%8C%96%E7%9A%84%E6%9C%AC%E8%B4%A8%EF%BC%88%E7%A7%A9-vs-%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">退化的本质（秩 vs 可观测性）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%9B%9B%E7%B1%BB%E5%85%B8%E5%9E%8B%E9%80%80%E5%8C%96%EF%BC%88%E6%9C%AC-demo-%E9%87%8F%E5%8C%96%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">二、四类典型退化（本 demo 量化）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AF%8F%E7%A7%8D%E9%80%80%E5%8C%96%E7%9A%84%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%E5%88%86%E6%9E%90%EF%BC%88%E5%A5%87%E5%BC%82%E5%80%BC%E8%B0%B1%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">每种退化的可观测性分析（奇异值谱）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%E5%88%86%E6%9E%90%EF%BC%88%E6%A0%B8%E5%BF%83%E6%96%B9%E6%B3%95%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、可观测性分析（核心方法）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9D%A1%E4%BB%B6%E6%95%B0%E9%98%88%E5%80%BC%E7%9A%84%E9%80%89%E5%8F%96%EF%BC%88%E7%BB%8F%E9%AA%8C%E5%80%BC%EF%BC%8C%E9%9C%80%E6%8C%89%E5%B0%BA%E5%BA%A6%E5%BD%92%E4%B8%80%E5%8C%96%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">条件数阈值的选取（经验值，需按尺度归一化）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E6%80%8E%E4%B9%88%E9%81%BF%E5%85%8D-%E6%80%8E%E4%B9%88%E6%95%91"><span class="nav-number">1.4.</span> <span class="nav-text">四、怎么避免 &#x2F; 怎么救</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%87%E6%A0%B7%E8%AE%BE%E8%AE%A1%E7%9A%84%E2%80%9D%E6%BF%80%E5%8A%B1%E7%9F%A9%E9%98%B5%E2%80%9D%EF%BC%88%E8%BF%90%E5%8A%A8%E5%A4%84%E6%96%B9%EF%BC%89"><span class="nav-number">1.4.1.</span> <span class="nav-text">采样设计的”激励矩阵”（运动处方）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.5.</span> <span class="nav-text">五、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">六、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.7.</span> <span class="nav-text">七、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L2.3 退化（Degeneracy） ⭐
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L2_DEGENERACY</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L2-3-退化（Degeneracy）-⭐"><a href="#L2-3-退化（Degeneracy）-⭐" class="headerlink" title="L2.3 退化（Degeneracy） ⭐"></a>L2.3 退化（Degeneracy） ⭐</h1><blockquote>
+<p>标定里最隐蔽的坑：<strong>算法不报错，但结果完全不可信</strong>。退化就是”数据采集的运动模式不够”，导致某些自由度在数学上根本解不出来。</p>
+</blockquote>
+<hr>
+<h2 id="一、什么是退化"><a href="#一、什么是退化" class="headerlink" title="一、什么是退化"></a>一、什么是退化</h2><p>手眼标定解的是 6 自由度 X。如果采集的运动只激活了其中一部分自由度，其余自由度”没被任何方程约束”，就出现：</p>
+<ul>
+<li>系数矩阵 <strong>秩亏（rank-deficient）</strong></li>
+<li>SVD 出现<strong>接近 0 的奇异值</strong></li>
+<li>求解器给出一个<strong>任意</strong>值填进去——不报错，但错得离谱</li>
+</ul>
+<h3 id="退化的本质（秩-vs-可观测性）"><a href="#退化的本质（秩-vs-可观测性）" class="headerlink" title="退化的本质（秩 vs 可观测性）"></a>退化的本质（秩 vs 可观测性）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AX=XB 堆叠成 M·qX=0（4k×4）: 解 = 最小奇异向量</span><br><span class="line">退化 ⟺ M 秩亏 ⟺ 某些自由度的约束方程线性相关</span><br><span class="line">线性相关的原因: 相对运动的旋转轴全部共线/平面化</span><br><span class="line">与 L3.2 可观测性同源: 运动激励不足 → 状态不可观（KF_demo L3.2 的同一数学）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>核心认知</strong>：退化不是”数值问题”（不是舍入误差），是<strong>信息问题</strong>——数据里根本不含那部分自由度的信息，任何求解器（包括 OpenCV）都给不出正确答案。<strong>可观测性判据必须在求解前检查</strong>（这正是 L3.4 pipeline 的”前置闸门”）。</p>
+<h2 id="二、四类典型退化（本-demo-量化）"><a href="#二、四类典型退化（本-demo-量化）" class="headerlink" title="二、四类典型退化（本 demo 量化）"></a>二、四类典型退化（本 demo 量化）</h2><table>
+<thead>
+<tr>
+<th>运动模式</th>
+<th>不可观的自由度</th>
+<th>现象</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>纯平移</strong>（无旋转）</td>
+<td>整个旋转部分</td>
+<td>相对旋转全为 I，M 矩阵整块为 0</td>
+</tr>
+<tr>
+<td><strong>仅绕单轴旋转</strong>（如只绕 z）</td>
+<td>绕该轴的转角等</td>
+<td>旋转只 1 维，缺 2 维约束</td>
+</tr>
+<tr>
+<td><strong>平面运动</strong>（xy 平移 + z 转动，无倾斜）</td>
+<td>俯仰/横滚相关自由度</td>
+<td>板始终”躺平”面对相机</td>
+</tr>
+<tr>
+<td><strong>视场覆盖不足</strong></td>
+<td>对应区域的畸变/焦距</td>
+<td>边缘误差系统性偏大</td>
+</tr>
+</tbody></table>
+<h3 id="每种退化的可观测性分析（奇异值谱）"><a href="#每种退化的可观测性分析（奇异值谱）" class="headerlink" title="每种退化的可观测性分析（奇异值谱）"></a>每种退化的可观测性分析（奇异值谱）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">纯平移: R_A≡I → 旋转方程系数整块为零 → M_R 全零 → 零空间=整个旋转, 秩=0</span><br><span class="line">单轴旋转: 所有旋转轴共线 → M_R 秩=3（缺 1 维: 绕公共轴的旋转自由度不可观）</span><br><span class="line">         平移方程 (R_A−I) 秩=2（缺沿轴的平移分量）</span><br><span class="line">平面运动: 旋转轴全是 z → 俯仰/横滚相关自由度弱约束（视坐标定义而定, 不必然特指某两个）</span><br><span class="line">视场不足: 不是 AX=XB 退化, 是内参观测病态（L2.1 的"中心图"实验）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程直觉</strong>：退化判据 = 相对运动的<strong>旋转轴分布</strong>（多样性）。注意”三个独立方向”不是严格必要条件——<strong>两个非平行旋转轴通常已能约束旋转</strong>（第三维由噪声改善条件数）；工程要求多轴多角是”抗噪 + 降条件数”而非严格可观测性门槛。<strong>样本多但轴单一仍退化</strong>：信息维度与样本量无关——但更多样本可降低已观测方向上的随机噪声（区分”缺失自由度”与”估计方差”）。</p>
+<h2 id="三、可观测性分析（核心方法）"><a href="#三、可观测性分析（核心方法）" class="headerlink" title="三、可观测性分析（核心方法）"></a>三、可观测性分析（核心方法）</h2><p>把每个相对运动对的<strong>旋转部分</strong>写成 <code>(S(qA)-W(qB))·qX = 0</code>（四元数左乘/右乘矩阵，4×4 齐次方程），堆叠成 M_R(4k×4)。对 M_R 做 SVD：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">⚠️ 注意: 无噪齐次方程的解本身就在零空间 → σ_min≈0 是"正常"的!</span><br><span class="line">正确判据: 零空间维数是否 &gt;1（即 σ_{n-1}/σ_n 谱隙是否小）</span><br><span class="line">  M_R 的秩 = 4−dim(零空间); 良态: 零空间维数=1 → σ_{3}/σ_{2} 大</span><br><span class="line">  退化: 零空间维数&gt;1 → σ_{3}/σ_{2} 接近 1 → 告警</span><br><span class="line">（同时检查平移方程 (R_A−I)t_X=R_X t_B−t_A 的堆叠矩阵 M_t 的秩与条件数）</span><br></pre></td></tr></tbody></table></figure>
+
+<p>本 demo 同时跑四个场景，打印各自的奇异值比值，并断言”好数据不告警、三种退化全告警”。</p>
+<h3 id="条件数阈值的选取（经验值，需按尺度归一化）"><a href="#条件数阈值的选取（经验值，需按尺度归一化）" class="headerlink" title="条件数阈值的选取（经验值，需按尺度归一化）"></a>条件数阈值的选取（经验值，需按尺度归一化）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">手眼方程旋转+平移量纲不同: 直接比 σ_max/σ_min 受单位影响!</span><br><span class="line">工程做法: 先对矩阵列做尺度归一化（如单位化旋转块/平移块）, 再看奇异值比</span><br><span class="line">经验阈值（归一化后）: σ_min/σ_max &lt; 1e-3 → 告警（保守值, 需按实现与数据标定）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程细节</strong>：阈值与数据量纲/噪声水平相关——更严谨的做法是”相对噪声”：若 σ_min 与噪声在 M 中引起的扰动同量级，则退化。固定 1e-3 是归一化后的常用保守值，需注明是经验而非通用定理。</p>
+<h2 id="四、怎么避免-怎么救"><a href="#四、怎么避免-怎么救" class="headerlink" title="四、怎么避免 / 怎么救"></a>四、怎么避免 / 怎么救</h2><ul>
+<li><strong>采样设计</strong>：让机器人做<strong>多轴组合的大运动</strong>——旋转要绕不同轴、转角尽量大；平移要覆盖工作空间不同位置。</li>
+<li><strong>在线检测</strong>：标定前先算 M 的条件数，超阈值就<strong>提示用户补采某些轴</strong>的种子姿态。</li>
+<li><strong>信息加权</strong>：给可观测自由度更大权重（见 L3.2 鲁棒与退化自适应）。</li>
+<li><strong>别只拍正对板</strong>：倾斜 + 多距离 + 多视场是防退化的基本功（也防内参退化，见 L2.1）。</li>
+</ul>
+<h3 id="采样设计的”激励矩阵”（运动处方）"><a href="#采样设计的”激励矩阵”（运动处方）" class="headerlink" title="采样设计的”激励矩阵”（运动处方）"></a>采样设计的”激励矩阵”（运动处方）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">目标: 相对运动旋转轴覆盖 R³ 的三个独立方向</span><br><span class="line">处方: 绕 x 轴 ±30° 摆几个姿态 → 绕 y 轴摆 → 绕 z 轴摆 → 组合斜向</span><br><span class="line">     （等效于"让板在画面里出现俯仰、横滚、偏航三种姿态"）</span><br><span class="line">检查: 标定前算 σ_min/σ_max, 不达标就补采</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程铁律</strong>：退化是”预防 &gt; 补救”——采样设计（激励多样）比任何求解器都重要。L3.4 pipeline 把条件数检查做成前置闸门，就是”预防”的工程化。</p>
+<h2 id="五、自检"><a href="#五、自检" class="headerlink" title="五、自检"></a>五、自检</h2><ul>
+<li>把”多样运动”的姿态数降到 3，看条件数是否也开始变差（样本太少也会退化）。</li>
+<li>把”纯旋转”改成”绕 x 和 z 都转”，看告警是否消失（多轴即可解）。</li>
+<li>挑战：为什么”样本多但都绕同一轴”仍然退化？（信息维度与样本量无关——100 个共线轴约束和 1 个一样，秩都是 1）</li>
+</ul>
+<h2 id="六、工程落点（真实项目）"><a href="#六、工程落点（真实项目）" class="headerlink" title="六、工程落点（真实项目）"></a>六、工程落点（真实项目）</h2><ul>
+<li><strong>easy_handeye</strong>：内置”采样多样性与可观测性检查”——采集前提示姿态类型，采集后检查。</li>
+<li><strong>OpenCV 不自动查退化</strong>：<code>calibrateHandEye</code> 直接给解——<strong>工程责任在调用方</strong>（这也是本 demo 与 L3.4 做前置闸门的动机）。</li>
+<li><strong>Halcon</strong> <code>hand_eye_calibration</code>：文档强调”旋转轴要多样”。</li>
+<li><strong>Kalibr</strong>：相机-IMU 标定同样要求”激励六自由度”（多轴摆动）——退化分析是标定工具的共性。</li>
+</ul>
+<h2 id="七、下一步"><a href="#七、下一步" class="headerlink" title="七、下一步"></a>七、下一步</h2><p>进 <a href="/02jd/cali_demo/cali_l2_tcp_deep.html">L2.4 TCP 深入</a> 与 <a href="/02jd/cali_demo/cali_l2_error_check.html">L2.5 误差校验 ⭐</a>。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L2_DEGENERACY</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

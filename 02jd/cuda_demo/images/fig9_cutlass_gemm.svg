@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 860" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#475569"/>
+    </marker>
+    <marker id="arwb" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="arwg" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#15803d"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="680" height="860" fill="#f8fafc"/>
+  <text x="20" y="34" font-size="18" font-weight="800" fill="#0f172a">CUTLASS GEMM 分块 vs onnxruntime 工业模式</text>
+  <text x="20" y="52" font-size="11" fill="#64748b">源码：NVIDIA/cutlass · main · mma_multistage.h / kernel/gemm.h / device/gemm.h — tiling+双缓冲+pipeline+TensorCore 的模板封装</text>
+
+  <!-- ============ Panel 1: 四件套封装总览 ============ -->
+  <rect x="20" y="64" width="310" height="356" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="36" y="88" font-size="13" font-weight="700" fill="#1d4ed8">① 四件套 = 模板参数 + 组件类</text>
+  <text x="36" y="106" font-size="10" fill="#64748b">device/gemm.h:150-167 · 对照 ORT 单点技巧</text>
+
+  <!-- four rows -->
+  <g transform="translate(36,124)">
+    <rect x="0" y="0" width="278" height="56" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="10" y="18" font-size="11" font-weight="700" fill="#1e3a8a">tiling</text>
+    <text x="10" y="34" font-size="9.5" fill="#334155">Threadblock/Warp/Instruction Shape</text>
+    <text x="10" y="48" font-size="9.5" fill="#334155">+ ThreadblockSwizzle（自动合并）</text>
+
+    <rect x="0" y="66" width="278" height="56" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+    <text x="10" y="84" font-size="11" font-weight="700" fill="#166534">双缓冲</text>
+    <text x="10" y="100" font-size="9.5" fill="#334155">int kStages → shared 多份 K 切片</text>
+    <text x="10" y="114" font-size="9.5" fill="#334155">+ 寄存器 warp_loaded_frag_[2]</text>
+
+    <rect x="0" y="132" width="278" height="56" rx="6" fill="#fef3c7" stroke="#fde68a"/>
+    <text x="10" y="150" font-size="11" font-weight="700" fill="#92400e">pipeline</text>
+    <text x="10" y="166" font-size="9.5" fill="#334155">cp.async + fence + wait</text>
+    <text x="10" y="180" font-size="9.5" fill="#334155">prologue() 灌满 kStages-1 份</text>
+
+    <rect x="0" y="198" width="278" height="56" rx="6" fill="#fae8ff" stroke="#f5d0fe"/>
+    <text x="10" y="216" font-size="11" font-weight="700" fill="#86198f">Tensor Core</text>
+    <text x="10" y="232" font-size="9.5" fill="#334155">Operator warp_mma_ → mma.sync</text>
+    <text x="10" y="246" font-size="9.5" fill="#334155">InstructionShape&lt;16,8,8&gt;</text>
+  </g>
+  <text x="36" y="406" font-size="9.5" fill="#64748b">ORT：tile[32][33] / __shfl_xor / grid-stride = 单点技巧</text>
+  <text x="36" y="420" font-size="9.5" font-weight="700" fill="#1d4ed8">CUTLASS：升级为可参数化模板 + 组件接口</text>
+
+  <!-- ============ Panel 2: tiling 三级 + swizzle ============ -->
+  <rect x="350" y="64" width="310" height="356" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="366" y="88" font-size="13" font-weight="700" fill="#1d4ed8">② tiling：三级 GemmShape + swizzle</text>
+  <text x="366" y="106" font-size="10" fill="#64748b">device/gemm.h:150-167 · kernel/gemm.h:220-227</text>
+
+  <!-- three nested tiles -->
+  <g transform="translate(372,124)">
+    <rect x="0" y="0" width="200" height="120" rx="6" fill="#eff6ff" stroke="#60a5fa" stroke-width="2"/>
+    <text x="8" y="16" font-size="10" font-weight="700" fill="#1e3a8a">Threadblock &lt;128,128,8&gt;</text>
+    <rect x="20" y="28" width="80" height="80" rx="4" fill="#dbeafe" stroke="#3b82f6"/>
+    <text x="28" y="44" font-size="9" fill="#1e40af">Warp</text>
+    <text x="28" y="58" font-size="9" fill="#1e40af">&lt;64,64,8&gt;</text>
+    <rect x="32" y="66" width="34" height="34" rx="3" fill="#93c5fd" stroke="#2563eb"/>
+    <text x="38" y="86" font-size="8" fill="#0c4a6e">I</text>
+    <text x="38" y="98" font-size="8" fill="#0c4a6e">&lt;16,8,8&gt;</text>
+    <rect x="120" y="40" width="70" height="78" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="128" y="56" font-size="9" font-weight="700" fill="#334155">CTA 网格</text>
+    <text x="128" y="72" font-size="8.5" fill="#475569">grid_tiled</text>
+    <text x="128" y="86" font-size="8.5" fill="#475569">_shape 自动</text>
+    <text x="128" y="100" font-size="8.5" fill="#475569">切分全局</text>
+  </g>
+  <line x1="540" y1="244" x2="566" y2="244" stroke="#1d4ed8" stroke-width="2" marker-end="url(#arwb)"/>
+  <text x="566" y="204" font-size="9.5" font-weight="700" fill="#1d4ed8">ThreadblockSwizzle</text>
+  <text x="566" y="220" font-size="9" fill="#64748b">运行时重排 CTA 顺序</text>
+  <text x="566" y="234" font-size="9" fill="#64748b">→ 相邻 CTA 访相邻</text>
+  <text x="566" y="248" font-size="9" fill="#64748b">显存 = 天然合并</text>
+  <text x="566" y="270" font-size="9" fill="#64748b">对应 L2.1 合并访问</text>
+  <text x="566" y="284" font-size="9" fill="#64748b">（ORT 靠手工保证）</text>
+  <text x="366" y="400" font-size="9.5" fill="#64748b">量化：TB&lt;128,128,8&gt; → warps=(128/64)²=4（128 线程）</text>
+  <text x="366" y="414" font-size="9.5" fill="#64748b">每 warp MMA=(64/16)(64/8)(8/8)=32，每 K 步 CTA=128</text>
+
+  <!-- ============ Panel 3: 双缓冲 + pipeline ============ -->
+  <rect x="20" y="440" width="310" height="356" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="36" y="464" font-size="13" font-weight="700" fill="#1d4ed8">③ 双缓冲 + cp.async pipeline</text>
+  <text x="36" y="482" font-size="10" fill="#64748b">mma_multistage.h:91,178,311,434,489,362</text>
+
+  <!-- circular buffer -->
+  <text x="36" y="506" font-size="10" font-weight="600" fill="#334155">shared 环形缓冲（kStages=3）</text>
+  <g transform="translate(36,514)">
+    <rect x="0" y="0" width="80" height="34" rx="5" fill="#dbeafe" stroke="#3b82f6"/>
+    <text x="22" y="21" font-size="10" fill="#1e40af">stage0</text>
+    <rect x="90" y="0" width="80" height="34" rx="5" fill="#dcfce7" stroke="#22c55e"/>
+    <text x="112" y="21" font-size="10" fill="#166534">stage1</text>
+    <rect x="180" y="0" width="80" height="34" rx="5" fill="#fef9c3" stroke="#eab308"/>
+    <text x="202" y="21" font-size="10" fill="#854d0e">stage2</text>
+    <line x1="80" y1="17" x2="90" y2="17" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+    <line x1="170" y1="17" x2="180" y2="17" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+    <line x1="220" y1="34" x2="200" y2="58" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#arw)"/>
+  </g>
+  <text x="240" y="592" font-size="9" fill="#64748b">回绕（:279）</text>
+
+  <!-- timeline cp.async -->
+  <text x="36" y="612" font-size="10" font-weight="600" fill="#334155">时间线：算当前 stage ∥ 取下一 stage</text>
+  <g transform="translate(36,620)">
+    <rect x="0" y="0" width="120" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd"/>
+    <text x="30" y="14" font-size="9" fill="#1e40af">MMA stage0</text>
+    <rect x="125" y="0" width="120" height="20" rx="3" fill="#dcfce7" stroke="#86efac"/>
+    <text x="150" y="14" font-size="9" fill="#166534">MMA stage1</text>
+    <rect x="40" y="28" width="120" height="20" rx="3" fill="#fef9c3" stroke="#fde68a"/>
+    <text x="58" y="42" font-size="9" fill="#854d0e">cp.async 取 stage1</text>
+    <rect x="165" y="28" width="120" height="20" rx="3" fill="#fef9c3" stroke="#fde68a"/>
+    <text x="183" y="42" font-size="9" fill="#854d0e">cp.async 取 stage2</text>
+    <line x1="60" y1="20" x2="60" y2="28" stroke="#15803d" stroke-width="1.5" marker-end="url(#arwg)"/>
+    <line x1="185" y1="20" x2="185" y2="28" stroke="#15803d" stroke-width="1.5" marker-end="url(#arwg)"/>
+  </g>
+  <text x="36" y="776" font-size="9.5" fill="#64748b">prologue() 先灌 kStages-1=2 份(:370)，主循环(</text>
+  <text x="36" y="790" font-size="9.5" fill="#64748b">:505) 三段交错；register warp_loaded_frag_[2] 双缓冲</text>
+
+  <!-- ============ Panel 4: 与 ORT 对照 ============ -->
+  <rect x="350" y="440" width="310" height="356" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="366" y="464" font-size="13" font-weight="700" fill="#1d4ed8">④ 与 onnxruntime 三件套对照</text>
+  <text x="366" y="482" font-size="10" fill="#64748b">上节源：transpose_impl / softmax_warpwise / layer_norm / gemm.cc</text>
+
+  <g transform="translate(366,500)">
+    <rect x="0" y="0" width="278" height="62" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="10" y="16" font-size="10" font-weight="700" fill="#1e3a8a">ORT transpose tile[32][33]+1</text>
+    <text x="10" y="32" font-size="9.5" fill="#334155">→ CUTLASS ThreadblockShape + Swizzle</text>
+    <text x="10" y="48" font-size="9.5" fill="#64748b">固定 tile → 可参数化三级 + 自动合并</text>
+
+    <rect x="0" y="72" width="278" height="62" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="10" y="88" font-size="10" font-weight="700" fill="#1e3a8a">ORT softmax __shfl_xor 归约</text>
+    <text x="10" y="104" font-size="9.5" fill="#334155">→ CUTLASS Operator 组件</text>
+    <text x="10" y="120" font-size="9.5" fill="#64748b">单点技巧 → 可换 SIMT / TensorOp</text>
+
+    <rect x="0" y="144" width="278" height="62" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="10" y="160" font-size="10" font-weight="700" fill="#1e3a8a">ORT layernorm 跨 warp + grid-stride</text>
+    <text x="10" y="176" font-size="9.5" fill="#334155">→ CUTLASS kStages + pipeline</text>
+    <text x="10" y="192" font-size="9.5" fill="#64748b">手写 while+原子 → 模板 pipe + cp.async</text>
+
+    <rect x="0" y="216" width="278" height="62" rx="6" fill="#fef3c7" stroke="#fde68a"/>
+    <text x="10" y="232" font-size="10" font-weight="700" fill="#92400e">ORT GEMM 直接交 cuBLASLt</text>
+    <text x="10" y="248" font-size="9.5" fill="#334155">→ CUTLASS 即其底层手写模板</text>
+    <text x="10" y="264" font-size="9.5" fill="#64748b">工程边界：自己只写 shape/bias 胶水</text>
+  </g>
+  <text x="366" y="774" font-size="9.5" font-weight="700" fill="#86198f">核心：单点技巧 → 可复用模板</text>
+  <text x="366" y="788" font-size="9.5" fill="#64748b">CUTLASS = 把"手写高手套路"库化</text>
+</svg>

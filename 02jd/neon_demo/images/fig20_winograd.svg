@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 250">
+  <rect width="680" height="250" fill="#fbfdff"/>
+  <text x="20" y="28" font-size="15" font-weight="bold" fill="#1a2b4a">图二 · Winograd F(2,3) 编解码流水线</text>
+  <g font-size="11" fill="#22324f">
+    <rect x="30" y="70" width="90" height="50" rx="6" fill="#e8f1ff" stroke="#3b82f6"/>
+    <text x="75" y="92" text-anchor="middle">输入 tile</text><text x="75" y="108" text-anchor="middle">4×4</text>
+    <rect x="150" y="70" width="100" height="50" rx="6" fill="#fff4e6" stroke="#f59e0b"/>
+    <text x="200" y="92" text-anchor="middle">Bᵀ·d·B</text><text x="200" y="108" text-anchor="middle">编码(变换)</text>
+    <rect x="300" y="70" width="80" height="50" rx="6" fill="#eafaf0" stroke="#22c55e"/>
+    <text x="340" y="92" text-anchor="middle">V</text><text x="340" y="108" text-anchor="middle">变换域</text>
+    <rect x="430" y="70" width="90" height="50" rx="6" fill="#e8f1ff" stroke="#3b82f6"/>
+    <text x="475" y="92" text-anchor="middle">核 3×3</text><text x="475" y="108" text-anchor="middle">g</text>
+    <rect x="550" y="70" width="100" height="50" rx="6" fill="#fff4e6" stroke="#f59e0b"/>
+    <text x="600" y="92" text-anchor="middle">G·g·Gᵀ</text><text x="600" y="108" text-anchor="middle">编码(变换)</text>
+  </g>
+  <text x="400" y="155" text-anchor="middle" font-size="13" font-weight="bold" fill="#b45309">M = U ⊙ V   （NEON vmulq 逐点乘，9→4 次乘法）</text>
+  <rect x="300" y="175" width="80" height="45" rx="6" fill="#eafaf0" stroke="#22c55e"/>
+  <text x="340" y="197" text-anchor="middle">M</text><text x="340" y="213" text-anchor="middle">变换域</text>
+  <rect x="410" y="175" width="110" height="45" rx="6" fill="#f3e8ff" stroke="#a855f7"/>
+  <text x="465" y="197" text-anchor="middle">Aᵀ·M·A</text><text x="465" y="213" text-anchor="middle">解码(逆变换)</text>
+  <rect x="560" y="175" width="90" height="45" rx="6" fill="#e8f1ff" stroke="#3b82f6"/>
+  <text x="605" y="197" text-anchor="middle">输出</text><text x="605" y="213" text-anchor="middle">2×2</text>
+  <g stroke="#94a3b8" stroke-dasharray="3">
+    <line x1="130" y1="95" x2="150" y2="95"/><line x1="250" y1="95" x2="300" y2="95"/>
+    <line x1="380" y1="95" x2="430" y2="95"/><line x1="520" y1="95" x2="550" y2="95"/>
+    <line x1="340" y1="120" x2="340" y2="155"/><line x1="340" y1="155" x2="340" y2="175"/>
+    <line x1="380" y1="197" x2="410" y2="197"/><line x1="520" y1="197" x2="560" y2="197"/>
+  </g>
+</svg>

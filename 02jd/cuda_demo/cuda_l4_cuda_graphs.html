@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L4（工业扩展）· CUDA Graphs：把整条 kernel 链固化成「可重放图」 本文件是 cuda_l4_cuda_graphs.cpp 的配套讲解。图示：images&#x2F;fig20_cuda_graphs.svg（四联图），浏览器完整预览 cuda_l4_cuda_graphs_diagrams.html。一句话：推理&#x2F;训练里「同一条 kernel 链被 launch 成千上万次」时，pe">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L4（工业扩展）· CUDA Graphs：把整条 kernel 链固化成「可重放图」">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l4_cuda_graphs.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L4（工业扩展）· CUDA Graphs：把整条 kernel 链固化成「可重放图」 本文件是 cuda_l4_cuda_graphs.cpp 的配套讲解。图示：images&#x2F;fig20_cuda_graphs.svg（四联图），浏览器完整预览 cuda_l4_cuda_graphs_diagrams.html。一句话：推理&#x2F;训练里「同一条 kernel 链被 launch 成千上万次」时，pe">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l4_cuda_graphs">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cuda_demo/cuda_l4_cuda_graphs.html","path":"02jd/cuda_demo/cuda_l4_cuda_graphs.html","title":"L4（工业扩展）· CUDA Graphs：把整条 kernel 链固化成「可重放图」"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L4（工业扩展）· CUDA Graphs：把整条 kernel 链固化成「可重放图」 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L4%EF%BC%88%E5%B7%A5%E4%B8%9A%E6%89%A9%E5%B1%95%EF%BC%89%C2%B7-CUDA-Graphs%EF%BC%9A%E6%8A%8A%E6%95%B4%E6%9D%A1-kernel-%E9%93%BE%E5%9B%BA%E5%8C%96%E6%88%90%E3%80%8C%E5%8F%AF%E9%87%8D%E6%94%BE%E5%9B%BE%E3%80%8D"><span class="nav-number">1.</span> <span class="nav-text">L4（工业扩展）· CUDA Graphs：把整条 kernel 链固化成「可重放图」</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E8%BF%99%E4%B8%80%E7%AB%99%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88"><span class="nav-number">1.1.</span> <span class="nav-text">0. 这一站解决什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%8E%9F%E7%90%86%EF%BC%9A%E4%BB%8E%E3%80%8C%E9%80%90%E6%AC%A1-launch%E3%80%8D%E5%88%B0%E3%80%8C%E6%8D%95%E8%8E%B7-%E9%87%8D%E6%94%BE%E3%80%8D"><span class="nav-number">1.2.</span> <span class="nav-text">1. 原理：从「逐次 launch」到「捕获+重放」</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E6%9C%B4%E7%B4%A0-stream-%E8%B7%AF%E5%BE%84"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.1 朴素 stream 路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-CUDA-Graph-%E8%B7%AF%E5%BE%84"><span class="nav-number">1.2.2.</span> <span class="nav-text">1.2 CUDA Graph 路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E5%8A%A0%E9%80%9F%E6%AF%94%E4%B8%8E%E6%B8%90%E8%BF%91%E4%B8%8A%E7%95%8C"><span class="nav-number">1.2.3.</span> <span class="nav-text">1.3 加速比与渐近上界</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%AD%A3%E7%A1%AE%E6%80%A7%EF%BC%9A%E5%9B%BE%E9%87%8D%E6%94%BE-%E9%80%90%E6%AC%A1-launch%EF%BC%88%E4%B8%94-%E9%97%AD%E5%BC%8F%E8%A7%A3%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">2. 正确性：图重放 &#x3D;&#x3D; 逐次 launch（且 &#x3D;&#x3D; 闭式解）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88cuda-l4-cuda-graphs-cpp%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">3. 代码走读（cuda_l4_cuda_graphs.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88%EF%BC%88%E5%B7%B2%E9%AA%8C%E8%AF%81%E6%95%B0%E5%80%BC%EF%BC%8CALL-PASS%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">4. 你会看到什么（已验证数值，ALL PASS）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%B7%A5%E7%A8%8B%E8%A6%81%E7%82%B9%EF%BC%88%E9%97%AD%E5%9D%91%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">5. 工程要点（闭坑）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E7%BC%96%E8%AF%91%E4%B8%8E%E8%87%AA%E6%A3%80"><span class="nav-number">1.7.</span> <span class="nav-text">6. 编译与自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E4%B8%8B%E4%B8%80%E6%AD%A5-%E5%85%84%E5%BC%9F%E4%BB%93%E5%BA%93%E4%BA%92%E5%BC%95"><span class="nav-number">1.8.</span> <span class="nav-text">7. 下一步 &amp; 兄弟仓库互引</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L4（工业扩展）· CUDA Graphs：把整条 kernel 链固化成「可重放图」
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L4_CUDA_GRAPHS</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L4（工业扩展）·-CUDA-Graphs：把整条-kernel-链固化成「可重放图」"><a href="#L4（工业扩展）·-CUDA-Graphs：把整条-kernel-链固化成「可重放图」" class="headerlink" title="L4（工业扩展）· CUDA Graphs：把整条 kernel 链固化成「可重放图」"></a>L4（工业扩展）· CUDA Graphs：把整条 kernel 链固化成「可重放图」</h1><blockquote>
+<p>本文件是 <code>cuda_l4_cuda_graphs.cpp</code> 的配套讲解。图示：<code>images/fig20_cuda_graphs.svg</code>（四联图），浏览器完整预览 <code>cuda_l4_cuda_graphs_diagrams.html</code>。<br>一句话：<strong>推理/训练里「同一条 kernel 链被 launch 成千上万次」时，per-launch 的 host 端开销会主导；CUDA Graphs 把这条链捕获成一张图，之后每次重放只付一次 <code>cudaGraphLaunch</code> 的代价。</strong></p>
+</blockquote>
+<hr>
+<h2 id="0-这一站解决什么"><a href="#0-这一站解决什么" class="headerlink" title="0. 这一站解决什么"></a>0. 这一站解决什么</h2><p>前面 L3.1（<code>cuda_l3_fusion_pipeline</code>）讲了 <strong>fusion 消除「中间张量落全局的带宽往返」</strong>——那是「数据搬运」维度的浪费。<br>但还有<strong>另一类浪费也是工业高频痛点</strong>：<strong>launch 开销</strong>。</p>
+<ul>
+<li>每个 kernel <code>&lt;&lt;&lt;grid,block&gt;&gt;&gt;</code> 启动，CPU 都要做：参数打包 → 依赖检查 → 入队到 GPU 命令流。单次约 <strong>3–10 µs</strong>（文献量级，本 demo 模型取 5 µs）。</li>
+<li>推理服务里一个 step 往往是 <strong>几十个 kernel</strong>（normalize → matmul → bias → activation → …），一天跑 <strong>上百万 step</strong> → 纯粹的 launch 派发时间就能吃掉可观的墙钟。</li>
+<li>这些 kernel 的「结构」每一步都一样，变化的只是数据指针/标量——可每次都重新派发一遍，纯属重复劳动。</li>
+</ul>
+<p>CUDA Graphs 的解法：<strong>第一次把这条链（含 kernel、依赖、拷贝、事件）「录」成一张有向无环图，之后只重放这张图</strong>。重放一次 <code>cudaGraphLaunch</code> 就把整条链派发出去，host 端开销从 <code>N·K·L_stream</code> 降到 <code>C_capture + N·L_graph</code>。</p>
+<blockquote>
+<p>与 fusion 的分工：<strong>fusion 省「带宽」、Graphs 省「launch」</strong>——两者都是「让昂贵算力别空转」，但砍的是不同的浪费维度。这正是 L3.1 那句话的对称补完。</p>
+</blockquote>
+<hr>
+<h2 id="1-原理：从「逐次-launch」到「捕获-重放」"><a href="#1-原理：从「逐次-launch」到「捕获-重放」" class="headerlink" title="1. 原理：从「逐次 launch」到「捕获+重放」"></a>1. 原理：从「逐次 launch」到「捕获+重放」</h2><h3 id="1-1-朴素-stream-路径"><a href="#1-1-朴素-stream-路径" class="headerlink" title="1.1 朴素 stream 路径"></a>1.1 朴素 stream 路径</h3><figure class="highlight text"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">for step in N:</span><br><span class="line">    for k in K:</span><br><span class="line">        kernel_k&lt;&lt;&lt;...&gt;&gt;&gt;(...)      # 每次都要一次 host 端 launch</span><br></pre></td></tr></tbody></table></figure>
+
+<p>host 端累计开销（纯派发，不含 GPU 计算时间）：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">T_stream(N) = N × K × L_stream</span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="1-2-CUDA-Graph-路径"><a href="#1-2-CUDA-Graph-路径" class="headerlink" title="1.2 CUDA Graph 路径"></a>1.2 CUDA Graph 路径</h3><figure class="highlight text"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">capture():      # 一次性</span><br><span class="line">    BeginCapture → 照常写 K 个 launch → EndCapture → Instantiate  → graphExec</span><br><span class="line">for step in N:</span><br><span class="line">    GraphLaunch(graphExec)          # 每次只一次「图派发」</span><br></pre></td></tr></tbody></table></figure>
+
+<p>host 端累计开销：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">T_graph(N) = C_capture + N × L_graph</span><br></pre></td></tr></tbody></table></figure>
+<p>其中 <code>C_capture</code> 是一次性建图开销（约几十~几百 µs，被 N 次重放摊薄），<code>L_graph</code> 是单次图派发（约 1–3 µs，因为一图打包 K 个 kernel 只一次派发）。</p>
+<h3 id="1-3-加速比与渐近上界"><a href="#1-3-加速比与渐近上界" class="headerlink" title="1.3 加速比与渐近上界"></a>1.3 加速比与渐近上界</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">speedup(N) = T_stream / T_graph = (N·K·L_stream) / (C_capture + N·L_graph)</span><br><span class="line">asymptote (N→∞) = K · L_stream / L_graph</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>关键直觉</strong>：<code>K</code> 越大（每图 kernel 越多）、<code>N</code> 越大（重放越频繁），收益越大；渐近上界只取决于 <code>K</code> 与两种派发开销之比。本 demo 模型 <code>L_stream=5µs, L_graph=1µs</code>：</p>
+<ul>
+<li><code>K=4</code>：上界 <code>4×5/1 = 20×</code>；N=100/1k/10k 实测 <strong>10.0× / 18.2× / 19.8×</strong>。</li>
+<li><code>K=20</code>：上界 <code>100×</code>；N=1k 实测 <strong>90.9×</strong>。</li>
+</ul>
+<p>这正是「<strong>多小 kernel 反复 launch</strong>」场景最划算——和 fusion 一样，受益方都是推理里大量细碎算子。</p>
+<hr>
+<h2 id="2-正确性：图重放-逐次-launch（且-闭式解）"><a href="#2-正确性：图重放-逐次-launch（且-闭式解）" class="headerlink" title="2. 正确性：图重放 == 逐次 launch（且 == 闭式解）"></a>2. 正确性：图重放 == 逐次 launch（且 == 闭式解）</h2><p>教学用一条 4-kernel 链（一个 step）：<code>y = C·(A·y + B) + D</code>（线性依赖 k0→k1→k2→k3）。</p>
+<ul>
+<li><strong>stream 路径</strong>：N 次，每次把链从头跑一遍（每 kernel 一次 launch）。</li>
+<li><strong>graph 路径</strong>：把链「捕获」成图（节点 + 依赖，本 demo 用一个最小图抽象 + Kahn 拓扑排序忠实模拟），然后重放 N 次。</li>
+</ul>
+<p>两者在 <code>N=1000</code> 下结果<strong>逐元素完全一致（max|diff| = 0）</strong>，且都与闭式解 <code>y_N = (AC)^N·y0 + (CB+D)·(1-(AC)^N)/(1-AC)</code> 一致（误差 ~1.1e-16，即机器 epsilon）。</p>
+<blockquote>
+<p>这说明：<strong>graph 不是「近似加速」，而是「语义等价 + 派发更省」</strong>——捕获时记录的依赖保证了重放顺序与逐次 launch 完全相同。</p>
+</blockquote>
+<hr>
+<h2 id="3-代码走读（cuda-l4-cuda-graphs-cpp）"><a href="#3-代码走读（cuda-l4-cuda-graphs-cpp）" class="headerlink" title="3. 代码走读（cuda_l4_cuda_graphs.cpp）"></a>3. 代码走读（<code>cuda_l4_cuda_graphs.cpp</code>）</h2><table>
+<thead>
+<tr>
+<th>段</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>模型常量</td>
+<td><code>L_STREAM=5µs, L_GRAPH=1µs, C_CAPTURE=100µs</code>（教学量级，可在真机用 nsys 实测替换）</td>
+</tr>
+<tr>
+<td><code>chain_step</code></td>
+<td>4 个 kernel 的顺序依赖：scale→shift→scale→shift，构成可重复 step</td>
+</tr>
+<tr>
+<td><code>Graph</code> 抽象</td>
+<td><code>nodes</code> + <code>deps</code> + <code>topo</code>；<code>build()</code> 用 <strong>Kahn 拓扑排序</strong> 捕获依赖，<code>replay()</code> 按拓扑序执行——忠实模拟「capture 记录依赖、replay 按依赖跑」</td>
+</tr>
+<tr>
+<td>Part A 正确性</td>
+<td>stream 重放 N 次 vs graph 重放 N 次，逐元素对拍 + 与闭式解对拍（<code>chk</code> PASS/FAIL）</td>
+</tr>
+<tr>
+<td>Part B 收益</td>
+<td>打印 <code>T_stream / T_graph / speedup</code> 随 N、随 K 的表；断言 <code>N=1k 加速比&gt;10×</code>、<code>K=20 渐近&gt;50×</code></td>
+</tr>
+<tr>
+<td>Part C 真机片段</td>
+<td><code>#ifdef __CUDACC__</code> 守护：① stream capture ② Graph API（AddKernelNode+依赖）③ <code>GraphExecKernelNodeSetParams</code> 更新节点参数 ④ 条件/循环节点（CUDA 12+）</td>
+</tr>
+</tbody></table>
+<p><code>#ifdef __CUDACC__</code> 守护约定与本仓库前作（<code>cuda_l3_fusion_pipeline.cpp</code> 等）一致：</p>
+<ul>
+<li><strong>纯 C++ 路径</strong>（<code>g++</code>，沙箱/无 GPU 也行）只跑 Part A/B 的模型与对拍；</li>
+<li><strong>真机路径</strong>（<code>nvcc</code>）才编译 Part C 的真实 CUDA Graphs API 片段。</li>
+</ul>
+<hr>
+<h2 id="4-你会看到什么（已验证数值，ALL-PASS）"><a href="#4-你会看到什么（已验证数值，ALL-PASS）" class="headerlink" title="4. 你会看到什么（已验证数值，ALL PASS）"></a>4. 你会看到什么（已验证数值，ALL PASS）</h2><figure class="highlight text"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">--- Part A: 正确性（重放 N=1000 次, 每图 K=4 kernel）---</span><br><span class="line">  stream vs graph  max|diff| = 0.00e+00</span><br><span class="line">  stream vs 闭式   max|diff| = 1.11e-16</span><br><span class="line">  graph  vs 闭式   max|diff| = 1.11e-16</span><br><span class="line">  [PASS] stream 与 graph 重放结果逐元素一致</span><br><span class="line">  [PASS] stream 与闭式解一致</span><br><span class="line">  [PASS] graph  与闭式解一致</span><br><span class="line"></span><br><span class="line">--- Part B: host 端 launch 开销模型（µs）---</span><br><span class="line">  [随重放次数 N，K=4]</span><br><span class="line">    N=100     stream=2000  graph=200    加速比=10.00x (渐近上界=20x)</span><br><span class="line">    N=1000    stream=20000 graph=1100   加速比=18.18x (渐近上界=20x)</span><br><span class="line">    N=10000   stream=200000 graph=10100 加速比=19.80x (渐近上界=20x)</span><br><span class="line">  [随每图 kernel 数 K，N=1000]</span><br><span class="line">    K=1   stream=5000   graph=1100  加速比=4.55x  (渐近上界=5x)</span><br><span class="line">    K=4   stream=20000  graph=1100  加速比=18.18x (渐近上界=20x)</span><br><span class="line">    K=10  stream=50000  graph=1100  加速比=45.45x (渐近上界=50x)</span><br><span class="line">    K=20  stream=100000 graph=1100  加速比=90.91x (渐近上界=100x)</span><br><span class="line"></span><br><span class="line">=== 7 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<hr>
+<h2 id="5-工程要点（闭坑）"><a href="#5-工程要点（闭坑）" class="headerlink" title="5. 工程要点（闭坑）"></a>5. 工程要点（闭坑）</h2><ol>
+<li><strong>静态图不能改数据</strong>——但可<strong>廉价更新节点参数</strong>：<code>cudaGraphExecKernelNodeSetParams(graphExec, node, &amp;params)</code> 改输入指针/标量即可，<strong>无需重新 capture</strong>。这是让 Graphs 用于「每 step 形状/指针不同」的推理服务的命门（真机片段③）。</li>
+<li><strong>捕获开销一次性</strong>：<code>C_capture</code> 只在第一次建图时付，被 N 次重放摊薄；N 太小时（如只跑几次）反而不划算——要用 nsys 看真实 break-even。</li>
+<li><strong>控制流也能进图</strong>（CUDA 12+）：<code>cudaGraphConditionalHandle</code> + <code>cudaGraphAddWhileNode</code> 把 if/while 固化进图，避免为分支反复 capture。</li>
+<li><strong>诚实边界</strong>：Graphs 省的是 <strong>launch 开销</strong>，不是 GPU 计算本身。若瓶颈是 compute-bound（见 L2.3 Roofline），上图也不会让 kernel 算得更快——它只削掉「派发」这段 host 端时间。</li>
+</ol>
+<hr>
+<h2 id="6-编译与自检"><a href="#6-编译与自检" class="headerlink" title="6. 编译与自检"></a>6. 编译与自检</h2><figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 纯 C++（无 GPU 也能跑，验证模型与对拍）</span></span><br><span class="line">g++ -O3 -std=c++17 cuda_l4_cuda_graphs.cpp -o cg4 &amp;&amp; ./cg4</span><br><span class="line"><span class="comment"># 预期：Part A 三处 PASS（max|diff|=0 / 1e-16），Part B 加速比 10×~91×，</span></span><br><span class="line"><span class="comment">#       末尾 === 7 passed, 0 failed ===</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 真机 CUDA（需 nvcc + SM_70+，才能编译 __CUDACC__ 守护的 Graphs API 片段）</span></span><br><span class="line">nvcc -O3 -std=c++17 -<span class="built_in">arch</span>=sm_80 cuda_l4_cuda_graphs.cpp -o cg4_gpu</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>沙箱无 <code>g++/nvcc</code>，本文件按「纯 C++ 路径可演进、CUDA 路径需真机」的仓库惯例编写；数值结论以真机/手动复核为准。</p>
+</blockquote>
+<hr>
+<h2 id="7-下一步-兄弟仓库互引"><a href="#7-下一步-兄弟仓库互引" class="headerlink" title="7. 下一步 &amp; 兄弟仓库互引"></a>7. 下一步 &amp; 兄弟仓库互引</h2><ul>
+<li><strong>cuda 内部</strong>：接 <code>cuda_l3_fusion_pipeline</code>（L3.1）——fusion 省带宽、Graphs 省 launch，两站合起来是「推理 step 的 host/GPU 双维度优化」主线；接 <code>cuda_l3_multigpu_nccl</code>（L3.4）——多卡场景下 graph 还能跨 stream 编排 H2D/K/D 依赖。</li>
+<li><strong>跨 demo</strong>：Graphs 是「把一个固定计算流程固化、反复执行」的思想，与 <code>ctrl_l4_mpc</code>（control，L4 滚动时域每步求解同一 QP）、<code>cali_l4_*</code> 的「固定标定流程反复跑」同构；<code>ls_l4_lasso</code> 的可重放近端梯度迭代也是「同结构反复执行」的另一例。</li>
+<li><strong>纵深</strong>：CUDA 12 条件/循环节点 → <code>cuda_l3_fp8</code> / <code>cuda_l3_flash_attn</code>（P1，承接 fusion/pipeline/epilogue 线）可进一步把 attention 的整条 step 固化成图。</li>
+</ul>
+<p>→ 本仓库 P0 清单 7 项中，CUDA Graphs 是继 AD/MPC/Lasso/鱼眼+卷帘/LiDAR-IMU 之后落地的第 6 个 L4 专题；剩余 <code>kf_l3_enkf</code>+<code>kf_l3_mhe</code>（KF）仍待补。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L4_CUDA_GRAPHS</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

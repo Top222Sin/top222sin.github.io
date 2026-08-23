@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#ffffff"/>
+
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L3.3 机器学习：反向传播 = 雅可比链式法则</text>
+  <text x="20" y="56" font-size="12" fill="#555">前向计算 y；反向把损失梯度 ∂L/∂y 沿各层雅可比链式回传，得到每个参数梯度</text>
+
+  <g transform="translate(70,90)">
+    <!-- input -->
+    <circle cx="0" cy="60" r="14" fill="#dbeafe" stroke="#2563eb"/>
+    <circle cx="0" cy="110" r="14" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="-22" y="64" font-size="10" fill="#1e40af">x₁</text>
+    <text x="-22" y="114" font-size="10" fill="#1e40af">x₂</text>
+    <!-- hidden -->
+    <circle cx="110" cy="40" r="14" fill="#dbeafe" stroke="#2563eb"/>
+    <circle cx="110" cy="85" r="14" fill="#dbeafe" stroke="#2563eb"/>
+    <circle cx="110" cy="130" r="14" fill="#dbeafe" stroke="#2563eb"/>
+    <!-- output -->
+    <circle cx="220" cy="85" r="14" fill="#dcfce7" stroke="#059669"/>
+    <!-- forward edges -->
+    <line x1="14" y1="60" x2="96" y2="40" stroke="#94a3b8"/>
+    <line x1="14" y1="60" x2="96" y2="85" stroke="#94a3b8"/>
+    <line x1="14" y1="60" x2="96" y2="130" stroke="#94a3b8"/>
+    <line x1="14" y1="110" x2="96" y2="40" stroke="#94a3b8"/>
+    <line x1="14" y1="110" x2="96" y2="85" stroke="#94a3b8"/>
+    <line x1="14" y1="110" x2="96" y2="130" stroke="#94a3b8"/>
+    <line x1="124" y1="40" x2="206" y2="80" stroke="#94a3b8"/>
+    <line x1="124" y1="85" x2="206" y2="85" stroke="#94a3b8"/>
+    <line x1="124" y1="130" x2="206" y2="90" stroke="#94a3b8"/>
+    <!-- backprop arrows (red) -->
+    <line x1="206" y1="95" x2="124" y2="140" stroke="#dc2626" stroke-width="2" marker-end="url(#arr14)"/>
+    <line x1="96" y1="142" x2="14" y2="120" stroke="#dc2626" stroke-width="2" marker-end="url(#arr14)"/>
+    <text x="150" y="170" font-size="10" fill="#dc2626">∂L/∂W,∂L/∂b (反向)</text>
+    <text x="150" y="24" font-size="10" fill="#2563eb">前向</text>
+  </g>
+  <defs><marker id="arr14" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/></marker></defs>
+
+  <g transform="translate(330,110)" font-size="13" fill="#222">
+    <text x="0" y="0">δ₂ = (y−y*)</text>
+    <text x="0" y="28" fill="#d97706">δ₁ = (W₂ᵀδ₂)⊙tanh'(z₁)</text>
+    <text x="0" y="56" fill="#2563eb">∂L/∂W₂=δ₂hᵀ, ∂L/∂W₁=δ₁xᵀ</text>
+  </g>
+
+  <text x="20" y="350" font-size="11" fill="#666">要点：所谓"反向传播"就是把损失对各参数的梯度写成雅可比的链式乘积。demo 显示反向得到的梯度与逐参数有限差分完全一致，∂y/∂x=W₂·diag(tanh')·W₁ 也吻合。</text>
+</svg>

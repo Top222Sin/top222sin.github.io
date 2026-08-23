@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="NEON 主线 · 实例大全与最终总结 配套代码：neon_l1_examples_final.cpp（每一项都可单独编译对拍）。本篇是 NEON 主线（L1 原理 → L3 汇编&#x2F;微架构&#x2F;迁移）的收官实例篇：把”NEON 还能用在哪”用3x3&#x2F;4x4&#x2F;5x5 卷积、Winograd、FFT、稀疏矩阵，以及 softmax&#x2F;层归一化&#x2F;激活&#x2F;L2 距离等典型数学，全部落成可运行实例，并给出何时该用哪">
+<meta property="og:type" content="website">
+<meta property="og:title" content="NEON 主线 · 实例大全与最终总结">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/neon_demo/neon_l1_examples_final.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="NEON 主线 · 实例大全与最终总结 配套代码：neon_l1_examples_final.cpp（每一项都可单独编译对拍）。本篇是 NEON 主线（L1 原理 → L3 汇编&#x2F;微架构&#x2F;迁移）的收官实例篇：把”NEON 还能用在哪”用3x3&#x2F;4x4&#x2F;5x5 卷积、Winograd、FFT、稀疏矩阵，以及 softmax&#x2F;层归一化&#x2F;激活&#x2F;L2 距离等典型数学，全部落成可运行实例，并给出何时该用哪">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.960Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/neon_demo/neon_l1_examples_final">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/neon_demo/neon_l1_examples_final.html","path":"02jd/neon_demo/neon_l1_examples_final.html","title":"NEON 主线 · 实例大全与最终总结"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>NEON 主线 · 实例大全与最终总结 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#NEON-%E4%B8%BB%E7%BA%BF-%C2%B7-%E5%AE%9E%E4%BE%8B%E5%A4%A7%E5%85%A8%E4%B8%8E%E6%9C%80%E7%BB%88%E6%80%BB%E7%BB%93"><span class="nav-number">1.</span> <span class="nav-text">NEON 主线 · 实例大全与最终总结</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E3%80%87%E3%80%81NEON-%E4%B8%BB%E7%BA%BF%E5%85%A8%E6%99%AF%EF%BC%88%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%9B%9E%E9%A1%BE%EF%BC%89"><span class="nav-number">1.1.</span> <span class="nav-text">〇、NEON 主线全景（一句话回顾）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%813x3-%E5%8D%B7%E7%A7%AF%EF%BC%9A%E7%9B%B4%E6%8E%A5-NEON%EF%BC%88vext-%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">一、3x3 卷积：直接 NEON（vext 滑动窗口）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%814x4-5x5-%E5%8D%B7%E7%A7%AF%EF%BC%9A%E7%BB%9F%E4%B8%80%E8%B5%B0-im2col-GEMM"><span class="nav-number">1.3.</span> <span class="nav-text">二、4x4 &#x2F; 5x5 卷积：统一走 im2col + GEMM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81Winograd-F-2-3-%EF%BC%9A%E5%8D%B7%E7%A7%AF%E7%9A%84%E2%80%9D%E5%82%85%E9%87%8C%E5%8F%B6%E2%80%9D"><span class="nav-number">1.4.</span> <span class="nav-text">三、Winograd F(2,3)：卷积的”傅里叶”</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2%EF%BC%9A%E5%9F%BA-2-FFT-%E7%9A%84-NEON-%E8%9D%B6%E5%BD%A2"><span class="nav-number">1.5.</span> <span class="nav-text">四、傅里叶变换：基-2 FFT 的 NEON 蝶形</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E7%A8%80%E7%96%8F%E7%9F%A9%E9%98%B5%EF%BC%9A%E4%B8%BA%E4%BD%95%E2%80%9D%E7%A8%80%E7%96%8F%E2%80%9D%E5%8F%8D%E8%80%8C%E9%9A%BE%E7%9F%A2%E9%87%8F%E5%8C%96%EF%BC%8C%E7%BB%93%E6%9E%84%E5%8C%96%E6%89%8D%E6%95%91%E5%BE%97%E5%9B%9E%E6%9D%A5"><span class="nav-number">1.6.</span> <span class="nav-text">五、稀疏矩阵：为何”稀疏”反而难矢量化，结构化才救得回来</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%85%B6%E4%BB%96%E5%85%B8%E5%9E%8B-NEON-%E6%95%B0%E5%AD%A6%EF%BC%88softmax-%E5%B1%82%E5%BD%92%E4%B8%80%E5%8C%96-%E6%BF%80%E6%B4%BB-%E8%B7%9D%E7%A6%BB-%E5%BF%AB%E9%80%9F%E5%80%92%E6%95%B0%EF%BC%89"><span class="nav-number">1.7.</span> <span class="nav-text">六、其他典型 NEON 数学（softmax &#x2F; 层归一化 &#x2F; 激活 &#x2F; 距离 &#x2F; 快速倒数）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E5%86%B3%E7%AD%96%E8%A1%A8%EF%BC%9A%E6%AF%8F%E4%B8%AA%E7%AE%97%E5%AD%90%E8%AF%A5%E7%94%A8%E5%93%AA%E7%A7%8D-NEON-%E6%89%93%E6%B3%95"><span class="nav-number">1.8.</span> <span class="nav-text">七、决策表：每个算子该用哪种 NEON 打法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81NEON-%E5%B7%A5%E7%A8%8B%E5%B8%88%E8%83%BD%E5%8A%9B%E6%B8%85%E5%8D%95%EF%BC%88%E6%94%B6%E5%AE%98%E8%87%AA%E6%A3%80%EF%BC%89"><span class="nav-number">1.9.</span> <span class="nav-text">八、NEON 工程师能力清单（收官自检）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%AC%E7%AF%87%E6%96%87%E4%BB%B6"><span class="nav-number">1.9.1.</span> <span class="nav-text">本篇文件</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">NEON 主线 · 实例大全与最终总结
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/neon_demo/">NEON_DEMO</a></li>
+            <li>NEON_L1_EXAMPLES_FINAL</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="NEON-主线-·-实例大全与最终总结"><a href="#NEON-主线-·-实例大全与最终总结" class="headerlink" title="NEON 主线 · 实例大全与最终总结"></a>NEON 主线 · 实例大全与最终总结</h1><blockquote>
+<p>配套代码：<code>neon_l1_examples_final.cpp</code>（每一项都可单独编译对拍）。<br>本篇是 NEON 主线（L1 原理 → L3 汇编/微架构/迁移）的<strong>收官实例篇</strong>：把”NEON 还能用在哪”用<br>3x3/4x4/5x5 卷积、Winograd、FFT、稀疏矩阵，以及 softmax/层归一化/激活/L2 距离等典型数学，<br>全部落成可运行实例，并给出<strong>何时该用哪种打法</strong>的决策表。</p>
+</blockquote>
+<hr>
+<h2 id="〇、NEON-主线全景（一句话回顾）"><a href="#〇、NEON-主线全景（一句话回顾）" class="headerlink" title="〇、NEON 主线全景（一句话回顾）"></a>〇、NEON 主线全景（一句话回顾）</h2><table>
+<thead>
+<tr>
+<th>层级</th>
+<th>你已掌握</th>
+<th>对应文件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>L1 原理</strong></td>
+<td>SIMD 本质、编译器向量化能做/不能做、AoS vs SoA、对齐、基础 intrinsics</td>
+<td><code>neon_l1_lut.cpp</code> / <code>neon_l1_optinfo.cpp</code></td>
+</tr>
+<tr>
+<td><strong>L2 进阶</strong></td>
+<td>gather/scatter、前缀和并行、int8 量化 GEMM(SDOT)、profiling(perf/simpleperf)</td>
+<td><code>neon_l2_gather_prefixsum.cpp</code> / <code>neon_l2_int8_gemm.cpp</code> / <code>neon_l2_profiling.cpp</code></td>
+</tr>
+<tr>
+<td><strong>L3 深度</strong></td>
+<td>手写汇编+调度+寄存器 / Cortex-A 微架构(ILP/带宽) / GEMM 微内核 walkthrough / SVE2 迁移 / SVE 三件套(NCNN·MNN 后端)</td>
+<td><code>neon_l3_*.{cpp,md}</code>（4 部分）</td>
+</tr>
+<tr>
+<td><strong>本篇</strong></td>
+<td><strong>实例大全</strong>：卷积三打法、Winograd、FFT、稀疏矩阵、其他典型数学</td>
+<td><code>neon_l1_examples_final.cpp</code>（本篇）</td>
+</tr>
+</tbody></table>
+<p><strong>贯穿始终的两个旋钮</strong>：① <strong>ILP 深度（累加器数）≥ 每周期 NEON 端口数</strong> 才能喂满吞吐；<br>② <strong>数据按缓存层次分块/预取 + 结构化（连续/对齐）</strong> 才能喂饱带宽。下面的每个实例，本质都是在<br>这两个旋钮上做文章。</p>
+<hr>
+<h2 id="一、3x3-卷积：直接-NEON（vext-滑动窗口）"><a href="#一、3x3-卷积：直接-NEON（vext-滑动窗口）" class="headerlink" title="一、3x3 卷积：直接 NEON（vext 滑动窗口）"></a>一、3x3 卷积：直接 NEON（vext 滑动窗口）</h2><p><strong>原理</strong>：3x3 是最常见卷积。直接法的瓶颈是”同一行像素被相邻输出窗口重复读 3 次”。<br>NEON 的解法是<strong>载入一行 4 像素后，在寄存器内用 <code>vextq_f32</code> 滑动</strong>出窗口的 3 列，<br>一次算出 4 个输出列，把重复访存压到 1/3。</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">a0 = vld1q(r0+x)              // [x, x+1, x+2, x+3]</span><br><span class="line">s = k0*a0 + k1*vext(a0,1) + k2*vext(a0,2)   // 三列窗口一次成形</span><br><span class="line">  + k3*a1 + k4*vext(a1,1) + k5*vext(a1,2)</span><br><span class="line">  + k6*a2 + k7*vext(a2,1) + k8*vext(a2,2)</span><br><span class="line">vst1q(o+x, s)                 // 4 个输出列</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>关键指令</strong>：<code>vld1q</code> / <code>vextq_f32</code>（寄存器内字节滑窗）/ <code>vmlaq_n_f32</code>（乘加标量权重）。<br><strong>ncnn 落点</strong>：<code>src/layer/arm/convolution_3x3.h</code> 的 <code>conv3x3s1_neon</code> 正是这套 <code>vext</code> 手法；<br><code>convolution_1x1.h</code>、<code>convolution_3x3_winograd.h</code> 是 1x1 与 Winograd 两条旁支。<br><strong>何时用</strong>：kernel=3、stride=1、通道数不大时，直接法最省（无额外变换开销）。这是 NEON 卷积的”地基”。</p>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 250">
+  <rect width="680" height="250" fill="#fbfdff"></rect>
+  <text x="20" y="28" font-size="15" font-weight="bold" fill="#1a2b4a">图一 · 卷积三种打法对比</text>
+  <g font-size="11" fill="#22324f">
+    <!-- 直接 3x3 -->
+    <rect x="20" y="50" width="150" height="80" rx="8" fill="#e8f1ff" stroke="#3b82f6"></rect>
+    <text x="95" y="74" text-anchor="middle" font-weight="bold" fill="#1d4ed8">直接 NEON(3x3)</text>
+    <text x="95" y="94" text-anchor="middle">vext 滑动窗口</text>
+    <text x="95" y="112" text-anchor="middle">无变换开销</text>
+    <!-- im2col -->
+    <rect x="190" y="50" width="150" height="80" rx="8" fill="#eafaf0" stroke="#22c55e"></rect>
+    <text x="265" y="74" text-anchor="middle" font-weight="bold" fill="#15803d">im2col + GEMM</text>
+    <text x="265" y="94" text-anchor="middle">任意 kernel(k=3/4/5)</text>
+    <text x="265" y="112" text-anchor="middle">复用 8x4 微内核</text>
+    <!-- Winograd -->
+    <rect x="360" y="50" width="150" height="80" rx="8" fill="#fff4e6" stroke="#f59e0b"></rect>
+    <text x="435" y="74" text-anchor="middle" font-weight="bold" fill="#b45309">Winograd F(2,3)</text>
+    <text x="435" y="94" text-anchor="middle">变换域逐点乘</text>
+    <text x="435" y="112" text-anchor="middle">3x3 乘法最少</text>
+    <!-- depthwise -->
+    <rect x="530" y="50" width="130" height="80" rx="8" fill="#f3e8ff" stroke="#a855f7"></rect>
+    <text x="595" y="74" text-anchor="middle" font-weight="bold" fill="#7e22ce">深度可分离</text>
+    <text x="595" y="94" text-anchor="middle">逐通道独立</text>
+    <text x="595" y="112" text-anchor="middle">DW + PW</text>
+  </g>
+  <text x="20" y="165" font-size="11" fill="#445">选谁：3x3→直接 / 任意 k→im2col / 3x3 要省乘法→Winograd / 轻量模型→深度可分离</text>
+  <line x1="170" y1="90" x2="190" y2="90" stroke="#94a3b8" stroke-dasharray="3"></line>
+  <line x1="340" y1="90" x2="360" y2="90" stroke="#94a3b8" stroke-dasharray="3"></line>
+  <line x1="510" y1="90" x2="530" y2="90" stroke="#94a3b8" stroke-dasharray="3"></line>
+</svg>
+
+<hr>
+<h2 id="二、4x4-5x5-卷积：统一走-im2col-GEMM"><a href="#二、4x4-5x5-卷积：统一走-im2col-GEMM" class="headerlink" title="二、4x4 / 5x5 卷积：统一走 im2col + GEMM"></a>二、4x4 / 5x5 卷积：统一走 im2col + GEMM</h2><p><strong>原理</strong>：当 kernel 不是 3（或 stride 任意），手写 <code>vext</code> 滑动就不优雅了。通用打法是<br><strong>im2col</strong>：把每个输出位置对应的 k×k 邻域拉成一行，整张特征图变成”列矩阵”，卷积立即退化为一个<br><code>GEMM</code>（C = W · im2col）。这把<strong>所有卷积统一到我们 L3 第三部分已经打透的 8x4 NEON 微内核</strong>上。<br>代码里的 <code>im2col()</code> + <code>gemm_scalar()</code> 与你 <code>neon_l3_gemm.cpp</code> 的打包 GEMM 是同一条链路（生产换 NEON 8x4 即可）。</p>
+<p><strong>关键指令</strong>：<code>vld1q</code>/<code>vmlaq</code>/<code>vaddvq</code>（在微内核里）。<br><strong>ncnn 落点</strong>：<code>convolution_im2col_gemm.h</code>（im2col + <code>transpose8x8_ps</code> 打包 + <code>gemm</code>）。<br><strong>何时用</strong>：kernel≥4、或 depthwise 之外的通用卷积、或需要吃满 L1 分块时。</p>
+<blockquote>
+<p>5x5 还有一条旁支：用<strong>两次 3x3 近似</strong>（因式分解 / 序列）替代一次 5x5，乘法更少——但精度/语义<br>需确认，通用场景仍以 im2col 为主。</p>
+</blockquote>
+<hr>
+<h2 id="三、Winograd-F-2-3-：卷积的”傅里叶”"><a href="#三、Winograd-F-2-3-：卷积的”傅里叶”" class="headerlink" title="三、Winograd F(2,3)：卷积的”傅里叶”"></a>三、Winograd F(2,3)：卷积的”傅里叶”</h2><p><strong>原理</strong>：3x3 卷积在像素域要做 9 次乘/输出点；Winograd 把它搬进<strong>变换域</strong>，只需 4 次”逐点乘”<br>（从 9→4，省 ~2.25× 乘法）。三步即<strong>编解码</strong>：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入 tile(4x4) ──Bᵀ·d·B──▶ V       核(3x3) ──G·g·Gᵀ──▶ U</span><br><span class="line">                              M = U ⊙ V   ← NEON 逐点乘 vmlaq</span><br><span class="line">M ──Aᵀ·M·A──▶ 输出(2x2)   ← 逆变换（解码）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><code>B</code>/<code>G</code>/<code>A</code> 是固定常数矩阵（见代码 <code>WIN_B/WIN_G/WIN_A</code>）。ncnn 的<br><code>convolution_3x3_winograd.h</code> 里 <code>transform_kernel</code>/<code>transform_input</code>/<code>transform_output</code> 就是这三步；<br><strong>逐点乘那一步是 NEON <code>vmulq</code> 直接干的活</strong>——这正是我们 L3 第五部分说的”卷积 = 编解码”的同款逻辑，<br>而 FFT 是它在连续信号上的通用版（见 §四）。</p>
+<p><strong>关键指令</strong>：变换阶段 <code>vld/vmla</code>（矩阵乘），核心阶段 <code>vmulq_f32</code>（逐点乘，NEON 最舒服的形态）。<br><strong>何时用</strong>：3x3、通道数大、对乘法数敏感时（MobileNet/ResNet 的瓶颈层）。<strong>代价</strong>：需要 tile 对齐与<br>边界填充，小特征图不划算，所以它是 3x3 大图场景的”省乘法”选项，不是万能替代。</p>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 250">
+  <rect width="680" height="250" fill="#fbfdff"></rect>
+  <text x="20" y="28" font-size="15" font-weight="bold" fill="#1a2b4a">图二 · Winograd F(2,3) 编解码流水线</text>
+  <g font-size="11" fill="#22324f">
+    <rect x="30" y="70" width="90" height="50" rx="6" fill="#e8f1ff" stroke="#3b82f6"></rect>
+    <text x="75" y="92" text-anchor="middle">输入 tile</text><text x="75" y="108" text-anchor="middle">4×4</text>
+    <rect x="150" y="70" width="100" height="50" rx="6" fill="#fff4e6" stroke="#f59e0b"></rect>
+    <text x="200" y="92" text-anchor="middle">Bᵀ·d·B</text><text x="200" y="108" text-anchor="middle">编码(变换)</text>
+    <rect x="300" y="70" width="80" height="50" rx="6" fill="#eafaf0" stroke="#22c55e"></rect>
+    <text x="340" y="92" text-anchor="middle">V</text><text x="340" y="108" text-anchor="middle">变换域</text>
+    <rect x="430" y="70" width="90" height="50" rx="6" fill="#e8f1ff" stroke="#3b82f6"></rect>
+    <text x="475" y="92" text-anchor="middle">核 3×3</text><text x="475" y="108" text-anchor="middle">g</text>
+    <rect x="550" y="70" width="100" height="50" rx="6" fill="#fff4e6" stroke="#f59e0b"></rect>
+    <text x="600" y="92" text-anchor="middle">G·g·Gᵀ</text><text x="600" y="108" text-anchor="middle">编码(变换)</text>
+  </g>
+  <text x="400" y="155" text-anchor="middle" font-size="13" font-weight="bold" fill="#b45309">M = U ⊙ V   （NEON vmulq 逐点乘，9→4 次乘法）</text>
+  <rect x="300" y="175" width="80" height="45" rx="6" fill="#eafaf0" stroke="#22c55e"></rect>
+  <text x="340" y="197" text-anchor="middle">M</text><text x="340" y="213" text-anchor="middle">变换域</text>
+  <rect x="410" y="175" width="110" height="45" rx="6" fill="#f3e8ff" stroke="#a855f7"></rect>
+  <text x="465" y="197" text-anchor="middle">Aᵀ·M·A</text><text x="465" y="213" text-anchor="middle">解码(逆变换)</text>
+  <rect x="560" y="175" width="90" height="45" rx="6" fill="#e8f1ff" stroke="#3b82f6"></rect>
+  <text x="605" y="197" text-anchor="middle">输出</text><text x="605" y="213" text-anchor="middle">2×2</text>
+  <g stroke="#94a3b8" stroke-dasharray="3">
+    <line x1="130" y1="95" x2="150" y2="95"></line><line x1="250" y1="95" x2="300" y2="95"></line>
+    <line x1="380" y1="95" x2="430" y2="95"></line><line x1="520" y1="95" x2="550" y2="95"></line>
+    <line x1="340" y1="120" x2="340" y2="155"></line><line x1="340" y1="155" x2="340" y2="175"></line>
+    <line x1="380" y1="197" x2="410" y2="197"></line><line x1="520" y1="197" x2="560" y2="197"></line>
+  </g>
+</svg>
+
+<hr>
+<h2 id="四、傅里叶变换：基-2-FFT-的-NEON-蝶形"><a href="#四、傅里叶变换：基-2-FFT-的-NEON-蝶形" class="headerlink" title="四、傅里叶变换：基-2 FFT 的 NEON 蝶形"></a>四、傅里叶变换：基-2 FFT 的 NEON 蝶形</h2><p><strong>原理</strong>：FFT 把时域信号搬进频域（与 Winograd 把像素搬进变换域是同一思路的连续版）。基-2 迭代<br>FFT 由 <strong>N·logN 只”蝶形”</strong> 组成，每只做复数乘加：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tr = br·wr − bi·wi      ti = br·wi + bi·wr      // 复数乘</span><br><span class="line">a' = a − tr             b' = a + tr             // 蝶形合并</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>NEON 关键点</strong>：复数存成 <strong>SoA</strong>（两个独立数组 <code>re[]</code>/<code>im[]</code>），一次 <code>vld1q</code> 取 4 个实部/虚部，<br>四只蝴蝶并行；复数乘变成分量级 <code>vmulq</code>/<code>vsubq</code>/<code>vaddq</code>，干净无 <code>vtrn</code> 折腾（对比 L3 第五部分 SVE 用<br><code>svld2</code> 拆交织复数，思路一致，SVE 更省一步）。</p>
+<p><strong>关键指令</strong>：<code>vld1q</code> / <code>vmulq_f32</code> / <code>vsubq_f32</code> / <code>vaddq_f32</code> / <code>vaddvq_f32</code>（规约）。<br><strong>ncnn/MNN 落点</strong>：推理引擎的 FFT 多用于 <strong>语音/音频前处理、可分离卷积的频域加速、某些检测后处理</strong>；<br>MNN 的 <code>KleidiAI</code>/<code>kai</code> 路径也含 FFT 类 ukernel。代码 <code>fft_radix2_neon()</code> 与 <code>dft_naive()</code> 对拍验证。<br><strong>何时用</strong>：长序列变换、频域滤波、需要 O(N logN) 而非 O(N²) 时。</p>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 240">
+  <rect width="680" height="240" fill="#fbfdff"></rect>
+  <text x="20" y="28" font-size="15" font-weight="bold" fill="#1a2b4a">图三 · FFT 蝶形 + NEON（复数 SoA 存法）</text>
+  <g font-size="11" fill="#22324f">
+    <rect x="40" y="60" width="120" height="60" rx="6" fill="#e8f1ff" stroke="#3b82f6"></rect>
+    <text x="100" y="84" text-anchor="middle" font-weight="bold">复数 SoA</text>
+    <text x="100" y="102" text-anchor="middle">re[] / im[]</text>
+    <text x="100" y="118" text-anchor="middle">(各 4 路并载)</text>
+    <rect x="220" y="60" width="160" height="60" rx="6" fill="#fff4e6" stroke="#f59e0b"></rect>
+    <text x="300" y="82" text-anchor="middle" font-weight="bold">一只蝶形（×4 路）</text>
+    <text x="300" y="100" text-anchor="middle">tr=br·wr−bi·wi</text>
+    <text x="300" y="116" text-anchor="middle">ti=br·wi+bi·wr</text>
+    <rect x="430" y="60" width="180" height="60" rx="6" fill="#eafaf0" stroke="#22c55e"></rect>
+    <text x="520" y="82" text-anchor="middle" font-weight="bold">NEON 指令映射</text>
+    <text x="520" y="100" text-anchor="middle">vmulq / vsubq / vaddq</text>
+    <text x="520" y="116" text-anchor="middle">vld1q 取 4 实部+4 虚部</text>
+  </g>
+  <text x="20" y="155" font-size="11" fill="#445">迭代：位反转重排 → 逐级(len=2,4,8…)蝶形；每级 twiddle = e^(−2πi/len)</text>
+  <text x="20" y="178" font-size="11" fill="#445">SVE2 对照（L3 第五部分）：svld2 拆交织复数 → 同理，但向量长度随核自适应、谓词掩尾部</text>
+  <text x="20" y="205" font-size="11" fill="#b45309">落点：语音/音频前处理、频域滤波、可分离卷积频域加速；MNN/kai 含 FFT 类 ukernel</text>
+  <g stroke="#94a3b8" stroke-dasharray="3">
+    <line x1="160" y1="90" x2="220" y2="90"></line><line x1="380" y1="90" x2="430" y2="90"></line>
+  </g>
+</svg>
+
+<p><strong>原理级拆解（图三·乙）</strong>：上图说”四只蝴蝶并行”，这里的 <strong>“4” 来自 SIMD 宽度</strong>——复数按 SoA 存，128-bit 寄存器装 4 个 float32，于是 <code>vmulq</code>/<code>vaddq</code>/<code>vsubq</code> 每条指令的 4 个 lane 各跑一只独立蝴蝶的复乘/加减，互不干扰。下图为这只”一次 4 只”的打包与并行：</p>
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 680 400" role="img">
+  <title>一条 vmulq 一次算 4 只 FFT 蝴蝶（原理级）</title>
+  <desc>复数 FFT 数据按 SoA 存放：128-bit NEON 寄存器装 4 个 float，因此一条 vmulq 同时乘 4 只独立蝴蝶的同名分量。"4" 来自 128 bit 除以 32-bit float。</desc>
+  <defs>
+    <marker id="arrowB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+    </marker>
+  </defs>
+
+</svg><p>  <text x="340" y="28" text-anchor="middle" style="font-size:14px;font-weight:500;fill:#2C2C2A">图三·乙（原理级）· 一条 vmulq 一次算 4 只蝴蝶</text><br>  <text x="340" y="48" text-anchor="middle" style="font-size:12px;fill:#5F5E5A">复数 SoA 存法：128-bit 每 lane = 一只蝴蝶的一个 float</text></p>
+<p>  <text x="40" y="74" style="font-size:12px;font-weight:500;fill:#185FA5">4 只蝴蝶（k = 0..3）</text><br>  <g><br>    <rect x="40" y="82" width="200" height="46" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"><br>    <text x="52" y="102" style="font-size:13px;font-weight:500;fill:#2C2C2A">蝴蝶 k = 0</text><br>    <text x="52" y="120" style="font-size:12px;fill:#5F5E5A">a0, b0  w0 → A0, B0</text><br>  </rect></g><br>  <g><br>    <rect x="40" y="136" width="200" height="46" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"><br>    <text x="52" y="156" style="font-size:13px;font-weight:500;fill:#2C2C2A">蝴蝶 k = 1</text><br>    <text x="52" y="174" style="font-size:12px;fill:#5F5E5A">a1, b1  w1 → A1, B1</text><br>  </rect></g><br>  <g><br>    <rect x="40" y="190" width="200" height="46" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"><br>    <text x="52" y="210" style="font-size:13px;font-weight:500;fill:#2C2C2A">蝴蝶 k = 2</text><br>    <text x="52" y="228" style="font-size:12px;fill:#5F5E5A">a2, b2  w2 → A2, B2</text><br>  </rect></g><br>  <g><br>    <rect x="40" y="244" width="200" height="46" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"><br>    <text x="52" y="264" style="font-size:13px;font-weight:500;fill:#2C2C2A">蝴蝶 k = 3</text><br>    <text x="52" y="282" style="font-size:12px;fill:#5F5E5A">a3, b3  w3 → A3, B3</text><br>  </rect></g></p>
+<p>  <text x="300" y="74" style="font-size:12px;font-weight:500;fill:#185FA5">SoA 打包 → 每寄存器 4 lane</text><br>  <g><br>    <text x="300" y="78" style="font-size:11px;fill:#185FA5">vA_re</text><br>    <rect x="300" y="82" width="220" height="46" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="300" y="92" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="355" y="92" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="410" y="92" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="465" y="92" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <text x="327" y="110" text-anchor="middle" style="font-size:12px;fill:#042C53">a0</text><br>    <text x="382" y="110" text-anchor="middle" style="font-size:12px;fill:#042C53">a1</text><br>    <text x="437" y="110" text-anchor="middle" style="font-size:12px;fill:#042C53">a2</text><br>    <text x="492" y="110" text-anchor="middle" style="font-size:12px;fill:#042C53">a3</text><br>  </rect></rect></rect></rect></rect></g><br>  <g><br>    <text x="300" y="132" style="font-size:11px;fill:#185FA5">vB_re</text><br>    <rect x="300" y="136" width="220" height="46" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="300" y="146" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="355" y="146" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="410" y="146" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="465" y="146" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <text x="327" y="164" text-anchor="middle" style="font-size:12px;fill:#042C53">b0</text><br>    <text x="382" y="164" text-anchor="middle" style="font-size:12px;fill:#042C53">b1</text><br>    <text x="437" y="164" text-anchor="middle" style="font-size:12px;fill:#042C53">b2</text><br>    <text x="492" y="164" text-anchor="middle" style="font-size:12px;fill:#042C53">b3</text><br>  </rect></rect></rect></rect></rect></g><br>  <g><br>    <text x="300" y="186" style="font-size:11px;fill:#185FA5">vW_re</text><br>    <rect x="300" y="190" width="220" height="46" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="300" y="200" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="355" y="200" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="410" y="200" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="465" y="200" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <text x="327" y="218" text-anchor="middle" style="font-size:12px;fill:#042C53">wr0</text><br>    <text x="382" y="218" text-anchor="middle" style="font-size:12px;fill:#042C53">wr1</text><br>    <text x="437" y="218" text-anchor="middle" style="font-size:12px;fill:#042C53">wr2</text><br>    <text x="492" y="218" text-anchor="middle" style="font-size:12px;fill:#042C53">wr3</text><br>  </rect></rect></rect></rect></rect></g><br>  <g><br>    <text x="300" y="240" style="font-size:11px;fill:#185FA5">vW_im</text><br>    <rect x="300" y="244" width="220" height="46" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="300" y="254" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="355" y="254" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="410" y="254" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <rect x="465" y="254" width="55" height="28" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"><br>    <text x="327" y="272" text-anchor="middle" style="font-size:12px;fill:#042C53">wi0</text><br>    <text x="382" y="272" text-anchor="middle" style="font-size:12px;fill:#042C53">wi1</text><br>    <text x="437" y="272" text-anchor="middle" style="font-size:12px;fill:#042C53">wi2</text><br>    <text x="492" y="272" text-anchor="middle" style="font-size:12px;fill:#042C53">wi3</text><br>  </rect></rect></rect></rect></rect></g></p>
+  <path d="M245 165 H295" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrowB)">
+  <text x="270" y="158" text-anchor="middle" style="font-size:11px;fill:#5F5E5A">SoA</text>
+
+  <g>
+    <rect x="560" y="108" width="110" height="46" rx="8" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5">
+    <text x="615" y="128" text-anchor="middle" style="font-size:13px;font-weight:500;fill:#412402">vmulq</text>
+    <text x="615" y="146" text-anchor="middle" style="font-size:11px;fill:#412402">vA_re × vB_re</text>
+  </rect></g>
+  <path d="M520 105 C545 105, 545 131, 560 131" fill="none" stroke="#854F0B" stroke-width="1.5" marker-end="url(#arrowB)">
+  <path d="M520 159 C545 159, 545 131, 560 131" fill="none" stroke="#854F0B" stroke-width="1.5" marker-end="url(#arrowB)">
+
+  <g>
+    <rect x="560" y="170" width="110" height="62" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5">
+    <text x="615" y="190" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#173404">4 lanes</text>
+    <text x="615" y="208" text-anchor="middle" style="font-size:12px;fill:#173404">a_k · b_k</text>
+    <text x="615" y="224" text-anchor="middle" style="font-size:11px;fill:#173404">k = 0..3</text>
+  </rect></g>
+  <path d="M615 154 V170" stroke="#3B6D11" stroke-width="1.5" marker-end="url(#arrowB)">
+
+  <rect x="40" y="312" width="630" height="72" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5">
+  <text x="52" y="332" style="font-size:12px;font-weight:500;fill:#2C2C2A">“4” 从哪来？</text>
+  <text x="52" y="350" style="font-size:12px;fill:#5F5E5A">128-bit 寄存器 ÷ 32-bit float = 4 lanes。一条 vmulq/vaddq/vsubq 同时作用 4 个 float，</text>
+  <text x="52" y="368" style="font-size:12px;fill:#5F5E5A">所以 4 只蝴蝶并行。完整复乘：tw = w·b 需 tw_re = w_re·b_re − w_im·b_im，</text>
+  <text x="52" y="384" style="font-size:12px;fill:#5F5E5A">tw_im = w_re·b_im + w_im·b_re（也用 vW_im）；每步都是 4-lane 操作 → 每条指令 4 只蝴蝶。</text>
+
+
+<hr>
+<h2 id="五、稀疏矩阵：为何”稀疏”反而难矢量化，结构化才救得回来"><a href="#五、稀疏矩阵：为何”稀疏”反而难矢量化，结构化才救得回来" class="headerlink" title="五、稀疏矩阵：为何”稀疏”反而难矢量化，结构化才救得回来"></a>五、稀疏矩阵：为何”稀疏”反而难矢量化，结构化才救得回来</h2><p><strong>原理</strong>：稠密 GEMM/卷积天然连续、对齐，NEON 吃得饱；<strong>稀疏矩阵(SpMV)的灾难是 gather</strong>——<br>每个非零元要按列下标 <code>x[col[p]]</code> 去取，地址不连续、不可预测，NEON 的连续 <code>vld1q</code> 用不上，只能标量。</p>
+<p><strong>两条出路（代码都给了）</strong>：</p>
+<ol>
+<li><strong>CSR SpMV</strong>（<code>spmv_csr</code>）：简单正确，但本质是标量 gather，NEON 帮不上忙——除非一行内有连续段。</li>
+<li><strong>BSR 4×4 块稀疏</strong>（<code>bsr4_neon</code>）：把矩阵切成 4×4 <strong>稠密块</strong>，块内连续 → <code>vld1q</code> 取块行、<br><code>vmlaq</code> 做 4 路点积，NEON 重新吃饱。这就是 NCNN/MNN 做结构化稀疏（如 <strong>2:4 结构化稀疏</strong>：<br>每 4 个权重保留 2 个，块内规则可矢量化）的思路。<strong>结论：稀疏要”结构化”才能喂 NEON</strong>——这也呼应<br>我们 L3 反复强调的”数据必须连续/对齐”旋钮。</li>
+</ol>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 250">
+  <rect width="680" height="250" fill="#fbfdff"></rect>
+  <text x="20" y="28" font-size="15" font-weight="bold" fill="#1a2b4a">图四 · 稀疏矩阵：gather 难矢量化 → 结构化(块/BSR) 救场</text>
+  <g font-size="11" fill="#22324f">
+    <rect x="30" y="55" width="180" height="70" rx="6" fill="#fee2e2" stroke="#ef4444"></rect>
+    <text x="120" y="78" text-anchor="middle" font-weight="bold" fill="#b91c1c">CSR SpMV（标量）</text>
+    <text x="120" y="98" text-anchor="middle">y[r]=Σ val[p]·x[col[p]]</text>
+    <text x="120" y="116" text-anchor="middle">gather 不连续 → NEON 用不上</text>
+    <rect x="250" y="55" width="200" height="70" rx="6" fill="#eafaf0" stroke="#22c55e"></rect>
+    <text x="350" y="78" text-anchor="middle" font-weight="bold" fill="#15803d">BSR 4×4 块稀疏（NEON）</text>
+    <text x="350" y="98" text-anchor="middle">块内稠密 → vld1q + vmlaq</text>
+    <text x="350" y="116" text-anchor="middle">4 路点积并行，重新吃饱</text>
+    <rect x="480" y="55" width="180" height="70" rx="6" fill="#f3e8ff" stroke="#a855f7"></rect>
+    <text x="570" y="78" text-anchor="middle" font-weight="bold" fill="#7e22ce">2:4 结构化稀疏</text>
+    <text x="570" y="98" text-anchor="middle">每 4 保 2，规则可矢量化</text>
+    <text x="570" y="116" text-anchor="middle">NCNN/MNN 推理常用</text>
+  </g>
+  <text x="20" y="155" font-size="11" fill="#445">其他典型 NEON 数学（§六对照）：</text>
+  <g font-size="10.5" fill="#22324f">
+    <text x="20" y="178">• softmax：neon_exp（2^(x)=2^ix·2^frac 位技巧） + vaddvq 规约 + vdivq</text>
+    <text x="20" y="196">• layer_norm：vaddvq 求均值 → vmlaq 求方差 → vrsqrteq + 牛顿 → vmlaq/vaddq 仿射</text>
+    <text x="20" y="214">• sigmoid：1/(1+exp(−x))；relu：vmaxq_n(0)；L2：vsubq→vmlaq→vaddvq→sqrt</text>
+    <text x="20" y="232">• 快速倒数：vrecpeq + vrecpsq（1~2 次牛顿），归一化/缩放免除法</text>
+  </g>
+</svg>
+
+<hr>
+<h2 id="六、其他典型-NEON-数学（softmax-层归一化-激活-距离-快速倒数）"><a href="#六、其他典型-NEON-数学（softmax-层归一化-激活-距离-快速倒数）" class="headerlink" title="六、其他典型 NEON 数学（softmax / 层归一化 / 激活 / 距离 / 快速倒数）"></a>六、其他典型 NEON 数学（softmax / 层归一化 / 激活 / 距离 / 快速倒数）</h2><table>
+<thead>
+<tr>
+<th>算子</th>
+<th>NEON 关键指令</th>
+<th>核心技巧</th>
+<th>参考（标量）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>softmax</strong></td>
+<td><code>neon_exp_ps</code> / <code>vaddvq_f32</code> / <code>vdivq_f32</code></td>
+<td>先减 max 防溢出；exp 用 <code>2^ix·2^frac</code> 位技巧避免无 exp 指令</td>
+<td><code>std::exp</code></td>
+</tr>
+<tr>
+<td><strong>layer_norm / RMSNorm</strong></td>
+<td><code>vaddvq</code> / <code>vmlaq</code> / <code>vrsqrteq_f32</code>(+牛顿)</td>
+<td>均值/方差水平归约；<code>vrsqrte</code> 给 1/√，一次牛顿提精度</td>
+<td>手算</td>
+</tr>
+<tr>
+<td><strong>sigmoid</strong></td>
+<td><code>neon_exp_ps</code> / <code>vdivq_f32</code></td>
+<td><code>1/(1+exp(−x))</code></td>
+<td><code>std::exp</code></td>
+</tr>
+<tr>
+<td><strong>relu</strong></td>
+<td><code>vmaxq_n_f32(0)</code></td>
+<td>一行</td>
+<td><code>max(0,x)</code></td>
+</tr>
+<tr>
+<td><strong>L2 距离</strong></td>
+<td><code>vsubq</code> / <code>vmlaq</code> / <code>vaddvq_f32</code></td>
+<td>差平方累加后 <code>sqrt</code></td>
+<td>手算</td>
+</tr>
+<tr>
+<td><strong>快速倒数</strong></td>
+<td><code>vrecpeq_f32</code> / <code>vrecpsq_f32</code></td>
+<td>牛顿迭代免除法（1~2 步）</td>
+<td><code>1/x</code></td>
+</tr>
+</tbody></table>
+<p><strong>ARM 基线无 <code>vexp</code> 指令</strong>——所以 softmax/sigmoid 必须自带向量化 exp。代码里的 <code>neon_exp_ps</code><br>用 <code>x/ln2</code> 拆整数/小数部，<code>2^ix</code> 直接拼 float 指数位，<strong>rel err ~1e-3</strong>，足够推理用。这正是<br>NCNN/MNN 在 <code>requantize_arm.cpp</code>、<code>CommonOptFunctionNeon.cpp</code> 里做归一化/激活的同类手法。</p>
+<hr>
+<h2 id="七、决策表：每个算子该用哪种-NEON-打法"><a href="#七、决策表：每个算子该用哪种-NEON-打法" class="headerlink" title="七、决策表：每个算子该用哪种 NEON 打法"></a>七、决策表：每个算子该用哪种 NEON 打法</h2><table>
+<thead>
+<tr>
+<th>你的算子</th>
+<th>首选打法</th>
+<th>关键 NEON</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>3x3 stride1 卷积</td>
+<td>直接 <code>vext</code> 滑动</td>
+<td><code>vextq</code>/<code>vmlaq_n</code></td>
+<td>无变换开销，最省</td>
+</tr>
+<tr>
+<td>4x4 / 5x5 卷积</td>
+<td>im2col + GEMM</td>
+<td><code>vmlaq</code>/<code>vaddvq</code></td>
+<td>复用 8x4 微内核（L3 三）</td>
+</tr>
+<tr>
+<td>3x3 大图省乘法</td>
+<td>Winograd F(2,3)</td>
+<td><code>vmulq</code> 逐点乘</td>
+<td>9→4 乘法，需 tile 对齐</td>
+</tr>
+<tr>
+<td>长序列变换</td>
+<td>基-2 FFT</td>
+<td><code>vmulq</code>/<code>vsubq</code>/<code>vaddq</code>(SoA)</td>
+<td>O(N logN)</td>
+</tr>
+<tr>
+<td>稠密 GEMM</td>
+<td>分块+打包+8×4</td>
+<td><code>vmlaq</code>/<code>vld1q</code></td>
+<td>A76 满双管（L3 三）</td>
+</tr>
+<tr>
+<td>稀疏 SpMV</td>
+<td>结构化(BSR/2:4)</td>
+<td><code>vld1q</code>+<code>vmlaq</code></td>
+<td>纯 CSR 的 gather 难矢量化</td>
+</tr>
+<tr>
+<td>softmax/sigmoid</td>
+<td>自带 neon_exp</td>
+<td><code>vaddvq</code>/<code>vdivq</code></td>
+<td>基线无 vexp</td>
+</tr>
+<tr>
+<td>layer_norm</td>
+<td>水平归约+vrsqrte</td>
+<td><code>vaddvq</code>/<code>vrsqrteq</code></td>
+<td>牛顿提精度</td>
+</tr>
+<tr>
+<td>L2/距离</td>
+<td>差平方累加</td>
+<td><code>vsubq</code>/<code>vmlaq</code>/<code>vaddvq</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>快速倒数/缩放</td>
+<td>牛顿迭代</td>
+<td><code>vrecpeq</code>/<code>vrecpsq</code></td>
+<td>免除法</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="八、NEON-工程师能力清单（收官自检）"><a href="#八、NEON-工程师能力清单（收官自检）" class="headerlink" title="八、NEON 工程师能力清单（收官自检）"></a>八、NEON 工程师能力清单（收官自检）</h2><ul>
+<li><input checked="" disabled="" type="checkbox"> <strong>原理层</strong>：说清 SIMD 比标量快在哪、编译器向量化的边界、AoS vs SoA、对齐。</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>算子层</strong>：3x3 直接 / im2col / Winograd / FFT / 稀疏(BSR) / softmax / 层归一化 / 激活 / 距离，均能写 NEON 并标量化对拍。</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>性能层</strong>：<code>-fopt-info</code> 读报告改码、<code>perf</code>/<code>simpleperf</code> 找热点、<code>IPC</code>/<code>cache-misses</code> 闭环。</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>深度层</strong>：手写汇编、寄存器分配、指令调度(ILP)、Cortex-A 微架构(端口/带宽)、GEMM 微内核 walkthrough。</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>演进层</strong>：SVE2 VLA+谓词一份内核跨 X2→X4/Neoverse；理解 NCNN(手写 NEON) vs MNN(委托 KleidiAI) 的后端分野。</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>工程层</strong>：跨平台（ARM NEON + x86 SSE2 镜像）、正确性对拍优先、用 <code>perf</code> 验证而非拍脑袋。</li>
+</ul>
+<blockquote>
+<p><strong>一句话收尾</strong>：NEON 不是”记指令”，而是<strong>把计算重排成”连续、对齐、多条独立累加器链”，再用 ILP 喂满端口、用分块/预取喂饱带宽</strong>——上面的每个实例，都是这句话的具象化。L3 主线到此完整；后续支线只剩 <strong>CUDA 合并访问铁律</strong>（之前暂存）可接。</p>
+</blockquote>
+<hr>
+<h3 id="本篇文件"><a href="#本篇文件" class="headerlink" title="本篇文件"></a>本篇文件</h3><ul>
+<li><code>neon_l1_examples_final.cpp</code> — 实例大全（6 节，逐项标量化对拍，ARM 编译跑真 NEON）。</li>
+<li><code>neon_l1_examples_final.md</code> — 你正在看的完整总结（4 张内联 SVG）。</li>
+<li><code>neon_l1_examples_final_diagrams.html</code> + <code>images/fig19~fig22.svg</code> — 图示预览页与独立 SVG。</li>
+</ul>
+</rect></path></path></path></path>
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/neon_demo/">NEON_DEMO</a></li>
+            <li>NEON_L1_EXAMPLES_FINAL</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

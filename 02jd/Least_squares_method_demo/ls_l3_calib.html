@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3.1 工业用例：传感器线性标定 一句话：传感器输出 y 与被测量 x 的线性关系 y &#x3D; ax + b 出厂都是未知的——用一组已知点采样，LS 反演出 (a, b)，之后才能用 x̂ &#x3D; (y − b)&#x2F;a 把读数还原成物理量。这是整个学习链里最小、最常见、也最不能省的”标定 Hello World”。   一、问题与法方程传感器输入输出建模为线性：  y &#x3D; a·x + b + ε，ε ~">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3.1 工业用例：传感器线性标定">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l3_calib.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3.1 工业用例：传感器线性标定 一句话：传感器输出 y 与被测量 x 的线性关系 y &#x3D; ax + b 出厂都是未知的——用一组已知点采样，LS 反演出 (a, b)，之后才能用 x̂ &#x3D; (y − b)&#x2F;a 把读数还原成物理量。这是整个学习链里最小、最常见、也最不能省的”标定 Hello World”。   一、问题与法方程传感器输入输出建模为线性：  y &#x3D; a·x + b + ε，ε ~">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/images/fig12_calib.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.950Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/images/fig12_calib.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l3_calib">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l3_calib.html","path":"02jd/Least_squares_method_demo/ls_l3_calib.html","title":"L3.1 工业用例：传感器线性标定"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3.1 工业用例：传感器线性标定 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-1-%E5%B7%A5%E4%B8%9A%E7%94%A8%E4%BE%8B%EF%BC%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E7%BA%BF%E6%80%A7%E6%A0%87%E5%AE%9A"><span class="nav-number">1.</span> <span class="nav-text">L3.1 工业用例：传感器线性标定</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E9%97%AE%E9%A2%98%E4%B8%8E%E6%B3%95%E6%96%B9%E7%A8%8B"><span class="nav-number">1.1.</span> <span class="nav-text">一、问题与法方程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%B7%A5%E7%A8%8B%E8%83%8C%E6%99%AF%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E6%A0%87%E5%AE%9A%E7%BB%95%E4%B8%8D%E5%BC%80"><span class="nav-number">1.2.</span> <span class="nav-text">二、工程背景：为什么标定绕不开</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81demo-%E8%AE%BE%E5%AE%9A"><span class="nav-number">1.3.</span> <span class="nav-text">三、demo 设定</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88ls-l3-calib-cpp%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、代码走读（ls_l3_calib.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.5.</span> <span class="nav-text">五、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.6.</span> <span class="nav-text">六、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.7.</span> <span class="nav-text">七、下一步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%84%E5%BC%9F%E4%BB%93%E5%BA%93%E8%81%94%E7%B3%BB"><span class="nav-number">1.8.</span> <span class="nav-text">兄弟仓库联系</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3.1 工业用例：传感器线性标定
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Least_squares_method_demo/">LEAST_SQUARES_METHOD_DEMO</a></li>
+            <li>LS_L3_CALIB</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-1-工业用例：传感器线性标定"><a href="#L3-1-工业用例：传感器线性标定" class="headerlink" title="L3.1 工业用例：传感器线性标定"></a>L3.1 工业用例：传感器线性标定</h1><blockquote>
+<p>一句话：<strong>传感器输出 y 与被测量 x 的线性关系 <code>y = ax + b</code> 出厂都是未知的</strong>——用一组已知点采样，LS 反演出 (a, b)，之后才能用 <code>x̂ = (y − b)/a</code> 把读数还原成物理量。这是整个学习链里最小、最常见、也最不能省的”标定 Hello World”。</p>
+</blockquote>
+<hr>
+<h2 id="一、问题与法方程"><a href="#一、问题与法方程" class="headerlink" title="一、问题与法方程"></a>一、问题与法方程</h2><p>传感器输入输出建模为线性：</p>
+<blockquote>
+<p>y = a·x + b + ε，ε ~ N(0, σ²)</p>
+</blockquote>
+<p>取 n 个已知标定点 (xᵢ, yᵢ)，A = [xᵢ, 1]（n×2），b = [yᵢ]。LS 解满足法方程（L1.1）：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[ Σxᵢ²   Σxᵢ ] [a]   [ Σxᵢyᵢ ]</span><br><span class="line">[ Σxᵢ     n  ] [b] = [ Σyᵢ   ]</span><br></pre></td></tr></tbody></table></figure>
+
+<p>行列式 <code>det = n·Σxᵢ² − (Σxᵢ)²</code>，闭式解：</p>
+<blockquote>
+<p><strong>â = (n·Σxᵢyᵢ − Σxᵢ·Σyᵢ) / det</strong>，  <strong>b̂ = (Σxᵢ²·Σyᵢ − Σxᵢ·Σxᵢyᵢ) / det</strong></p>
+</blockquote>
+<p>得到 (â, b̂) 后，<strong>反演公式</strong>把后续读数 y 还原成物理量：</p>
+<blockquote>
+<p>x̂ = (y − b̂) / â</p>
+</blockquote>
+<blockquote>
+<p>未标定（拍脑袋给增益 a=0.02）的反演 <code>x̃ = y/0.02</code> 把零飘 b 和增益误差全压进结果——本篇 demo 量化这一差距。</p>
+</blockquote>
+<blockquote>
+<p>⚠ <strong>噪声模型注记</strong>：本 demo 的”线性标定 + LS 反演”假设<strong>x 精确、只有 y 有噪</strong>（OLS 场景）。若标定基准 x 本身有测量噪声（如恒温槽温度不准），斜率会被系统性衰减（回归稀释）——那是 TLS 的场景（L2.6）。传感器标定通常 x 是”已知标准”（可认为精确），OLS 够用；若标准不可靠则上 TLS。</p>
+</blockquote>
+<h2 id="二、工程背景：为什么标定绕不开"><a href="#二、工程背景：为什么标定绕不开" class="headerlink" title="二、工程背景：为什么标定绕不开"></a>二、工程背景：为什么标定绕不开</h2><ul>
+<li>ADC、热电偶、压力计、电子秤、霍尔电流计……<strong>输出经放大/ADC 后都带零飘 b 与刻度系数 a</strong>，且随温度、老化、批次漂移。</li>
+<li>工厂出货前用一组<strong>已知激励</strong>（恒温槽/标准砝码/基准电压）扫一遍，LS 算出 (a, b) 写进 EEPROM。</li>
+<li>非线性强的（相机、IMU）走 cali_demo 的 BA；线性范围里，<strong>这一篇就够了</strong>。</li>
+<li>多次重复标定取平均：噪声是零均值，N 次平均把 σ 压成 σ/√N——这是 demo 里”16 次平均”的动机。</li>
+</ul>
+<h2 id="三、demo-设定"><a href="#三、demo-设定" class="headerlink" title="三、demo 设定"></a>三、demo 设定</h2><ul>
+<li>真值 <code>a_true = 0.0185</code>、<code>b_true = -0.42</code>（量纲：ADC/°C）；7 个标定温度 <code>T = {0, 10, 25, 40, 60, 80, 100}°C</code>；读数噪声 σ = 0.02。</li>
+<li><strong>16 次独立标定取平均</strong>（每次重置随机种子 → 16 组独立噪声实现），看参数偏差是否 &lt; 8e-3。</li>
+<li>反演测试：30 个随机温度 <code>T ∈ [0, 100]</code>，比较标定反演 <code>T_cal = (adc − b̂)/â</code> 与未标定 <code>T_naive = adc/0.02</code> 的 RMSE。</li>
+</ul>
+<h2 id="四、代码走读（ls-l3-calib-cpp）"><a href="#四、代码走读（ls-l3-calib-cpp）" class="headerlink" title="四、代码走读（ls_l3_calib.cpp）"></a>四、代码走读（ls_l3_calib.cpp）</h2><ul>
+<li>L13–18：<code>urand</code>/<code>gauss</code>——LCG + Box-Muller，固定种子可复现。</li>
+<li>L28–29：真值与标定点表 <code>Ts[7]</code>。</li>
+<li>L30–42：<strong>16 次标定循环</strong>——每次 <code>set_seed(1200+m)</code>（L33）重置噪声；内层 7 点累加 <code>Sx/Sy/Sxx/Sxy</code>（L34–37），L39 算 <code>det</code>，L40–41 套闭式解并累加到 <code>pa/pb</code>。</li>
+<li>L43：<code>pa/=M; pb/=M;</code> —— 平均 16 次估计，σ/√16 把噪声方差压到 1/16。</li>
+<li>L45：<code>chk</code> 标定参数偏差 &lt; 8e-3。</li>
+<li>L46–60：<strong>反演 RMSE 对比</strong>——L47 切到独立种子 <code>set_seed(777)</code>（不与标定样本同分布）；L50–52 生成随机温度的 ADC 读数，并算 <code>T_cal</code> vs <code>T_naive</code>；L53 用 <code>adc/0.02</code> 模拟”拍脑袋增益”。</li>
+<li>L60：检查 <code>T_cal</code> 的 RMSE 比 <code>T_naive</code> 至少小 10 倍（写法 <code>err&lt;0.1·RMSE_naive ? 0 : 1</code>）。</li>
+<li>L61–62：<code>[结论]</code> 强调”多点+LS 抗噪”是所有出厂标定的公共内核。</li>
+</ul>
+<h2 id="五、你会看到什么"><a href="#五、你会看到什么" class="headerlink" title="五、你会看到什么"></a>五、你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">=== L3.1 传感器线性标定 ===</span><br><span class="line">  [demo] 标定 16 次平均: a=0.0185x b=-0.420x (真值 0.0185, -0.42)</span><br><span class="line">  标定参数接近真值(16次平均)         err=~5e-03 tol=8e-03  PASS</span><br><span class="line">  [demo] 温度反演 RMSE: 标定=~1.0 °C vs 未标定=~25 °C</span><br><span class="line">  标定后反演精度提升 10×+           err=0.0e+00 tol=5e-01  PASS</span><br><span class="line">  [结论] 两点决定一条直线,多点+LS 抗噪;ADC 增益/零飘、压力计、</span><br><span class="line">        电子秤——出厂标定全是这一篇。</span><br><span class="line">=== 2 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>噪声由 LCG 生成、种子固定 → 同机可复现；跨机或换编译器浮点顺序略异。16 次平均把单次参数偏差 ~2e-2 压到 ~5e-3（≈ 2e-2/√16）。反演 RMSE：标定 ~1°C 来自噪声 σ/â ≈ 0.02/0.0185；未标定 ~25°C 因为增益偏差 ~10% × 满量程 100°C。</p>
+</blockquote>
+<p><img src="/02jd/Least_squares_method_demo/images/fig12_calib.svg" alt="L3.1 工业用例：传感器线性标定"></p>
+<h2 id="六、自检"><a href="#六、自检" class="headerlink" title="六、自检"></a>六、自检</h2><ul>
+<li>把标定次数从 16 降到 1，看参数偏差是否回到 ~2e-2（验证 σ/√N 规律）。</li>
+<li>思考：为什么 7 个标定点要尽量<strong>均匀铺满量程</strong>而不是扎堆在一端？（AᵀA 的 <code>det = n·Σx² − (Σx)²</code> 在共线/聚簇时趋向 0 → 岭回归/条件数问题的雏形，见 L1.3/L1.4。）</li>
+<li>把 <code>T_naive = adc/0.02</code> 改成 <code>adc/0.0185</code>（增益对了零飘没补），看 RMSE 还剩多少——量化”零飘 b”独立于”增益 a”的影响。</li>
+</ul>
+<h2 id="七、下一步"><a href="#七、下一步" class="headerlink" title="七、下一步"></a>七、下一步</h2><p>进入 <a href="/02jd/Least_squares_method_demo/ls_l3_gps.html">L3.2 GPS 伪距定位</a>——从线性标定走向非线性 LS：伪距方程对 [x,y,z,δt·c] 线性化后用 GN 迭代求解。</p>
+<h2 id="兄弟仓库联系"><a href="#兄弟仓库联系" class="headerlink" title="兄弟仓库联系"></a>兄弟仓库联系</h2><p>线性标定是 <a href="/02jd/cali_demo/README.html">cali</a> 的最小原型；cali 用 BA 做相机/手眼这种<strong>非线性</strong>标定，但流程同构：建模 → 采样 → 解 LS → 反演验证。<a href="/02jd/KF_demo/README.html">KF</a> L1.1 的”参数恒定 + 观测修正”也是把这一篇放进递推框架。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Least_squares_method_demo/">LEAST_SQUARES_METHOD_DEMO</a></li>
+            <li>LS_L3_CALIB</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

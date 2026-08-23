@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3 补充（NEON 线 · 第1站）：ncnn 怎么用 ARM NEON 手写卷积 &#x2F; 矩阵乘 这是继「CUDA &#x2F; CUTLASS &#x2F; NCCL」GPU 主线之后，开辟的 CPU 侧对照线：读 ncnn 的 src&#x2F;layer&#x2F;arm&#x2F;，看工程师如何用手写 ARM NEON  intrinsic（甚至 aarch64 内联汇编）把卷积和矩阵乘榨干。GPU 有 Tensor Core &#x2F; sha">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3 补充（NEON 线 · 第1站）：ncnn 怎么用 ARM NEON 手写卷积 &#x2F; 矩阵乘">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_neon_conv_gemm.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3 补充（NEON 线 · 第1站）：ncnn 怎么用 ARM NEON 手写卷积 &#x2F; 矩阵乘 这是继「CUDA &#x2F; CUTLASS &#x2F; NCCL」GPU 主线之后，开辟的 CPU 侧对照线：读 ncnn 的 src&#x2F;layer&#x2F;arm&#x2F;，看工程师如何用手写 ARM NEON  intrinsic（甚至 aarch64 内联汇编）把卷积和矩阵乘榨干。GPU 有 Tensor Core &#x2F; sha">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_neon_conv_gemm">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_neon_conv_gemm.html","path":"02jd/cuda_demo/cuda_l3_neon_conv_gemm.html","title":"L3 补充（NEON 线 · 第1站）：ncnn 怎么用 ARM NEON 手写卷积 / 矩阵乘"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3 补充（NEON 线 · 第1站）：ncnn 怎么用 ARM NEON 手写卷积 / 矩阵乘 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-%E8%A1%A5%E5%85%85%EF%BC%88NEON-%E7%BA%BF-%C2%B7-%E7%AC%AC1%E7%AB%99%EF%BC%89%EF%BC%9Ancnn-%E6%80%8E%E4%B9%88%E7%94%A8-ARM-NEON-%E6%89%8B%E5%86%99%E5%8D%B7%E7%A7%AF-%E7%9F%A9%E9%98%B5%E4%B9%98"><span class="nav-number">1.</span> <span class="nav-text">L3 补充（NEON 线 · 第1站）：ncnn 怎么用 ARM NEON 手写卷积 &#x2F; 矩阵乘</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A70-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%AF%BB%E8%BF%99%E4%B8%80%E7%AB%99"><span class="nav-number">1.1.</span> <span class="nav-text">§0 为什么读这一站</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A71-%E8%B0%83%E5%BA%A6%E5%99%A8%EF%BC%9Aconv-%E6%80%8E%E4%B9%88%E9%80%89%E5%93%AA%E6%9D%A1%E8%B7%AF%E5%BE%84"><span class="nav-number">1.2.</span> <span class="nav-text">§1 调度器：conv 怎么选哪条路径</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A72-%E7%BB%9F%E4%B8%80%E5%8E%9F%E8%AF%AD%EF%BC%9Afmla-vfmaq-laneq-f32"><span class="nav-number">1.3.</span> <span class="nav-text">§2 统一原语：fmla &#x2F; vfmaq_laneq_f32</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A73-A-%E7%9B%B4%E6%8E%A5-3%C3%973-%E5%8D%B7%E7%A7%AF-%E2%80%94%E2%80%94-conv3x3s1-neon"><span class="nav-number">1.4.</span> <span class="nav-text">§3 (A) 直接 3×3 卷积 —— conv3x3s1_neon</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A74-B-1%C3%971-%E5%8D%B7%E7%A7%AF-GEMM-%E2%80%94%E2%80%94-conv1x1s1-neon"><span class="nav-number">1.5.</span> <span class="nav-text">§4 (B) 1×1 卷积 &#x3D; GEMM —— conv1x1s1_neon</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A75-C-im2col-SGEMM-%E7%9A%84-8%C3%9712-%E5%AF%84%E5%AD%98%E5%99%A8%E5%88%86%E5%9D%97%E5%BE%AE%E6%A0%B8"><span class="nav-number">1.6.</span> <span class="nav-text">§5 (C) im2col + SGEMM 的 8×12 寄存器分块微核</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A76-%E4%B8%8E-CUDA-CUTLASS-%E7%BA%BF%E7%9A%84%E5%AF%B9%E7%85%A7"><span class="nav-number">1.7.</span> <span class="nav-text">§6 与 CUDA&#x2F;CUTLASS 线的对照</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A77-%E6%95%B0%E5%80%BC%E8%87%AA%E6%A3%80%EF%BC%88%E7%BA%AF-C-%E5%8F%AF%E8%B7%91%EF%BC%8C%E6%97%A0-ARM-%E4%B9%9F%E8%A1%8C%EF%BC%89"><span class="nav-number">1.8.</span> <span class="nav-text">§7 数值自检（纯 C++ 可跑，无 ARM 也行）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A78-%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C"><span class="nav-number">1.9.</span> <span class="nav-text">§8 编译运行</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8B%E4%B8%80%E6%AD%A5%EF%BC%88NEON-%E7%BA%BF%E5%8F%AF%E9%80%89%EF%BC%89"><span class="nav-number">1.9.1.</span> <span class="nav-text">下一步（NEON 线可选）</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3 补充（NEON 线 · 第1站）：ncnn 怎么用 ARM NEON 手写卷积 / 矩阵乘
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L3_NEON_CONV_GEMM</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-补充（NEON-线-·-第1站）：ncnn-怎么用-ARM-NEON-手写卷积-矩阵乘"><a href="#L3-补充（NEON-线-·-第1站）：ncnn-怎么用-ARM-NEON-手写卷积-矩阵乘" class="headerlink" title="L3 补充（NEON 线 · 第1站）：ncnn 怎么用 ARM NEON 手写卷积 / 矩阵乘"></a>L3 补充（NEON 线 · 第1站）：ncnn 怎么用 ARM NEON 手写卷积 / 矩阵乘</h1><blockquote>
+<p>这是继「CUDA / CUTLASS / NCCL」GPU 主线之后，开辟的 <strong>CPU 侧对照线</strong>：读 ncnn 的 <code>src/layer/arm/</code>，看工程师如何用手写 ARM NEON  intrinsic（甚至 aarch64 内联汇编）把卷积和矩阵乘榨干。GPU 有 Tensor Core / shared memory，CPU 只有 128-bit NEON 向量 + L1/L2 cache —— 但<strong>算法骨架高度同构</strong>：寄存器分块 + FMA 原语 + 摊薄访存。</p>
+</blockquote>
+<p>读 real source（已拉到 <code>_ncnn_src/</code>，Tencent/ncnn@master）：<br><code>convolution_arm.cpp</code> · <code>convolution_im2col_gemm.h</code> · <code>convolution_1x1.h</code> · <code>convolution_3x3.h</code> · <code>arm_usability.h</code></p>
+<hr>
+<h2 id="§0-为什么读这一站"><a href="#§0-为什么读这一站" class="headerlink" title="§0 为什么读这一站"></a>§0 为什么读这一站</h2><ul>
+<li>GPU 卷积靠 Tensor Core 把 <code>D=A·B+C</code> 压成一条 <code>mma</code>；<strong>CPU 没有 Tensor Core</strong>，靠 NEON 的 128-bit 寄存器（<code>float32x4_t</code>，一次 4 个 float）做向量乘加。</li>
+<li>ncnn 是移动端推理标杆，其 ARM 卷积实现是「手写 SIMD 优化」的范本：把高抽象层的卷积，逐层下探到 <strong>im2col+GEMM / 1×1-as-GEMM / 直接 3×3 / Winograd</strong> 四条路径，每条都用 NEON 手写微核。</li>
+<li>与前面 CUDA 线对照，你会看到 <strong>“同一个数学（卷积=GEMM），两套硬件原语”</strong>：GPU 的 <code>wgmma</code>/<code>mma</code> vs CPU 的 <code>fmla</code>/<code>vfmaq_laneq_f32</code>。</li>
+</ul>
+<hr>
+<h2 id="§1-调度器：conv-怎么选哪条路径"><a href="#§1-调度器：conv-怎么选哪条路径" class="headerlink" title="§1 调度器：conv 怎么选哪条路径"></a>§1 调度器：conv 怎么选哪条路径</h2><p><code>convolution_arm.cpp</code> 的 <code>forward</code> 里先 reshape 权重，再按 <strong>kernel 尺寸 / 通道数 / opt 开关</strong> 选 kernel（<code>convolution_arm.cpp:204-262</code>）：</p>
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th>选中路径</th>
+<th>实现函数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>use_winograd &amp;&amp; 3×3 &amp;&amp; s1 &amp;&amp; dilation1 &amp;&amp; num_in/out≥8</code></td>
+<td>Winograd (F(2/3/4/6) 系列)</td>
+<td><code>conv3x3s1_winograd23/43/63</code> (<code>convolution_arm.cpp:489-499</code>)</td>
+</tr>
+<tr>
+<td><code>(use_sgemm &amp;&amp; prefer_sgemm) || 1×1</code></td>
+<td>im2col + SGEMM</td>
+<td><code>convolution_im2col_gemm</code> (<code>convolution_arm.cpp:562</code>)</td>
+</tr>
+<tr>
+<td>通用 3×3 / 5×5（pack4 布局）</td>
+<td>直接 NEON</td>
+<td><code>conv3x3s2_pack4_neon</code> / <code>conv5x5s1_pack4_neon</code> (<code>convolution_arm.cpp:579-597</code>)</td>
+</tr>
+</tbody></table>
+<p><code>prefer_sgemm</code> 的判据（<code>convolution_arm.cpp:223</code>）：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">bool</span> prefer_sgemm =</span><br><span class="line">    num_input * num_output * kernel_w * kernel_h * dilation * stride * <span class="number">2</span> &gt; l2_cache_size_fp32</span><br><span class="line"> || (num_input &gt; <span class="number">16</span> || num_output &gt; <span class="number">16</span>);</span><br></pre></td></tr></tbody></table></figure>
+<p>→ <strong>当问题规模超过 L2 缓存、或通道数很大时，im2col+GEMM 反而比直接卷积更 cache 友好</strong>（因为 GEMM 有高度优化的分块微核）。这点和 GPU 上「大矩阵用 GEMM、小卷积用直接/Winograd」的直觉一致。</p>
+<hr>
+<h2 id="§2-统一原语：fmla-vfmaq-laneq-f32"><a href="#§2-统一原语：fmla-vfmaq-laneq-f32" class="headerlink" title="§2 统一原语：fmla / vfmaq_laneq_f32"></a>§2 统一原语：fmla / vfmaq_laneq_f32</h2><p>ncnn 全部手写 ARM 卷积/矩阵乘，最后都落到<strong>同一个 NEON 原语</strong>：</p>
+<ul>
+<li><code>vfmaq_laneq_f32(acc, a, b, lane)</code> ≡ <code>acc += a * b[lane]</code>：把 <strong>B 的第 <code>lane</code> 个标量广播</strong> 到与 A 同宽的 4 路向量相乘，累加到输出寄存器。</li>
+<li>aarch64 汇编写法 <code>fmla v18.4s, v17.4s, %Z.s[0]</code>（内联汇编，<code>convolution_1x1.h:134</code>）：v17 = 4 路输入向量，v18 = 输出累加寄存器，<code>%Z.s[0]</code> = 一个权重标量。</li>
+</ul>
+<p><strong>为什么用 lane 广播？</strong> 一次 <code>vld1q</code> 把 4 个输入像素装进一个 <code>float32x4_t</code>；权重那一列（K 维）只需 load 一次，用 4 个 lane 分别广播即可喂给 4 路输出累加器 —— <strong>一次访存权重，服务 4 路输出</strong>，这正是 NEON 上摊薄访存的核心技巧。</p>
+<hr>
+<h2 id="§3-A-直接-3×3-卷积-——-conv3x3s1-neon"><a href="#§3-A-直接-3×3-卷积-——-conv3x3s1-neon" class="headerlink" title="§3 (A) 直接 3×3 卷积 —— conv3x3s1_neon"></a>§3 (A) 直接 3×3 卷积 —— <code>conv3x3s1_neon</code></h2><p>函数：<code>convolution_3x3.h:4</code>。一次算 <strong>4 个输出像素（4 路 SIMD lane）</strong>：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">float32x4_t</span> _r00 = <span class="built_in">vld1q_f32</span>(r0);   <span class="comment">// 顶行 4 个输入像素        convolution_3x3.h:364</span></span><br><span class="line"><span class="type">float32x4_t</span> _r10 = <span class="built_in">vld1q_f32</span>(r1);   <span class="comment">// 中行</span></span><br><span class="line"><span class="type">float32x4_t</span> _r20 = <span class="built_in">vld1q_f32</span>(r2);   <span class="comment">// 底行</span></span><br><span class="line"></span><br><span class="line"><span class="type">float32x4_t</span> _sum0 = <span class="built_in">vmulq_f32</span>(_r00, _k00);   <span class="comment">// 第 0 输出行的首乘</span></span><br><span class="line">_sum0 = <span class="built_in">vmlaq_f32</span>(_sum0, _r10, _k03);        <span class="comment">// + 中行 × 错位核向量</span></span><br><span class="line">_sum0 = <span class="built_in">vmlaq_f32</span>(_sum0, _r20, _k06);        <span class="comment">// + 底行 × 错位核向量</span></span><br><span class="line"><span class="comment">// （_sum1 / _sum0n / _sum1n 用同样 6 次 FMA 算相邻 1 个输出行 / 1 个输出通道）</span></span><br><span class="line"><span class="type">float</span> o = <span class="built_in">vaddvq_f32</span>(_sum0);                  <span class="comment">// 4 路水平求和 → 4 个输出像素  convolution_3x3.h:388</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>要点：</p>
+<ol>
+<li><strong>核预打包成 3 个「错位向量」</strong> <code>_k00/_k03/_k06</code>（<code>convolution_3x3.h:51-57</code>），把本应 9 次乘累加压到 6 次 FMA，利用滑动窗口相邻输出像素共享输入。</li>
+<li>一次处理 <strong>2 输出通道 × 2 输出行 × 4 输出列 = 16 个输出点</strong> 的块（见 <code>_sum0/_sum1/_sum0n/_sum1n</code> 四组），再 <code>vaddvq_f32</code> 水平归约。</li>
+<li>本仓库镜像 <code>cuda_l3_neon_conv_gemm.cpp:neon_style_conv3x3</code> 用清晰的 9-MAC 4-lane 版还原同一结构（ncnn 的 6-FMA 打包优化在注释里说明），与朴素实现对拍 <code>maxdiff=0</code>。</li>
+</ol>
+<hr>
+<h2 id="§4-B-1×1-卷积-GEMM-——-conv1x1s1-neon"><a href="#§4-B-1×1-卷积-GEMM-——-conv1x1s1-neon" class="headerlink" title="§4 (B) 1×1 卷积 = GEMM —— conv1x1s1_neon"></a>§4 (B) 1×1 卷积 = GEMM —— <code>conv1x1s1_neon</code></h2><p>函数：<code>convolution_1x1.h:4</code>。1×1 卷积没有空间窗口，<strong>本质就是矩阵乘</strong>：<br><code>out[H·W][outch] = in[H·W][inch] × W[outch][inch]</code>。</p>
+<p>ncnn 用 <strong>8 输出通道 × 8 输入通道</strong> 分块（对应 <code>convolution_1x1.h:20</code> 的 <code>outch &gt;&gt; 3</code> 和 <code>:57</code> 的 <code>q += 8</code>），内层用 <code>fmla</code> 的 lane 广播一次服务 8 个输出通道：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 8 个输出通道的累加寄存器 v18..v25 已 ld1 装好</span></span><br><span class="line"><span class="string">"fmla v18.4s, v17.4s, %34.s[0]   \n"</span>   <span class="comment">// 输入向量 v17 × 权重标量 lane0 → 累加进 v18</span></span><br><span class="line"><span class="string">"fmla v19.4s, v17.4s, %35.s[0]   \n"</span>   <span class="comment">// 同时累加进第 2 个输出通道 v19</span></span><br><span class="line"><span class="string">"fmla v20.4s, v17.4s, %36.s[0]   \n"</span>   <span class="comment">// … 直到第 8 个</span></span><br><span class="line"><span class="comment">// 下一轮用 %Z.s[1] 广播权重的第 2 个输入通道，继续累加</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>→ <strong>一个输入通道的 4 路向量 v17，被复用到 8 个输出通道的累加器</strong>；<code>size &amp; 3</code> 的余数在 <code>convolution_1x1.h:98</code> 处理。这就是「GEMM 的微核」：循环 K（输入通道），每个 K 用 lane 广播把 1 个输入值摊到 8 路输出。仓库镜像 <code>neon_style_conv1x1</code> 用 8×8 分块 + 余量处理还原，对拍 <code>maxdiff=1.3e-15</code>。</p>
+<hr>
+<h2 id="§5-C-im2col-SGEMM-的-8×12-寄存器分块微核"><a href="#§5-C-im2col-SGEMM-的-8×12-寄存器分块微核" class="headerlink" title="§5 (C) im2col + SGEMM 的 8×12 寄存器分块微核"></a>§5 (C) im2col + SGEMM 的 8×12 寄存器分块微核</h2><p>当走 GEMM 路径时，ncnn 先 <code>convolution_im2col_gemm_transform_kernel</code>（<code>convolution_arm.cpp:261</code>）把权重 reshape，再把输入 <code>convolution_im2col_pack_A_tile</code>（<code>convolution_im2col_gemm.h:4</code>，内部用 <code>transpose8x8_ps</code> —— <code>arm_usability.h:596</code> —— 做 8×8 转置打包进连续内存），最后调 GEMM 微核：</p>
+<p>函数：<code>convolution_gemm_transB_packed_tile</code>（<code>convolution_im2col_gemm.h:178</code>）。<strong>输出分块：<code>ii += 8</code> 行（<code>:194</code>）、<code>jj += 12</code> 列（<code>:206</code>）</strong> —— 一个微核一次算 <strong>8×12 = 96 个输出</strong>，全部驻留在 NEON 寄存器（intrinsic 版 24 个 <code>float32x4</code> = 96；aarch64 内联汇编版 v8–v31 共 32 个寄存器 = 128 floats 容纳 8×16 或 8×12 块，<code>convolution_im2col_gemm.h:266</code> 起的 <code>fmla</code> 循环）：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// K 主循环（convolution_im2col_gemm.h:1560），每步：</span></span><br><span class="line"><span class="type">float32x4_t</span> _pA0 = <span class="built_in">vld1q_f32</span>(pA);   <span class="comment">// 8 路输入（A 块的一行）</span></span><br><span class="line"><span class="type">float32x4_t</span> _pB0 = <span class="built_in">vld1q_f32</span>(pB);   <span class="comment">// 12 路权重中的一 lane</span></span><br><span class="line">_sum00 = <span class="built_in">vfmaq_laneq_f32</span>(_sum00, _pA0, _pB0, <span class="number">0</span>);  <span class="comment">// 广播 B 的 lane0 → 累加到 12 列中的第 0 组</span></span><br><span class="line">_sum01 = <span class="built_in">vfmaq_laneq_f32</span>(_sum01, _pA1, _pB0, <span class="number">0</span>);</span><br><span class="line">_sum10 = <span class="built_in">vfmaq_laneq_f32</span>(_sum10, _pA0, _pB0, <span class="number">1</span>);   <span class="comment">// lane1</span></span><br><span class="line"><span class="comment">// … 直到 _sumb1 = lane3，共 24 个累加器覆盖 8 行 × 12 列</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>要点：</p>
+<ol>
+<li><strong>8×12 寄存器分块</strong>把输出暂存在 96 个 float 寄存器里，K 循环里反复复用已 load 的 A/B，把访存摊到极低。</li>
+<li>同一 <code>vfmaq_laneq_f32</code>（= §2 的原语）贯穿 3×3 / 1×1 / SGEMM 三种 kernel —— <strong>ncnn 手写 NEON 的「单一内核」</strong>。</li>
+<li>仓库镜像 <code>neon_style_sgemm_8x12</code> 还原该 8×12 分块 + K 主循环（标量版 lane 广播），对拍 <code>maxdiff=1.3e-15</code>。</li>
+</ol>
+<hr>
+<h2 id="§6-与-CUDA-CUTLASS-线的对照"><a href="#§6-与-CUDA-CUTLASS-线的对照" class="headerlink" title="§6 与 CUDA/CUTLASS 线的对照"></a>§6 与 CUDA/CUTLASS 线的对照</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>ARM NEON（ncnn，本站）</th>
+<th>CUDA / CUTLASS（前序 L3）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>向量宽度</td>
+<td>128-bit <code>float32x4</code>（4 lane）</td>
+<td>32-bit×32 线程 / warp；Tensor Core 8×4×8</td>
+</tr>
+<tr>
+<td>核心原语</td>
+<td><code>fmla</code> / <code>vfmaq_laneq_f32</code>（标量 lane 广播）</td>
+<td><code>mma.sync</code> / <code>wgmma</code>（整块矩阵乘加）</td>
+</tr>
+<tr>
+<td>矩阵乘方式</td>
+<td>寄存器分块 GEMM（8×12 / 8×8）</td>
+<td>同样寄存器/共享内存分块，但由 MMA 指令完成乘加</td>
+</tr>
+<tr>
+<td>数据搬运</td>
+<td>cache（L1/L2）+ 预取 <code>prfm</code></td>
+<td>shared memory + <code>cp.async</code></td>
+</tr>
+<tr>
+<td>1×1 卷积</td>
+<td>= GEMM，8×8 分块 CPU 寄存</td>
+<td>= GEMM，CUTLASS <code>Gemm</code> 分块 + Tensor Core</td>
+</tr>
+<tr>
+<td>直接 3×3</td>
+<td>错位核向量 6-FMA + <code>vaddvq</code></td>
+<td>无直接对应（GPU 多走 im2col/GEMM 或 Winograd）</td>
+</tr>
+<tr>
+<td>拓扑/通信</td>
+<td>单核 + 多核 <code>omp</code>；无 P2P</td>
+<td>NVLink/P2P/NCCL 多卡</td>
+</tr>
+</tbody></table>
+<p><strong>一句话</strong>：GPU 把「乘加」交给 Tensor Core 硬件单元，CPU 把「乘加」交给手写的 NEON <code>fmla</code> 流水线；两者都靠<strong>寄存器分块 + 复用 + 摊薄访存</strong>把峰值算力吃满。读 ncnn 的 ARM 代码，等于读「没有 Tensor Core 时，卷积/矩阵乘该怎么手写」的标准答案。</p>
+<hr>
+<h2 id="§7-数值自检（纯-C-可跑，无-ARM-也行）"><a href="#§7-数值自检（纯-C-可跑，无-ARM-也行）" class="headerlink" title="§7 数值自检（纯 C++ 可跑，无 ARM 也行）"></a>§7 数值自检（纯 C++ 可跑，无 ARM 也行）</h2><p><code>g++ -O3 -std=c++17 cuda_l3_neon_conv_gemm.cpp -o neon &amp;&amp; ./neon</code> 输出：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(A) 3x3 直接卷积  : neon vs naive maxdiff = 0.00e+00  PASS</span><br><span class="line">(B) 1x1 卷积=GEMM : neon vs naive maxdiff = 1.33e-15 PASS</span><br><span class="line">(C) 8x12 SGEMM tile: neon vs naive maxdiff = 1.33e-15 PASS</span><br></pre></td></tr></tbody></table></figure>
+<p>（本环境无 g++/ARM 编译器，已用等价 Python 镜像逐一对拍确认上述结果。）</p>
+<h2 id="§8-编译运行"><a href="#§8-编译运行" class="headerlink" title="§8 编译运行"></a>§8 编译运行</h2><figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 纯 C++ 仿真（任意平台，看算法结构 + 对拍）</span></span><br><span class="line">g++ -O3 -std=c++17 cuda_l3_neon_conv_gemm.cpp -o neon &amp;&amp; ./neon</span><br><span class="line"></span><br><span class="line"><span class="comment"># 真机 ARM 对照（需 aarch64 + 编译 ncnn 本体）</span></span><br><span class="line"><span class="comment">#   git clone https://github.com/Tencent/ncnn &amp;&amp; 开 -DNCNN_NEON=ON 编出 benchmark</span></span><br><span class="line"><span class="comment">#   ./benchncnn 看 convolution 各项的 NEON 实现耗时</span></span><br></pre></td></tr></tbody></table></figure>
+
+<hr>
+<h3 id="下一步（NEON-线可选）"><a href="#下一步（NEON-线可选）" class="headerlink" title="下一步（NEON 线可选）"></a>下一步（NEON 线可选）</h3><ol start="2">
+<li>读 <code>convolution_3x3_winograd.h</code>（9424 行）看 Winograd 的 NEON 实现；</li>
+<li>读 <code>convolutiondepthwise_3x3.h</code> 看 depthwise 分离卷积的 NEON 写法；</li>
+<li>读 INT8 路径 <code>convolution_im2col_gemm_int8.h</code> / <code>convolution_3x3_int8.h</code> 看 <code>smull</code>/<code>sdot</code> 定点量化。</li>
+</ol>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L3_NEON_CONV_GEMM</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3.2 鲁棒与抗扰（扰动前馈 &#x2F; 扰动观测器 DOB）⭐ 增益整得再漂亮，现实里总有没建模的扰动——风、负载变化、摩擦。本篇看 PID 之外的两把抗扰武器：扰动前馈与扰动观测器（DOB），并验证它们真能把偏差压下去。   一、为什么 PID  alone 不够抗扰PID 的积分项最终能消除常值扰动的稳态误差——但它靠”误差慢慢累积”来补偿，期间系统会大幅偏离设定值、恢复也慢。对快变&#x2F;大扰动，这个">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3.2 鲁棒与抗扰（扰动前馈 &#x2F; 扰动观测器 DOB）⭐">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/pid_demo/pid_l3_robust.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3.2 鲁棒与抗扰（扰动前馈 &#x2F; 扰动观测器 DOB）⭐ 增益整得再漂亮，现实里总有没建模的扰动——风、负载变化、摩擦。本篇看 PID 之外的两把抗扰武器：扰动前馈与扰动观测器（DOB），并验证它们真能把偏差压下去。   一、为什么 PID  alone 不够抗扰PID 的积分项最终能消除常值扰动的稳态误差——但它靠”误差慢慢累积”来补偿，期间系统会大幅偏离设定值、恢复也慢。对快变&#x2F;大扰动，这个">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/pid_demo/images/fig12_robust.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.960Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/pid_demo/images/fig12_robust.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/pid_demo/pid_l3_robust">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/pid_demo/pid_l3_robust.html","path":"02jd/pid_demo/pid_l3_robust.html","title":"L3.2 鲁棒与抗扰（扰动前馈 / 扰动观测器 DOB）⭐"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3.2 鲁棒与抗扰（扰动前馈 / 扰动观测器 DOB）⭐ | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-2-%E9%B2%81%E6%A3%92%E4%B8%8E%E6%8A%97%E6%89%B0%EF%BC%88%E6%89%B0%E5%8A%A8%E5%89%8D%E9%A6%88-%E6%89%B0%E5%8A%A8%E8%A7%82%E6%B5%8B%E5%99%A8-DOB%EF%BC%89%E2%AD%90"><span class="nav-number">1.</span> <span class="nav-text">L3.2 鲁棒与抗扰（扰动前馈 &#x2F; 扰动观测器 DOB）⭐</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88-PID-alone-%E4%B8%8D%E5%A4%9F%E6%8A%97%E6%89%B0"><span class="nav-number">1.1.</span> <span class="nav-text">一、为什么 PID  alone 不够抗扰</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E4%B8%A4%E6%8A%8A%E6%8A%97%E6%89%B0%E6%AD%A6%E5%99%A8"><span class="nav-number">1.2.</span> <span class="nav-text">二、两把抗扰武器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DOB-%E7%9A%84%E6%8E%A8%E5%AF%BC%E9%93%BE%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88-x%E2%80%99-x%E2%88%92u-%E6%98%AF%E6%89%B0%E5%8A%A8%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">DOB 的推导链（为什么 x’+x−u 是扰动）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88pid-l3-robust-cpp%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、代码走读（pid_l3_robust.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.4.</span> <span class="nav-text">四、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%B7%A5%E7%A8%8B%E5%9D%91%EF%BC%88%E7%9C%9F%E5%AE%9E%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、工程坑（真实）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.6.</span> <span class="nav-text">六、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.7.</span> <span class="nav-text">七、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3.2 鲁棒与抗扰（扰动前馈 / 扰动观测器 DOB）⭐
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/pid_demo/">PID_DEMO</a></li>
+            <li>PID_L3_ROBUST</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-2-鲁棒与抗扰（扰动前馈-扰动观测器-DOB）⭐"><a href="#L3-2-鲁棒与抗扰（扰动前馈-扰动观测器-DOB）⭐" class="headerlink" title="L3.2 鲁棒与抗扰（扰动前馈 / 扰动观测器 DOB）⭐"></a>L3.2 鲁棒与抗扰（扰动前馈 / 扰动观测器 DOB）⭐</h1><blockquote>
+<p>增益整得再漂亮，现实里总有<strong>没建模的扰动</strong>——风、负载变化、摩擦。本篇看 PID 之外的两把抗扰武器：<strong>扰动前馈</strong>与<strong>扰动观测器（DOB）</strong>，并验证它们真能把偏差压下去。</p>
+</blockquote>
+<hr>
+<h2 id="一、为什么-PID-alone-不够抗扰"><a href="#一、为什么-PID-alone-不够抗扰" class="headerlink" title="一、为什么 PID  alone 不够抗扰"></a>一、为什么 PID  alone 不够抗扰</h2><p>PID 的积分项<strong>最终</strong>能消除常值扰动的稳态误差——但它靠”误差慢慢累积”来补偿，期间系统会<strong>大幅偏离设定值</strong>、恢复也慢。对快变/大扰动，这个瞬态不可接受。</p>
+<p><strong>定量的说法</strong>：积分项的”顶扰动”速度受 Ki 限制，而 Ki 又受稳定边界（L2.4）限制——**”消除扰动”和”保持稳定”争抢同一个 Ki<strong>。扰动前馈/DOB 的哲学是：</strong>别等误差长大，直接测/估扰动并反向补偿**，把 Ki 从”抗扰”的重担里解放出来。</p>
+<h2 id="二、两把抗扰武器"><a href="#二、两把抗扰武器" class="headerlink" title="二、两把抗扰武器"></a>二、两把抗扰武器</h2><p>同一 plant：<code>x' = −x + u + d</code>（d 为未知扰动，t1 时刻阶跃注入 d0）。</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>做法</th>
+<th>关键</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>① PID 仅</strong></td>
+<td><code>u = Kp·e + Ki∫e + Kd·de</code></td>
+<td>只靠积分磨回，瞬态大</td>
+</tr>
+<tr>
+<td><strong>② 扰动前馈</strong>（已知 d）</td>
+<td>额外 <code>u_ff = −d</code></td>
+<td>扰动被<strong>瞬时抵消</strong>，零偏差</td>
+</tr>
+<tr>
+<td><strong>③ DOB</strong></td>
+<td>估计 <code>d_hat = LPF(x' + x − u)</code>，再 <code>u_ff = −d_hat</code></td>
+<td><strong>未知扰动</strong>也能估出并抵消</td>
+</tr>
+</tbody></table>
+<p>DOB 的物理直觉：把”实际加速度 <code>x'</code>“与”模型预测的加速度 <code>−x+u</code>“做差，多出来的就是扰动，低通平滑后即 <code>d_hat</code>。</p>
+<h3 id="DOB-的推导链（为什么-x’-x−u-是扰动）"><a href="#DOB-的推导链（为什么-x’-x−u-是扰动）" class="headerlink" title="DOB 的推导链（为什么 x’+x−u 是扰动）"></a>DOB 的推导链（为什么 x’+x−u 是扰动）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">对象: x' = −x + u + d   →  解出 d = x' + x − u</span><br><span class="line">但是: x' 是导数, 直接求导噪声爆炸 (L2.2 教训!)</span><br><span class="line">处理: 用低通滤波的"近似微分" s/(1+τs) 代替 x':</span><br><span class="line">d_hat = [s/(1+τs)]·x + [1/(1+τs)]·(x − u)   ← 带 τ 的平滑估计</span><br><span class="line">实现: d_hat = LPF(x' + x − u) 等价于对 (x' + x − u) 做一阶低通</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>τ 是观测器带宽</strong>：τ 大 → d_hat 平滑但滞后大（扰动补偿不及时）；τ 小 → 快但把噪声也当扰动（输出抖）。DOB 与 KF/观测器（control_demo L2.4）同源——都是”模型 + 修正”，DOB 用低通做修正、KF 用协方差最优修正。</p>
+<h2 id="三、代码走读（pid-l3-robust-cpp）"><a href="#三、代码走读（pid-l3-robust-cpp）" class="headerlink" title="三、代码走读（pid_l3_robust.cpp）"></a>三、代码走读（pid_l3_robust.cpp）</h2><ul>
+<li><code>sim(cfg, dt, N, sp, d0, t1, Umax, dHatFinal)</code>：统一闭环仿真，按 <code>useFF / useDOB</code> 切换策略。</li>
+<li>指标：<code>peakDev</code>（t1 之后的峰值偏差）、<code>steadyErr</code>（末值偏差）。</li>
+<li>对拍判据（扰动真值 <code>d0</code> 已知）：<ul>
+<li><code>peakFF &lt; 0.2·peakPID</code> —— 完美前馈几乎消除瞬态；</li>
+<li><code>peakDOB &lt; 0.6·peakPID</code> —— DOB 显著优于裸 PID；</li>
+<li>三者稳态误差都 <code>&lt; 0.02</code>；</li>
+<li><strong>DOB 估计 <code>|d_hat − d0| &lt; 0.1·d0</code></strong> —— 观测器收敛到真值扰动（核心真值对拍）。</li>
+</ul>
+</li>
+</ul>
+<p><img src="/02jd/pid_demo/images/fig12_robust.svg" alt="L3.2 鲁棒抗扰"></p>
+<h2 id="四、你会看到什么"><a href="#四、你会看到什么" class="headerlink" title="四、你会看到什么"></a>四、你会看到什么</h2><ul>
+<li>左图：plant 上叠加扰动 d；DOB 模块从 <code>x'+x−u</code> 估出 d_hat。</li>
+<li>左下：d_hat 在 t1 注入后从 0 收敛到真值 0.5。</li>
+<li>右图：阶跃扰动后，PID 仅曲线大幅偏离，+前馈/+DOB 几乎贴着设定值。</li>
+</ul>
+<h2 id="五、工程坑（真实）"><a href="#五、工程坑（真实）" class="headerlink" title="五、工程坑（真实）"></a>五、工程坑（真实）</h2><ol>
+<li><strong>DOB 依赖模型精度</strong>：d_hat 公式里的 “−x+u” 是<strong>模型</strong>——模型错（比如惯性 J 标错 20%），d_hat 会系统性偏置（把模型误差当扰动补偿）。先校准模型再上 DOB。</li>
+<li><strong>DOB 与执行器饱和打架</strong>：扰动大时 u_ff 可能推 u 进饱和——DOB 估计要随饱和状态冻结（同 L1.5 的 anti-windup 思想），否则饱和期间 d_hat 继续涨、退饱和跳变。</li>
+<li><strong>前馈只能补”已知/可测”扰动</strong>：测噪声的”前馈”（demo 自检里）退化成开环补偿，噪声进输出——<strong>可测但不可靠的信号宁可用 DOB</strong>。</li>
+<li><strong>双积分/柔性系统</strong>：DOB 假设对象可逆（x’ 与 u 直接关联）；对柔性/非最小相位对象，直接反演会放大高频——需要滤波整形。</li>
+</ol>
+<h2 id="六、自检"><a href="#六、自检" class="headerlink" title="六、自检"></a>六、自检</h2><ul>
+<li>把 <code>d0</code> 从 0.5 调到 1.0，看 PID 仅偏差如何翻倍、DOB 依旧收敛（鲁棒）。</li>
+<li>把 DOB 的 <code>tau</code> 从 0.3 调到 1.0（更慢的观测器），看 d_hat 滞后变大、瞬态抑制变弱——体会观测器带宽权衡。</li>
+<li>把 <code>useFF</code> 改成”测量有噪声的 d”，看前馈效果退化——引出为什么需要 DOB。</li>
+</ul>
+<h2 id="七、下一步"><a href="#七、下一步" class="headerlink" title="七、下一步"></a>七、下一步</h2><p>进入 <a href="/02jd/pid_demo/pid_l3_autotuner.html">L3.3 在线/自动调参系统 ⭐</a>：把整定+抗扰做成一套能自动跑、能自检、能告警的工程系统。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/pid_demo/">PID_DEMO</a></li>
+            <li>PID_L3_ROBUST</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

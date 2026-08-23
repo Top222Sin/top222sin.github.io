@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 330" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="330" fill="#ffffff"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L2.2 微分噪声与 D 项滤波</text>
+
+  <!-- 左：测量噪声 vs 低通后 -->
+  <text x="20" y="58" font-size="12" fill="#555">① 反馈测量：原始(含噪) vs 低通后</text>
+  <g transform="translate(30,80)">
+    <line x1="0" y1="0" x2="300" y2="0" stroke="#ccc"/>
+    <line x1="0" y1="140" x2="300" y2="140" stroke="#888"/>
+    <line x1="0" y1="0" x2="0" y2="140" stroke="#888"/>
+    <line x1="300" y1="0" x2="300" y2="140" stroke="#888"/>
+    <polyline fill="none" stroke="#dc2626" stroke-width="1.8"
+      points="0,118 20,130 40,108 60,128 80,100 100,124 120,96 140,120 160,92 180,116 200,88 220,112 240,80 260,108 280,76 300,96"/>
+    <polyline fill="none" stroke="#059669" stroke-width="2.4"
+      points="0,120 75,90 150,65 225,45 300,35"/>
+    <text x="6" y="158" font-size="10" fill="#dc2626">■ 原始(噪声)</text>
+    <text x="170" y="158" font-size="10" fill="#059669">■ 低通后</text>
+  </g>
+
+  <!-- 右：控制量 u 噪声 vs 低通 -->
+  <text x="360" y="58" font-size="12" fill="#555">② 控制量 u：D 项放大噪声 vs 滤波后</text>
+  <g transform="translate(360,80)">
+    <line x1="0" y1="0" x2="300" y2="0" stroke="#ccc"/>
+    <line x1="0" y1="140" x2="300" y2="140" stroke="#888"/>
+    <line x1="0" y1="0" x2="0" y2="140" stroke="#888"/>
+    <line x1="300" y1="0" x2="300" y2="140" stroke="#888"/>
+    <polyline fill="none" stroke="#dc2626" stroke-width="1.6"
+      points="0,92 20,70 40,105 60,55 80,100 100,50 120,98 140,52 160,95 180,48 200,100 220,50 240,96 260,52 280,98 300,50"/>
+    <polyline fill="none" stroke="#2563eb" stroke-width="2.4"
+      points="0,90 75,58 150,50 225,48 300,48"/>
+    <text x="6" y="158" font-size="10" fill="#dc2626">■ 无滤波(抖)</text>
+    <text x="190" y="158" font-size="10" fill="#2563eb">■ 滤波后(稳)</text>
+  </g>
+
+  <text x="20" y="320" font-size="11" fill="#666">要点：D 项含 1/dt，把测量噪声放大约 1/dt 倍；对微分低通滤波（或改用 derivative-on-measurement）可大幅降噪，且消除设定值突变的冲击。</text>
+</svg>

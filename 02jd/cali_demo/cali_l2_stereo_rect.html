@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="双目标定（Stereo）· 深入：立体校正 + 极线对齐 + 视差→深度 上篇 L1 双目基础 求出了相对位姿 R,T。本篇走完双目的”最后一公里”：把极线拉平、做立体匹配的前置——立体校正，并用它把视差变成深度。   一、为什么要立体校正（Rectification）标定只给了 R,T。但原始左右图像里，同一个空间点的对应像素并不在同一行，极线是斜的——立体匹配得在 2D 里搜，计算量大且易错。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="双目标定（Stereo）· 深入：立体校正 + 极线对齐 + 视差→深度">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cali_demo/cali_l2_stereo_rect.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="双目标定（Stereo）· 深入：立体校正 + 极线对齐 + 视差→深度 上篇 L1 双目基础 求出了相对位姿 R,T。本篇走完双目的”最后一公里”：把极线拉平、做立体匹配的前置——立体校正，并用它把视差变成深度。   一、为什么要立体校正（Rectification）标定只给了 R,T。但原始左右图像里，同一个空间点的对应像素并不在同一行，极线是斜的——立体匹配得在 2D 里搜，计算量大且易错。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.910Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cali_demo/cali_l2_stereo_rect">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cali_demo/cali_l2_stereo_rect.html","path":"02jd/cali_demo/cali_l2_stereo_rect.html","title":"双目标定（Stereo）· 深入：立体校正 + 极线对齐 + 视差→深度"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>双目标定（Stereo）· 深入：立体校正 + 极线对齐 + 视差→深度 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%8C%E7%9B%AE%E6%A0%87%E5%AE%9A%EF%BC%88Stereo%EF%BC%89%C2%B7-%E6%B7%B1%E5%85%A5%EF%BC%9A%E7%AB%8B%E4%BD%93%E6%A0%A1%E6%AD%A3-%E6%9E%81%E7%BA%BF%E5%AF%B9%E9%BD%90-%E8%A7%86%E5%B7%AE%E2%86%92%E6%B7%B1%E5%BA%A6"><span class="nav-number">1.</span> <span class="nav-text">双目标定（Stereo）· 深入：立体校正 + 极线对齐 + 视差→深度</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%AB%8B%E4%BD%93%E6%A0%A1%E6%AD%A3%EF%BC%88Rectification%EF%BC%89"><span class="nav-number">1.1.</span> <span class="nav-text">一、为什么要立体校正（Rectification）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%A1%E6%AD%A3%E7%9A%84%E5%87%A0%E4%BD%95%EF%BC%88%E6%80%8E%E4%B9%88%E6%8A%8A%E6%96%9C%E6%9E%81%E7%BA%BF%E6%8B%89%E5%B9%B3%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">校正的几何（怎么把斜极线拉平）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E8%A7%86%E5%B7%AE-%E2%86%92-%E6%B7%B1%E5%BA%A6"><span class="nav-number">1.2.</span> <span class="nav-text">二、视差 → 深度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%B1%E5%BA%A6%E8%AF%AF%E5%B7%AE%E5%85%AC%E5%BC%8F%E7%9A%84%E6%8E%A8%E5%AF%BC%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88-%CF%83-Z-%E2%88%9D-Z%C2%B2%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">深度误差公式的推导（为什么 σ_Z ∝ Z²）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88cali-l2-stereo-rect-cpp%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、代码走读（cali_l2_stereo_rect.cpp）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%B1%E5%BA%A6%E5%8F%8D%E8%A7%A3%EF%BC%88%E6%9C%AC-demo-%E7%94%A8%E7%9A%84%E5%85%AC%E5%BC%8F%E8%B7%AF%E5%BE%84%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">深度反解（本 demo 用的公式路径）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%B8%8E%E5%8D%95%E7%9B%AE%E6%A0%87%E5%AE%9A%E7%9A%84%E9%97%AD%E7%8E%AF"><span class="nav-number">1.4.</span> <span class="nav-text">四、与单目标定的闭环</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.6.</span> <span class="nav-text">六、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">双目标定（Stereo）· 深入：立体校正 + 极线对齐 + 视差→深度
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L2_STEREO_RECT</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="双目标定（Stereo）·-深入：立体校正-极线对齐-视差→深度"><a href="#双目标定（Stereo）·-深入：立体校正-极线对齐-视差→深度" class="headerlink" title="双目标定（Stereo）· 深入：立体校正 + 极线对齐 + 视差→深度"></a>双目标定（Stereo）· 深入：立体校正 + 极线对齐 + 视差→深度</h1><blockquote>
+<p>上篇 <a href="/02jd/cali_demo/cali_l1_stereo.html">L1 双目基础</a> 求出了相对位姿 R,T。本篇走完双目的”最后一公里”：把极线拉平、做立体匹配的前置——<strong>立体校正</strong>，并用它把<strong>视差</strong>变成<strong>深度</strong>。</p>
+</blockquote>
+<hr>
+<h2 id="一、为什么要立体校正（Rectification）"><a href="#一、为什么要立体校正（Rectification）" class="headerlink" title="一、为什么要立体校正（Rectification）"></a>一、为什么要立体校正（Rectification）</h2><p>标定只给了 R,T。但原始左右图像里，<strong>同一个空间点的对应像素并不在同一行</strong>，极线是斜的——立体匹配得在 2D 里搜，计算量大且易错。</p>
+<p>立体校正用 <code>stereoRectify</code> 求出两路旋转 <code>R1,R2</code>，把两个图像平面扭到<strong>共面且行对齐</strong>：校正后 <code>x_L</code> 与 <code>x_R</code> 必落在<strong>同一行</strong>（水平极线）。匹配从”二维搜索”降成”沿同一行一维搜”，这才是 SGBM/BM 能实时跑的前提。</p>
+<blockquote>
+<p>本 demo 的硬指标：<strong>校正后同一 3D 点的两图 y 坐标差（垂直视差）≈ 0</strong>（&lt; 0.01 px）。</p>
+</blockquote>
+<h3 id="校正的几何（怎么把斜极线拉平）"><a href="#校正的几何（怎么把斜极线拉平）" class="headerlink" title="校正的几何（怎么把斜极线拉平）"></a>校正的几何（怎么把斜极线拉平）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">原始: 两相机光轴不平行 → 极线是斜线（对极几何的一般情形）</span><br><span class="line">校正: 找到两个旋转 R1,R2 使两相机"虚拟地"共面 + 行对齐</span><br><span class="line">      （虚拟相机: 光心不动, 光轴转到平行, 像面转到共面）</span><br><span class="line">stereoRectify 输出: R1,R2（虚拟旋转）+ P1,P2（虚拟投影矩阵）+ Q（视差→深度）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>核心洞察</strong>：校正不移动光心（保持三角几何），只”旋转像平面”——所以校正后的像素对应仍然有效，且极线变水平。这是”计算上便宜”的变换（一次重映射），却把匹配从 2D 搜索降为 1D。</p>
+<h2 id="二、视差-→-深度"><a href="#二、视差-→-深度" class="headerlink" title="二、视差 → 深度"></a>二、视差 → 深度</h2><p>校正后两相机光轴平行、焦距 f、基线 B。对深度为 Z 的点，左右图像上的视差：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">d = u_L − u_R = f · B / Z      ⇒      Z = f · B / d</span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li><strong>视差越大 → 越近</strong>；视差趋近 0 → 无穷远。</li>
+<li>深度误差来自视差测量误差 σ_d：<code>σ_Z ≈ Z²·σ_d / (f·B)</code>。</li>
+</ul>
+<p>由此得到两条工程铁律（本 demo 用合成数据量化）：</p>
+<table>
+<thead>
+<tr>
+<th>退化</th>
+<th>后果</th>
+<th>直觉</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>基线 B 过小</strong></td>
+<td>同样 σ_d 下 σ_Z 剧增</td>
+<td>双目”看得远”靠大基线换视差</td>
+</tr>
+<tr>
+<td><strong>标定 R,T 有误差</strong></td>
+<td>校正失败、垂直视差变大</td>
+<td>极线不再行对齐 → 一维匹配失配</td>
+</tr>
+</tbody></table>
+<h3 id="深度误差公式的推导（为什么-σ-Z-∝-Z²）"><a href="#深度误差公式的推导（为什么-σ-Z-∝-Z²）" class="headerlink" title="深度误差公式的推导（为什么 σ_Z ∝ Z²）"></a>深度误差公式的推导（为什么 σ_Z ∝ Z²）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Z = f·B/d → ∂Z/∂d = −f·B/d² = −Z²/(f·B)（用 d=f·B/Z 代入）</span><br><span class="line">σ_Z ≈ |∂Z/∂d|·σ_d = Z²·σ_d/(f·B)</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>三条推论</strong>（背下来）：</p>
+<ol>
+<li><strong>距离越远误差平方级放大</strong>——10m 处深度误差是 1m 处的 100 倍（同样 σ_d）；</li>
+<li><strong>基线越大误差越小</strong>——B 翻倍 σ_Z 减半（但视野/体积代价）；</li>
+<li><strong>σ_d 固定时 f 大误差小</strong>——高分辨率/长焦相机深度更准。</li>
+</ol>
+<h2 id="三、代码走读（cali-l2-stereo-rect-cpp）"><a href="#三、代码走读（cali-l2-stereo-rect-cpp）" class="headerlink" title="三、代码走读（cali_l2_stereo_rect.cpp）"></a>三、代码走读（cali_l2_stereo_rect.cpp）</h2><ol>
+<li><code>makeRig</code> 造一个 rig 真值（K_L,K_R, R,T, 基线 B=0.12 m）。</li>
+<li><code>stereoRectify(KL,dL,KR,dR,img,R,T,...)</code> → 校正旋转 <code>R1,R2</code> 与投影矩阵 <code>P1,P2</code>、视差→深度矩阵 <code>Q</code>。</li>
+<li>在左相机坐标系下取 40 个 3D 点，用 <code>P1,P2</code> 投影：<ul>
+<li><strong>垂直视差</strong> <code>|v1−v2|</code> 应 ≈ 0（极线对齐）；</li>
+<li><strong>深度</strong> <code>Z_est = f·B/d</code> 与真值 <code>Z</code> 比对，相对误差应 &lt; 5%。</li>
+</ul>
+</li>
+<li><strong>退化①</strong>：把基线缩到 3 cm 重校，深度相对误差显著变大——印证”小基线→深度误差大”。</li>
+<li><strong>退化②</strong>：给 T 注入 5% 误差再校，垂直视差立刻涨起来——印证”标定误差→校正失效→匹配崩”。</li>
+<li>健康指标达标才 <code>PASS</code>。</li>
+</ol>
+<h3 id="深度反解（本-demo-用的公式路径）"><a href="#深度反解（本-demo-用的公式路径）" class="headerlink" title="深度反解（本 demo 用的公式路径）"></a>深度反解（本 demo 用的公式路径）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">校正后: 两相机虚拟平行, 像素行对齐</span><br><span class="line">视差: d = u_L − u_R</span><br><span class="line">深度: Z = f·B/d （f = 校正后焦距 = P1[0,0]）</span><br><span class="line">更通用: Q 矩阵直接 Q·[u,v,d,1]ᵀ = [X,Y,Z,W] → 深度 = Z/W</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程细节</strong>：OpenCV 的 Q 矩阵把”视差→3D 齐次坐标”一步完成（含主点/基线的全部内化）——<code>reprojectImageTo3D</code> 就是用它。手算 Z=f·B/d 与 Q 等价，但 Q 更完整（处理主点偏移）。</p>
+<h2 id="四、与单目标定的闭环"><a href="#四、与单目标定的闭环" class="headerlink" title="四、与单目标定的闭环"></a>四、与单目标定的闭环</h2><p>整条双目链路是：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">单目标定(K_L,K_R)  →  [L1 双目基础](cali_l1_stereo.md)(R,T)  →  立体校正 + 视差→深度(本篇)</span><br><span class="line">     ↑ 见 [cali_l1_monocular](cali_l1_monocular.md)/L1.3         ↑ 见根目录 camera_calibration_guide §5–§7</span><br></pre></td></tr></tbody></table></figure>
+
+<p>内参不准 → 双目发散；R,T 不准 → 校正失效；基线选错 → 深度误差爆炸。三者任何一环出问题，双目测距都会崩——所以单目、双目基础、校正三篇要连起来看。</p>
+<h2 id="五、工程落点（真实项目）"><a href="#五、工程落点（真实项目）" class="headerlink" title="五、工程落点（真实项目）"></a>五、工程落点（真实项目）</h2><ul>
+<li><strong>OpenCV</strong> <code>stereoRectify</code> / <code>reprojectImageTo3D</code> / <code>StereoSGBM</code>——本 demo 的校正+深度就是这些接口的数学。</li>
+<li>**ROS <code>stereo_image_proc</code>**：<code>stereo/rectify</code> + <code>stereo/disparity</code> + <code>stereo/point_cloud2</code>——加载标定 yaml 实时产出校正图/视差/点云。</li>
+<li><strong>深度相机（RealSense/ZED）</strong>：出厂即做双目标定+校正（ZED 还做”立体校准在线重标”）。</li>
+<li><strong>视觉抓取/避障</strong>：双目测距的深度误差按 Z² 放大——远目标（&gt;5m）双目精度不足，这是”为什么补激光雷达”的量化理由。</li>
+</ul>
+<h2 id="六、下一步"><a href="#六、下一步" class="headerlink" title="六、下一步"></a>六、下一步</h2><p>回到 <a href="/02jd/cali_demo/README.html">cali_demo 总览 README</a>：把本篇的校正结果喂给 L3 的 pipeline / 验证，即可端到端评估”双目测距到底准不准”。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L2_STEREO_RECT</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

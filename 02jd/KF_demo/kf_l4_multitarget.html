@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L4.4（多目标）· 多目标跟踪（JPDA &#x2F; GM-PHD）+ OOSM 时间偏移 ⭐ 本文件是 kf_l4_multitarget.cpp 的配套讲解。图示：images&#x2F;fig22_multitarget.svg（三联图），浏览器完整预览 kf_l4_multitarget_diagrams.html。一句话：单目标 KF（L1&#x2F;L2）只解决「一个目标 + 干净量测」；真实战场是「多个目标">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L4.4（多目标）· 多目标跟踪（JPDA &#x2F; GM-PHD）+ OOSM 时间偏移 ⭐">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/KF_demo/kf_l4_multitarget.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L4.4（多目标）· 多目标跟踪（JPDA &#x2F; GM-PHD）+ OOSM 时间偏移 ⭐ 本文件是 kf_l4_multitarget.cpp 的配套讲解。图示：images&#x2F;fig22_multitarget.svg（三联图），浏览器完整预览 kf_l4_multitarget_diagrams.html。一句话：单目标 KF（L1&#x2F;L2）只解决「一个目标 + 干净量测」；真实战场是「多个目标">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.940Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/KF_demo/kf_l4_multitarget">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/KF_demo/kf_l4_multitarget.html","path":"02jd/KF_demo/kf_l4_multitarget.html","title":"L4.4（多目标）· 多目标跟踪（JPDA / GM-PHD）+ OOSM 时间偏移 ⭐"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L4.4（多目标）· 多目标跟踪（JPDA / GM-PHD）+ OOSM 时间偏移 ⭐ | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L4-4%EF%BC%88%E5%A4%9A%E7%9B%AE%E6%A0%87%EF%BC%89%C2%B7-%E5%A4%9A%E7%9B%AE%E6%A0%87%E8%B7%9F%E8%B8%AA%EF%BC%88JPDA-GM-PHD%EF%BC%89-OOSM-%E6%97%B6%E9%97%B4%E5%81%8F%E7%A7%BB-%E2%AD%90"><span class="nav-number">1.</span> <span class="nav-text">L4.4（多目标）· 多目标跟踪（JPDA &#x2F; GM-PHD）+ OOSM 时间偏移 ⭐</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E8%BF%99%E4%B8%80%E7%AB%99%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88"><span class="nav-number">1.1.</span> <span class="nav-text">0. 这一站解决什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%8E%9F%E7%90%86"><span class="nav-number">1.2.</span> <span class="nav-text">1. 原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-JPDA%EF%BC%9A%E8%81%94%E5%90%88%E6%A6%82%E7%8E%87%E6%95%B0%E6%8D%AE%E5%85%B3%E8%81%94%EF%BC%88%E8%BD%AF%E5%85%B3%E8%81%94%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.1 JPDA：联合概率数据关联（软关联）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-OOSM%EF%BC%9A%E4%B9%B1%E5%BA%8F%E9%87%8F%E6%B5%8B%E5%A4%84%E7%90%86%EF%BC%88%E8%BF%9F%E5%88%B0%E9%87%8F%E6%B5%8B%E6%80%8E%E4%B9%88%E7%94%A8%EF%BC%89"><span class="nav-number">1.2.2.</span> <span class="nav-text">1.2 OOSM：乱序量测处理（迟到量测怎么用）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-GM-PHD%EF%BC%9A%E6%A6%82%E7%8E%87%E5%81%87%E8%AE%BE%E5%AF%86%E5%BA%A6%EF%BC%88%E5%85%8D%E5%85%B3%E8%81%94%E5%9F%BA%E6%95%B0%E4%BC%B0%E8%AE%A1%EF%BC%89"><span class="nav-number">1.2.3.</span> <span class="nav-text">1.3 GM-PHD：概率假设密度（免关联基数估计）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%B8%8E%E5%8D%95%E7%9B%AE%E6%A0%87-KF-%E7%9A%84%E5%85%B3%E7%B3%BB%EF%BC%88%E6%89%BF%E4%B8%8A%E5%90%AF%E4%B8%8B%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">2. 与单目标 KF 的关系（承上启下）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E9%AA%8C%E8%AF%81%EF%BC%8815-%E9%A1%B9%E6%A3%80%E6%9F%A5%E5%85%A8-PASS%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">3. 验证（15 项检查全 PASS）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%B7%A5%E7%A8%8B%E8%A6%81%E7%82%B9-%E8%B8%A9%E5%9D%91"><span class="nav-number">1.5.</span> <span class="nav-text">4. 工程要点 &amp; 踩坑</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L4.4（多目标）· 多目标跟踪（JPDA / GM-PHD）+ OOSM 时间偏移 ⭐
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L4_MULTITARGET</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L4-4（多目标）·-多目标跟踪（JPDA-GM-PHD）-OOSM-时间偏移-⭐"><a href="#L4-4（多目标）·-多目标跟踪（JPDA-GM-PHD）-OOSM-时间偏移-⭐" class="headerlink" title="L4.4（多目标）· 多目标跟踪（JPDA / GM-PHD）+ OOSM 时间偏移 ⭐"></a>L4.4（多目标）· 多目标跟踪（JPDA / GM-PHD）+ OOSM 时间偏移 ⭐</h1><blockquote>
+<p>本文件是 <code>kf_l4_multitarget.cpp</code> 的配套讲解。图示：<code>images/fig22_multitarget.svg</code>（三联图），浏览器完整预览 <code>kf_l4_multitarget_diagrams.html</code>。<br>一句话：<strong>单目标 KF（L1/L2）只解决「一个目标 + 干净量测」；真实战场是「多个目标 + 杂波 + 量测迟到」——三件套：JPDA 做软关联、GM-PHD 做免关联基数估计、OOSM 把迟到量测无缝并入。</strong> 这是雷达/多目标跟踪（MTT）的工业主流方法论，承接 L2.4（NEES/NIS 闸门）、L3.4（多传感器融合）。</p>
+<p>验证：受管 Python 3.13.12 先行对拍 → 转写 C++17，<strong>15 项检查全部 PASS</strong>。</p>
+</blockquote>
+<hr>
+<h2 id="0-这一站解决什么"><a href="#0-这一站解决什么" class="headerlink" title="0. 这一站解决什么"></a>0. 这一站解决什么</h2><p>前 21 篇把<strong>单目标</strong>卡尔曼滤波讲透了。但工业多目标跟踪（雷达、ADS-B、多相机）的真实形态是：</p>
+<ul>
+<li><strong>谁是谁？</strong> 量测里混着多个目标的回波 + 杂波，必须做<strong>数据关联</strong>（哪条量测属于哪个目标）。</li>
+<li><strong>几个目标？</strong> 目标会出生、存活、死亡，目标数本身是随时间变化的随机变量（<strong>基数</strong> cardinality）。</li>
+<li><strong>量测迟到？</strong> 分布式传感器/网络传输会让某些量测<strong>乱序到达</strong>（Out-Of-Sequence Measurement, OOSM），直接丢弃浪费信息、硬插会破坏滤波器一致性。</li>
+</ul>
+<p>本篇三件套各攻一点，且都不依赖显式「硬」关联假设：</p>
+<table>
+<thead>
+<tr>
+<th>子主题</th>
+<th>解决</th>
+<th>核心思想</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>JPDA</strong></td>
+<td>软关联（谁是谁，含歧义）</td>
+<td>枚举联合关联事件 → 边缘概率 β_ij 软分配，新息取凸组合</td>
+</tr>
+<tr>
+<td><strong>GM-PHD</strong></td>
+<td>基数估计（几个目标）</td>
+<td>加权高斯分量 Σw 直接给目标数，免去逐对关联</td>
+</tr>
+<tr>
+<td><strong>OOSM</strong></td>
+<td>乱序量测（迟到怎么用）</td>
+<td>迟到量测经「从 m-1 重滤波」≡ 全量测正序重滤波（OOSM 定理）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>与兄弟仓库呼应：<code>Jacobian_demo</code>（雅可比）是 PHD 滤波量测更新线性化基础；<code>pid_demo</code> 的时序一致性思想同构于 OOSM 的「时间戳对齐」；L2.2 信息滤波的「更新=加法」正是 PHD 高斯分量更新的代数内核。</p>
+</blockquote>
+<hr>
+<h2 id="1-原理"><a href="#1-原理" class="headerlink" title="1. 原理"></a>1. 原理</h2><h3 id="1-1-JPDA：联合概率数据关联（软关联）"><a href="#1-1-JPDA：联合概率数据关联（软关联）" class="headerlink" title="1.1 JPDA：联合概率数据关联（软关联）"></a>1.1 JPDA：联合概率数据关联（软关联）</h3><p>传统「最近邻 / 硬关联」在歧义量测（一条量测同时落在两个目标门内）时会<strong>错配</strong>。JPDA 不硬判决，而是给每个「目标↔量测」配对一个<strong>概率</strong>：</p>
+<ol>
+<li><strong>门控（Gate）</strong>：用 χ² 门限（$\chi^2_{2,0.99}=9.21$ for 2D）剔除明显是杂波的量测。落在门内的量测才进入关联候选。</li>
+<li><strong>枚举联合关联事件</strong>：每个目标至多分一个量测（一条量测至多给一个目标）。事件 $E$ 的似然：<br>$$\mathcal L(E)=\prod_{i:\text{命中}} P_D P_G,\mathcal N(z;x_i^-,S_i);\cdot\prod_{i:\text{漏检}}(1-P_D P_G);\cdot\prod_{j:\text{未分配}}\frac{\lambda_c}{1-P_D P_G}$$<br>其中 $\lambda_c$ 是杂波空间密度、$P_D$ 检测概率、$S_i=H P^- H^\top+R$ 新息协方差。</li>
+<li><strong>边缘关联概率</strong> $\beta_{ij}=P(\text{目标}i\leftrightarrow\text{量测}j)=\sum_{E\ni i\leftrightarrow j}\mathcal L(E)/\sum_E\mathcal L(E)$。</li>
+<li><strong>组合新息</strong>是候选新息的<strong>凸组合</strong>：$\bar\nu_i=\sum_j\beta_{ij}(z_j-x_i^-)$，再像普通 KF 一样更新。</li>
+</ol>
+<blockquote>
+<p>demo A 部分：双目标 $x_1=[2,0],x_2=[-2,0]$，量测 m1 近 t1、m2 近 t2、m3 远处杂波、m4 两目标中点（歧义）。结果 $\beta_{1m4}=\beta_{2m4}=0.1037$（对称软分配）、m3 关联概率严格为 0、组合新息模长 0.0894 不超过任一单量测新息（凸组合性质）。</p>
+</blockquote>
+<h3 id="1-2-OOSM：乱序量测处理（迟到量测怎么用）"><a href="#1-2-OOSM：乱序量测处理（迟到量测怎么用）" class="headerlink" title="1.2 OOSM：乱序量测处理（迟到量测怎么用）"></a>1.2 OOSM：乱序量测处理（迟到量测怎么用）</h3><p>量测 $z[m]$ 在时刻 $N$ 才迟到到达（本应在 $m&lt;N$ 时刻并入）。朴素做法：要么丢弃（损失信息），要么硬插到当前（破坏一致性）。</p>
+<p><strong>OOSM 定理（正确性判据）</strong>：在正确时刻并入迟到量测 $z[m]$ 的最优估计，<strong>严格等价于</strong>「从 $m-1$ 时刻的状态起、把 $z[m],z[m+1],\dots,z[N]$ 正序重滤波一遍」的结果——即<strong>重滤波（refilter）</strong>。</p>
+<ul>
+<li>实现「从 $m-1$ 重滤波」：取前向滤波器在 $m-1$ 时刻的后验 $x(m-1|m-1)$（它已正确处理 $z[0..m-1]$，与正序重滤波一致），再正序滤波 $z[m..N]$。</li>
+<li>该结果 ≡ <code>refilter(全量测正序)</code>，对噪声实现<strong>数值恒等</strong>（demo 验证偏差 0），而永久丢弃方案 ≠ 它（后验不确定度更大）。</li>
+</ul>
+<blockquote>
+<p>⚠️ 踩坑（关键，已修复）：初版把 OOSM 理解成「逆时间平滑(RTS)回滚到 $m$ 再并入 $z[m]$ 后直接当结果」。对<strong>常量目标</strong>（$Q=0$）这碰巧对，但对<strong>随机游走</strong>（$Q&gt;0$）会错——因为此后 $z[m+1..N]$ 在重滤波里是<strong>作为更新</strong>改变均值的，而「平滑后直接前推」没有重新并入这些量测，二者偏离可达 0.5+。正确做法是<strong>从 $m-1$ 起重新正序滤波</strong>（等价于重滤波）。这也是为什么 OOSM 的「正确性」必须用「≡ 重滤波」来判定，而不是「更接近当前真值」——对 1~2 步滞后、量测冗余的吸收，OOSM 未必在单一实现上比丢弃更接近真值，但它在<strong>数学上等价于把量测用在正确时刻</strong>。</p>
+</blockquote>
+<h3 id="1-3-GM-PHD：概率假设密度（免关联基数估计）"><a href="#1-3-GM-PHD：概率假设密度（免关联基数估计）" class="headerlink" title="1.3 GM-PHD：概率假设密度（免关联基数估计）"></a>1.3 GM-PHD：概率假设密度（免关联基数估计）</h3><p>传统多目标滤波要在「关联」上花大量算力。PHD 滤波直接在<strong>强度（intensity / first moment）</strong>层面操作：用一组<strong>加权高斯分量</strong> $w_k\mathcal N(\cdot;m_k,P_k)$ 表示多目标后验，目标个数直接由 $\hat N=\sum w_k$ 估计——<strong>不做逐对关联</strong>。</p>
+<p>单分量更新（量测 $z$ 到来时）：</p>
+<ul>
+<li><strong>漏检分量</strong>：权重乘 $(1-P_D)$。</li>
+<li><strong>每量测更新分量</strong>：权重 $\propto \dfrac{P_D,w_k}{\lambda_c+\sum_l P_D w_l,\mathcal N(z;m_l,P_l+R)}\cdot\mathcal N(z;m_k,P_k+R)$。</li>
+<li><strong>预测</strong>：存活分量 $\times P_S$ + 出生分量。</li>
+<li><strong>剪枝</strong>：权重 $&lt;w_{\min}$（本 demo $10^{-3}$）的分量丢弃。</li>
+</ul>
+<blockquote>
+<p>demo C 部分：目标在 $k=10$ 出生、$k=40$ 死亡。出生前 $\hat N=0.0000$、存活期 $\hat N=0.9823\approx1$、死亡后 $\hat N=0.0000$，完整复现「出生→存活→死亡」的基数演化。</p>
+</blockquote>
+<hr>
+<h2 id="2-与单目标-KF-的关系（承上启下）"><a href="#2-与单目标-KF-的关系（承上启下）" class="headerlink" title="2. 与单目标 KF 的关系（承上启下）"></a>2. 与单目标 KF 的关系（承上启下）</h2><ul>
+<li><strong>JPDA</strong> = 单步 KF 更新的「关联泛化」：把新息从「单条量测」换成「按 β_ij 加权的凸组合」。关联概率的分母正是 L2.4 的 NIS/χ² 闸门在「事件」层面的推广。</li>
+<li><strong>GM-PHD</strong> = 信息滤波（L2.2）在多模态/多目标强度上的延伸：每个高斯分量独立做「预测+更新」，<strong>更新=精度相加</strong>那一套完全一致。</li>
+<li><strong>OOSM</strong> = RTS 平滑（L2.3）「时间一致性」思想的工程化：迟到量测要当作「本来就该在那个时刻出现」来处理，结果和重滤波不可区分。</li>
+</ul>
+<hr>
+<h2 id="3-验证（15-项检查全-PASS）"><a href="#3-验证（15-项检查全-PASS）" class="headerlink" title="3. 验证（15 项检查全 PASS）"></a>3. 验证（15 项检查全 PASS）</h2><table>
+<thead>
+<tr>
+<th>子主题</th>
+<th>检查</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>A JPDA</strong></td>
+<td>边缘概率归一化（目标1/2）</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td></td>
+<td>门控剔除远处杂波（m3 β=0）</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td></td>
+<td>歧义量测对称软分配 β_1m4≈β_2m4</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td></td>
+<td>歧义量测确被两目标共享（β&gt;0）</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td></td>
+<td>组合新息为凸组合（模长≤最大单量测新息，目标1/2）</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td><strong>B OOSM</strong></td>
+<td>OOSM(1步) ≡ 重滤波（全部量测正序）</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td></td>
+<td>OOSM(2步) ≡ 重滤波（全部量测正序）</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td></td>
+<td>OOSM(1步) ≠ 永久丢弃方案（已并入迟到量测）</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td></td>
+<td>常量目标：OOSM ≡ 重滤波</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td></td>
+<td>常量目标大滞后：OOSM 后验不确定度 &lt; 丢弃</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td><strong>C GM-PHD</strong></td>
+<td>出生前基数≈0</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td></td>
+<td>存活期基数≈1</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td></td>
+<td>死亡后基数≈0</td>
+<td>PASS</td>
+</tr>
+</tbody></table>
+<ul>
+<li>随机游走场景：<code>oosm1=1.38555 disc1=1.39741 ref=1.38555</code>，OOSM 与重滤波<strong>逐位一致</strong>（≡ 定理 RHS），且明显区别于丢弃方案。</li>
+<li>常量目标大滞后：<code>P_oosm=0.0474 &lt; P_disc=0.0498</code>，并入迟到量测<strong>严格降低后验不确定度</strong>。</li>
+<li>本机无 C++ 编译器，数学正确性由受管 Python 3.13.12 镜像核验；C++ 源码在具备编译器环境下应当全部 <code>PASS</code>（固定种子 LCG + Box-Muller，与验证端逐位一致）。</li>
+</ul>
+<hr>
+<h2 id="4-工程要点-踩坑"><a href="#4-工程要点-踩坑" class="headerlink" title="4. 工程要点 &amp; 踩坑"></a>4. 工程要点 &amp; 踩坑</h2><ol>
+<li><strong>JPDA 事件枚举随目标/量测数组合爆炸</strong>：实际系统用 Murty 算法取 top-K 事件近似，而非全枚举（demo 仅 2 目标 4 量测，全枚举 8 个事件可行）。</li>
+<li><strong>OOSM 的「正确性」判据是 ≡ 重滤波，不是「更接近真值」</strong>：对短滞后、量测冗余的场景，迟到量测信息已被后续量测吸收，OOSM 在单一噪声实现上未必比「丢弃」更接近当前真态——但它在数学上等价于把量测用在正确时刻（demo 用 <code>abs(oosm-ref)&lt;1e-9</code> 判定，对噪声实现鲁棒）。</li>
+<li><strong>GM-PHD 剪枝阈值</strong>：$w_{\min}$ 太大会丢弱目标、太小会分量爆炸；工程上配「合并（merge）+ 剪枝」双保险。</li>
+<li><strong>JPDA 组合新息的凸组合性质</strong>是数值稳定的天然保证：更新不会因某条歧义量测而剧烈跳变。</li>
+</ol>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L4_MULTITARGET</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

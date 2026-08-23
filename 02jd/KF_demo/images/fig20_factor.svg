@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 470" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="470" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L3.8 因子图批优化（iSAM2/GTSAM 视角）· 四个要点</text>
+
+  <!-- ① 因子图 = 信息矩阵视角 -->
+  <g>
+    <rect x="20" y="50" width="315" height="180" rx="10" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+    <rect x="20" y="50" width="315" height="30" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="177" y="70" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">① 因子图 = 信息矩阵视角</text>
+    <text x="36" y="108" font-size="12" fill="#1e3a8a">变量 = 2D 位姿 p_i；因子 = prior / between / unary</text>
+    <text x="36" y="132" font-size="12" fill="#1e3a8a">先验 + 过程噪声 + 量测 → 组装法方程 Hx=g</text>
+    <text x="36" y="156" font-size="12" fill="#1e3a8a">H 为块三对角 + 闭环长边（稀疏、可增量）</text>
+    <text x="36" y="180" font-size="12" fill="#1e3a8a">MAP 解 == RTS 平滑（图视角）</text>
+    <text x="36" y="206" font-size="11.5" fill="#555">MAP≡RTS 偏差 1.1e-15 · 信息矩阵稀疏占比 0.109</text>
+  </g>
+
+  <!-- ② SLAM 闭环 -->
+  <g>
+    <rect x="345" y="50" width="315" height="180" rx="10" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+    <rect x="345" y="50" width="315" height="30" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="502" y="70" font-size="13" font-weight="bold" fill="#78350f" text-anchor="middle">② SLAM 闭环（odometry + loop-closure）</text>
+    <text x="361" y="108" font-size="12" fill="#78350f">仅里程计链（死推算）终点漂离起点</text>
+    <text x="361" y="132" font-size="12" fill="#78350f">漂移 1.2686 &gt; 0.3（未闭环，明显发散）</text>
+    <text x="361" y="156" font-size="12" fill="#78350f">加 loop-closure 因子 x_N≈x_0 把终点拉回</text>
+    <text x="361" y="180" font-size="12" fill="#78350f">终点误差 0.0796、整链 RMSE 0.3683 &lt; 0.5919</text>
+    <text x="361" y="206" font-size="11.5" fill="#555">闭环是活跃约束（解变更量 2.803）</text>
+  </g>
+
+  <!-- ③ iSAM2 一致性 / KKT 不动点 -->
+  <g>
+    <rect x="20" y="250" width="315" height="180" rx="10" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+    <rect x="20" y="250" width="315" height="30" rx="10" fill="#f3e8ff" stroke="#9333ea" stroke-width="1.5"/>
+    <text x="177" y="270" font-size="13" font-weight="bold" fill="#581c87" text-anchor="middle">③ iSAM2 一致性（KKT 不动点）</text>
+    <text x="36" y="308" font-size="12" fill="#581c87">增量更新须收敛到全量批的 MAP</text>
+    <text x="36" y="332" font-size="12" fill="#581c87">闭环解处总代价梯度范数 = 2.83e-13 ≈ 0</text>
+    <text x="36" y="356" font-size="12" fill="#581c87">（一阶最优性 = KKT 不动点，任何求解器必达）</text>
+    <text x="36" y="380" font-size="12" fill="#581c87">增量式 == 批式（不变性，iSAM2 根基）</text>
+    <text x="36" y="406" font-size="11.5" fill="#555">梯度不动点 2.83e-13 · 闭环解变更 2.803</text>
+  </g>
+
+  <!-- ④ 承接关系 -->
+  <g>
+    <rect x="345" y="250" width="315" height="180" rx="10" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+    <rect x="345" y="250" width="315" height="30" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="502" y="270" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">④ 承接：图优化 = 平滑/信息滤波的升级</text>
+    <text x="361" y="308" font-size="12" fill="#14532d">因子图批优化 == RTS 平滑（图视角）</text>
+    <text x="361" y="332" font-size="12" fill="#14532d">== L2.2 信息滤波的增量求解版</text>
+    <text x="361" y="356" font-size="12" fill="#14532d">SLAM / 多传感器融合主流（GTSAM/iSAM2）</text>
+    <text x="361" y="380" font-size="12" fill="#14532d">稀疏结构 → 变量边缘化 / Schur 补加速</text>
+    <text x="361" y="406" font-size="11.5" fill="#555">承接 L2.2 信息滤波 / L2.3 RTS 平滑</text>
+  </g>
+</svg>

@@ -1,0 +1,72 @@
+<svg viewBox="0 0 680 300" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,'Microsoft YaHei',sans-serif">
+  <text x="340" y="26" text-anchor="middle" font-size="15" font-weight="500" fill="#1a202c">L4 LiDAR-IMU 时空标定（空间外参 + 时间偏移）</text>
+
+  <defs>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#5f5e5a"/></marker>
+    <marker id="arB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#185FA5"/></marker>
+    <marker id="arR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#A32D2D"/></marker>
+  </defs>
+
+  <!-- ============ Panel A: 空间外参 X ============ -->
+  <text x="175" y="52" text-anchor="middle" font-size="11" fill="#0c447c">① 空间外参 X = T_L^I （刚体对齐 Umeyama）</text>
+  <!-- LiDAR frame -->
+  <g>
+    <line x1="60" y1="120" x2="60" y2="220" stroke="#185FA5" stroke-width="1.6" marker-end="url(#arB)"/>
+    <line x1="60" y1="120" x2="130" y2="120" stroke="#185FA5" stroke-width="1.6" marker-end="url(#arB)"/>
+    <text x="52" y="116" font-size="9" fill="#0c447c">{L}  LiDAR</text>
+    <text x="132" y="116" font-size="9" fill="#0c447c">x_L</text>
+    <text x="48" y="226" font-size="9" fill="#0c447c">z_L</text>
+  </g>
+  <!-- point in L -->
+  <circle cx="100" cy="160" r="3.5" fill="#185FA5"/>
+  <text x="108" y="162" font-size="9" fill="#0c447c">p (in L)</text>
+  <!-- IMU frame -->
+  <g>
+    <line x1="230" y1="120" x2="230" y2="220" stroke="#3B6D11" stroke-width="1.6" marker-end="url(#arB)"/>
+    <line x1="230" y1="120" x2="300" y2="120" stroke="#3B6D11" stroke-width="1.6" marker-end="url(#arB)"/>
+    <text x="222" y="116" font-size="9" fill="#27500a">{I}  IMU</text>
+    <text x="302" y="116" font-size="9" fill="#27500a">x_I</text>
+    <text x="218" y="226" font-size="9" fill="#27500a">z_I</text>
+  </g>
+  <!-- same point in I -->
+  <circle cx="258" cy="172" r="3.5" fill="#3B6D11"/>
+  <text x="266" y="174" font-size="9" fill="#27500a">q = R·p + t</text>
+  <!-- X arrow -->
+  <path d="M100 160 C 150 195, 200 205, 258 172" fill="none" stroke="#A32D2D" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="175" y="200" font-size="9" fill="#a32d2d" text-anchor="middle">X = T_L^I  (R, t)</text>
+
+  <rect x="55" y="240" width="270" height="22" rx="6" fill="#EAF3DE" stroke="#3B6D11"/>
+  <text x="190" y="255" font-size="9" fill="#27500a" text-anchor="middle">同一刚体点：q_i ≈ R·p_i + t  （N 对点求最优 R,t）</text>
+
+  <!-- ============ Panel B: 时间偏移 Δt ============ -->
+  <text x="510" y="52" text-anchor="middle" font-size="11" fill="#0c447c">② 时间偏移 Δt（时钟不同步）</text>
+  <!-- LiDAR clock axis -->
+  <line x1="400" y1="100" x2="600" y2="100" stroke="#185FA5" stroke-width="1.6" marker-end="url(#arB)"/>
+  <text x="400" y="94" font-size="9" fill="#0c447c">LiDAR 时钟</text>
+  <text x="394" y="104" font-size="8" fill="#5f5e5a">t1</text>
+  <text x="588" y="104" font-size="8" fill="#5f5e5a">t2</text>
+  <circle cx="410" cy="100" r="3" fill="#185FA5"/>
+  <circle cx="590" cy="100" r="3" fill="#185FA5"/>
+  <!-- IMU clock axis (offset by Δt) -->
+  <line x1="400" y1="150" x2="600" y2="150" stroke="#3B6D11" stroke-width="1.6" marker-end="url(#arB)"/>
+  <text x="400" y="144" font-size="9" fill="#27500a">IMU 时钟</text>
+  <circle cx="440" cy="150" r="3" fill="#3B6D11"/>
+  <circle cx="620" cy="150" r="3" fill="#3B6D11"/>
+  <text x="392" y="154" font-size="8" fill="#5f5e5a">t1+Δt</text>
+  <text x="608" y="154" font-size="8" fill="#5f5e5a">t2+Δt</text>
+  <!-- offset bracket -->
+  <line x1="410" y1="108" x2="410" y2="142" stroke="#A32D2D" stroke-width="1" stroke-dasharray="3 2"/>
+  <line x1="440" y1="142" x2="440" y2="108" stroke="#A32D2D" stroke-width="1" stroke-dasharray="3 2"/>
+  <line x1="410" y1="125" x2="440" y2="125" stroke="#A32D2D" stroke-width="1.4" marker-end="url(#arR)"/>
+  <text x="424" y="120" font-size="8" fill="#a32d2d" text-anchor="middle">Δt</text>
+  <!-- scan event mapping -->
+  <line x1="410" y1="100" x2="440" y2="150" stroke="#cbd5e0" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="590" y1="100" x2="620" y2="150" stroke="#cbd5e0" stroke-width="1" stroke-dasharray="2 2"/>
+  <text x="500" y="180" font-size="8" fill="#5f5e5a" text-anchor="middle">同一物理扫描事件：两传感器"看到"的时刻差 Δt</text>
+
+  <rect x="400" y="200" width="200" height="40" rx="6" fill="#E6F0FA" stroke="#185FA5"/>
+  <text x="500" y="216" font-size="9" fill="#0c447c" text-anchor="middle">高速运动(30 m/s)下 10 ms Δt</text>
+  <text x="500" y="232" font-size="9" fill="#0c447c" text-anchor="middle">→ 0.3 m 点云错位 → 必标</text>
+
+  <text x="340" y="285" font-size="8" fill="#5f5e5a" text-anchor="middle">空间 X 与时间 Δt 须协同标定：稀疏点对齐求 X，滚动搜索求 Δt，再联合精修</text>
+</svg>

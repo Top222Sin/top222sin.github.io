@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3.3 工业用例：ARX 系统辨识 一句话：**线性系统 y(k) &#x3D; Σaᵢy(k−i) + Σbᵢu(k−i) + e**——把过去输入输出堆成回归矩阵 Φ，参数 θ 就是一次普通 LS 的解 (ΦᵀΦ)⁻¹ΦᵀY。前提是输入”持续激励”，否则 ΦᵀΦ 病态、参数不可辨识。   一、ARX 模型与 LS 辨识单输入单输出（SISO）线性系统：  y(k) &#x3D; a₁·y(k−1) + a₂·y">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3.3 工业用例：ARX 系统辨识">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l3_arx.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3.3 工业用例：ARX 系统辨识 一句话：**线性系统 y(k) &#x3D; Σaᵢy(k−i) + Σbᵢu(k−i) + e**——把过去输入输出堆成回归矩阵 Φ，参数 θ 就是一次普通 LS 的解 (ΦᵀΦ)⁻¹ΦᵀY。前提是输入”持续激励”，否则 ΦᵀΦ 病态、参数不可辨识。   一、ARX 模型与 LS 辨识单输入单输出（SISO）线性系统：  y(k) &#x3D; a₁·y(k−1) + a₂·y">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/images/fig14_arx.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.950Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/images/fig14_arx.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l3_arx">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l3_arx.html","path":"02jd/Least_squares_method_demo/ls_l3_arx.html","title":"L3.3 工业用例：ARX 系统辨识"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3.3 工业用例：ARX 系统辨识 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-3-%E5%B7%A5%E4%B8%9A%E7%94%A8%E4%BE%8B%EF%BC%9AARX-%E7%B3%BB%E7%BB%9F%E8%BE%A8%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text">L3.3 工业用例：ARX 系统辨识</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81ARX-%E6%A8%A1%E5%9E%8B%E4%B8%8E-LS-%E8%BE%A8%E8%AF%86"><span class="nav-number">1.1.</span> <span class="nav-text">一、ARX 模型与 LS 辨识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%B7%A5%E7%A8%8B%E8%83%8C%E6%99%AF%EF%BC%9A%E8%BE%A8%E8%AF%86-vs-%E6%8B%9F%E5%90%88"><span class="nav-number">1.2.</span> <span class="nav-text">二、工程背景：辨识 vs 拟合</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%8C%81%E7%BB%AD%E6%BF%80%E5%8A%B1%EF%BC%9A%E4%B8%8D%E5%8F%AF%E7%9C%81%E7%9A%84%E5%89%8D%E6%8F%90"><span class="nav-number">1.3.</span> <span class="nav-text">三、持续激励：不可省的前提</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%81%E7%BB%AD%E6%BF%80%E5%8A%B1%E7%9A%84%E8%B0%B1%E8%A7%A3%E9%87%8A%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E2%80%9D%E9%A2%91%E7%8E%87%E8%A6%86%E7%9B%96%E2%80%9D%E5%BF%85%E8%A6%81%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">持续激励的谱解释（为什么”频率覆盖”必要）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81demo-%E8%AE%BE%E5%AE%9A"><span class="nav-number">1.4.</span> <span class="nav-text">四、demo 设定</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88ls-l3-arx-cpp%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、代码走读（ls_l3_arx.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.6.</span> <span class="nav-text">六、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.7.</span> <span class="nav-text">七、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.8.</span> <span class="nav-text">八、下一步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%84%E5%BC%9F%E4%BB%93%E5%BA%93%E8%81%94%E7%B3%BB"><span class="nav-number">1.9.</span> <span class="nav-text">兄弟仓库联系</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3.3 工业用例：ARX 系统辨识
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Least_squares_method_demo/">LEAST_SQUARES_METHOD_DEMO</a></li>
+            <li>LS_L3_ARX</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-3-工业用例：ARX-系统辨识"><a href="#L3-3-工业用例：ARX-系统辨识" class="headerlink" title="L3.3 工业用例：ARX 系统辨识"></a>L3.3 工业用例：ARX 系统辨识</h1><blockquote>
+<p>一句话：**线性系统 <code>y(k) = Σaᵢy(k−i) + Σbᵢu(k−i) + e</code>**——把过去输入输出堆成回归矩阵 Φ，参数 θ 就是一次普通 LS 的解 <code>(ΦᵀΦ)⁻¹ΦᵀY</code>。前提是输入”持续激励”，否则 ΦᵀΦ 病态、参数不可辨识。</p>
+</blockquote>
+<hr>
+<h2 id="一、ARX-模型与-LS-辨识"><a href="#一、ARX-模型与-LS-辨识" class="headerlink" title="一、ARX 模型与 LS 辨识"></a>一、ARX 模型与 LS 辨识</h2><p>单输入单输出（SISO）线性系统：</p>
+<blockquote>
+<p>y(k) = a₁·y(k−1) + a₂·y(k−2) + … + aₙₐ·y(k−nₐ) + b₀·u(k) + b₁·u(k−1) + … + bₙ_b·u(k−n_b) + e(k)</p>
+</blockquote>
+<p>写成向量形式 <code>y(k) = φ(k)ᵀ·θ + e(k)</code>，其中回归量 <code>φ(k) = [y(k−1), ..., y(k−nₐ), u(k−n_b), ..., u(k)]</code>、参数 <code>θ = [a₁, ..., aₙₐ, b₀, ..., bₙ_b]ᵀ</code>。堆叠 N 次观测：</p>
+<blockquote>
+<p>Y = Φ·θ + E   （Y ∈ ℝᵏ, Φ ∈ ℝ^{k×ⁿ}, θ ∈ ℝⁿ）</p>
+</blockquote>
+<p>θ 的 LS 解（L1.1）：</p>
+<blockquote>
+<p><strong>θ̂ = (ΦᵀΦ)⁻¹·ΦᵀY</strong></p>
+</blockquote>
+<p>demo 用最朴素一阶 <code>y(k) = a·y(k−1) + b·u(k−1) + e</code>，于是 <code>φ(k) = [y(k−1), u(k−1)]</code>，2×2 法方程闭式解：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[ Σy²    Σyu ] [a]   [ Σy·Y ]</span><br><span class="line">[ Σyu    Σu² ] [b] = [ Σu·Y ]</span><br></pre></td></tr></tbody></table></figure>
+
+<p>行列式 <code>det = Σy²·Σu² − (Σyu)²</code>，闭式解：</p>
+<blockquote>
+<p>â = (Σu²·ΣyY − Σyu·ΣuY) / det，  b̂ = (Σy²·ΣuY − Σyu·ΣyY) / det</p>
+</blockquote>
+<h2 id="二、工程背景：辨识-vs-拟合"><a href="#二、工程背景：辨识-vs-拟合" class="headerlink" title="二、工程背景：辨识 vs 拟合"></a>二、工程背景：辨识 vs 拟合</h2><ul>
+<li>拟合（L1.1 标定）：已知模型结构、反演参数；传感器是<strong>静态</strong>关系 <code>y = ax + b</code>。</li>
+<li>辨识（本篇）：从<strong>输入输出时间序列</strong>同时反解模型结构与参数——动态系统的等价”标定”。</li>
+<li>control_demo 的”阶跃两点法”（一阶系统 K、T）是 ARX 的时域特例；ARX 更普适：高阶、多输入、零飘项 <code>c</code> 都能塞进 φ。</li>
+<li>模型阶数（nₐ, n_b）靠 <strong>AIC / BIC / 残差白性检验</strong>选——不在本篇范围，但思路：阶数加到残差不再变白为止。</li>
+</ul>
+<h2 id="三、持续激励：不可省的前提"><a href="#三、持续激励：不可省的前提" class="headerlink" title="三、持续激励：不可省的前提"></a>三、持续激励：不可省的前提</h2><p><code>ΦᵀΦ</code> 病态的几何含义：回归量 φ(k) 在 N 步里都”挤在一个方向”。若输入 u 是常数（如恒压 1.0），系统稳定后 y 也恒定，φ = [c₁, c₂] 全共线 → <code>det → 0</code> → 参数<strong>不可辨识</strong>。</p>
+<blockquote>
+<p>持续激励（PE）：输入谱必须覆盖模型阶数对应的频率。</p>
+</blockquote>
+<p>工程上常用方波、PRBS、扫频正弦。demo 用 <code>±1.0</code> 方波（cpp L33）——直流 + 丰富谐波，最简单也最有效。</p>
+<h3 id="持续激励的谱解释（为什么”频率覆盖”必要）"><a href="#持续激励的谱解释（为什么”频率覆盖”必要）" class="headerlink" title="持续激励的谱解释（为什么”频率覆盖”必要）"></a>持续激励的谱解释（为什么”频率覆盖”必要）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">回归矩阵 ΦᵀΦ 的特征值 = 输入激励在各"频率通道"上的能量</span><br><span class="line">PE(n): 输入谱在 [0, π] 上至少 n 个非零频率分量（覆盖模型阶数）</span><br><span class="line">常值输入: 只有直流分量 → 谱秩 1 → ΦᵀΦ 秩 1 → 参数不可辨识（秩亏）</span><br><span class="line">方波: 基波 + 全部奇次谐波（丰富!）→ 谱秩充足 → 可辨识</span><br><span class="line">PRBS: 伪随机二进制序列, 频谱近似白 → 全频带激励（工业首选）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程洞察</strong>：PE 条件的本质 = <strong>L1.1 的”x 要有散布”<strong>在时序系统里的推广——参数可辨识性由”激励的能量分布”决定，不是”数据量”。30 秒的常值输入永远辨识不出动态参数，1 秒的方波就够——</strong>激励设计是辨识实验的核心</strong>（control_demo 的阶跃响应辨识就是最简 PE）。</p>
+<h2 id="四、demo-设定"><a href="#四、demo-设定" class="headerlink" title="四、demo 设定"></a>四、demo 设定</h2><ul>
+<li>真值 <code>a = -0.8, b = 0.5</code>；N = 200 步；噪声 σ = 0.02。</li>
+<li>输入 <code>u(k) = ±1.0</code> 方波（周期 40 步），L33 <code>(k/20) % 2 == 0 ? 1 : -1</code>。</li>
+<li>从 <code>k &gt; 1</code> 开始采样 φ（首两步无历史值）。</li>
+<li>检查：① 参数辨识误差 &lt; 0.02；② 最大残差与噪声同级（&lt; 0.08，约 4σ）。</li>
+</ul>
+<h2 id="五、代码走读（ls-l3-arx-cpp）"><a href="#五、代码走读（ls-l3-arx-cpp）" class="headerlink" title="五、代码走读（ls_l3_arx.cpp）"></a>五、代码走读（ls_l3_arx.cpp）</h2><ul>
+<li>L14–18：<code>urand</code>/<code>gauss</code>，种子 14 固定。</li>
+<li>L26：<code>printf</code> 头。</li>
+<li>L28–29：真值 <code>a1=-0.8, b0=0.5</code>、N=200。</li>
+<li>L30–37：<strong>仿真数据生成</strong>：<ul>
+<li>L33：方波输入 <code>u = ((k/20)%2==0) ? 1.0 : -1.0</code>——周期 40 步、占空比 50% 的持续激励。</li>
+<li>L34：<code>y(k) = a1·y_prev + b0·u_prev + gauss()*0.02</code>——一阶 ARX 真值模型。</li>
+<li>L35：从 <code>k &gt; 1</code> 起 push 回归量 <code>phi_y=[y_prev], phi_u=[u_prev]</code> 与目标 <code>Y=[y]</code>，首两步跳过。</li>
+</ul>
+</li>
+<li>L38–46：<strong>2×2 法方程闭式解</strong>——<ul>
+<li>L39–42：累加 <code>Syy, Syu, Suu, SyY, SuY</code>。</li>
+<li>L44：<code>det = Syy·Suu − Syu·Syu</code>（= ΦᵀΦ 行列式）。</li>
+<li>L45–46：闭式解 <code>a_hat, b_hat</code>，与第一节公式逐字一致。</li>
+</ul>
+</li>
+<li>L47–49：算最大残差 <code>resmax</code>。</li>
+<li>L50–51：<code>[demo]</code> 打印估计参数与最大残差。</li>
+<li>L52：<code>chk</code> 参数辨识误差 &lt; 0.02。</li>
+<li>L53：<code>chk</code> 残差 &lt; 0.08（噪声 σ=0.02 的 ~4σ）。</li>
+<li>L54–55：<code>[结论]</code> 持续激励前提 + 与 control_demo 阶跃两点法的衔接。</li>
+</ul>
+<h2 id="六、你会看到什么"><a href="#六、你会看到什么" class="headerlink" title="六、你会看到什么"></a>六、你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">=== L3.3 ARX 系统辨识(最小二乘)===</span><br><span class="line">  [demo] ARX 辨识: a=-0.800x b=0.500x (真值 -0.8, 0.5), 最大残差=~0.06</span><br><span class="line">  ARX 参数辨识                    err=~4e-03 tol=2e-02  PASS</span><br><span class="line">  残差与噪声同级                  err=~6e-02 tol=8e-02  PASS</span><br><span class="line">  [结论] 只要输入'持续激励',辨识=一次线性 LS;模型阶数靠 AIC/残差白性。</span><br><span class="line">        control_demo L3.4 的阶跃两点法 = 本篇的时域特例。</span><br><span class="line">=== 2 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>参数估计误差典型值 ~4e-3（噪声 σ=0.02 的 1/5 量级，N=200 步平均）。残差最大值 ~0.06 ≈ 3σ——3σ 内的极值在 N=200 上是预期的。换种子时数值略异但都满足容限。</p>
+</blockquote>
+<p><img src="/02jd/Least_squares_method_demo/images/fig14_arx.svg" alt="L3.3 工业用例：ARX 系统辨识"></p>
+<h2 id="七、自检"><a href="#七、自检" class="headerlink" title="七、自检"></a>七、自检</h2><ul>
+<li>把输入从方波改成常数 <code>u(k) = 1.0</code>，看 <code>det = Σy²·Σu² − (Σyu)²</code> 是否趋向 0、参数估计发散（验证持续激励的必要性）。</li>
+<li>思考：为什么 ARX 把<strong>输出 y 也当回归量</strong>而不只是 u？（自回归 a·y(k−1) 表达系统的”自由响应”——只有 u 不够，否则只能辨识 b 不能辨识 a。）</li>
+<li>把模型阶数提到 2（<code>y(k) = a₁y(k−1) + a₂y(k−2) + b₁u(k−1) + b₂u(k−2) + e</code>），法方程变 4×4，看 LS 是否仍能解（验证向高阶扩展的便利性）。</li>
+</ul>
+<h2 id="八、下一步"><a href="#八、下一步" class="headerlink" title="八、下一步"></a>八、下一步</h2><p>进入 <a href="/02jd/Least_squares_method_demo/ls_l3_capstone.html">L3.4 capstone：LS 大一统</a>——把 L1–L3 全部方法串成一个综合工程案例，正式收官。</p>
+<h2 id="兄弟仓库联系"><a href="#兄弟仓库联系" class="headerlink" title="兄弟仓库联系"></a>兄弟仓库联系</h2><p><a href="/02jd/control_demo/README.html">control</a> L3.4 的阶跃两点法 = 本篇一阶 ARX 的时域特例；<a href="/02jd/KF_demo/README.html">KF</a> 的参数估计 = 本篇的递推版（RLS）；<a href="/02jd/Jacobian_demo/README.html">Jacobian</a> 提供 <code>ΦᵀΦ</code> 病态时的灵敏度分析工具。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Least_squares_method_demo/">LEAST_SQUARES_METHOD_DEMO</a></li>
+            <li>LS_L3_ARX</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

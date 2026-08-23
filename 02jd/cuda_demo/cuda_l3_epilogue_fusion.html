@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="CUTLASS epilogue 组件（bias + 激活 + 写回） vs onnxruntime bias broadcast —— 工业界如何用同一套 pipeline 描述任意算子 配套文件：cuda_l3_epilogue_fusion.cpp（mini-epilogue 参考实现 + CPU 对拍）、images&#x2F;fig10_epilogue_fusion.svg + cuda_l3_">
+<meta property="og:type" content="website">
+<meta property="og:title" content="CUTLASS epilogue 组件（bias + 激活 + 写回） vs onnxruntime bias broadcast —— 工业界如何用同一套 pipeline 描述任意算子">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_epilogue_fusion.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="CUTLASS epilogue 组件（bias + 激活 + 写回） vs onnxruntime bias broadcast —— 工业界如何用同一套 pipeline 描述任意算子 配套文件：cuda_l3_epilogue_fusion.cpp（mini-epilogue 参考实现 + CPU 对拍）、images&#x2F;fig10_epilogue_fusion.svg + cuda_l3_">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_epilogue_fusion">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_epilogue_fusion.html","path":"02jd/cuda_demo/cuda_l3_epilogue_fusion.html","title":"CUTLASS epilogue 组件（bias + 激活 + 写回） vs onnxruntime bias broadcast —— 工业界如何用同一套 pipeline 描述任意算子"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>CUTLASS epilogue 组件（bias + 激活 + 写回） vs onnxruntime bias broadcast —— 工业界如何用同一套 pipeline 描述任意算子 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CUTLASS-epilogue-%E7%BB%84%E4%BB%B6%EF%BC%88bias-%E6%BF%80%E6%B4%BB-%E5%86%99%E5%9B%9E%EF%BC%89-vs-onnxruntime-bias-broadcast-%E2%80%94%E2%80%94-%E5%B7%A5%E4%B8%9A%E7%95%8C%E5%A6%82%E4%BD%95%E7%94%A8%E5%90%8C%E4%B8%80%E5%A5%97-pipeline-%E6%8F%8F%E8%BF%B0%E4%BB%BB%E6%84%8F%E7%AE%97%E5%AD%90"><span class="nav-number">1.</span> <span class="nav-text">CUTLASS epilogue 组件（bias + 激活 + 写回） vs onnxruntime bias broadcast —— 工业界如何用同一套 pipeline 描述任意算子</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%85%88%E7%AB%8B%E9%97%AE%E9%A2%98%EF%BC%9Aepilogue-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF%E2%80%9D%E5%A4%8D%E7%94%A8-pipeline%E2%80%9D%E7%9A%84%E5%91%BD%E9%97%A8"><span class="nav-number">1.1.</span> <span class="nav-text">一、先立问题：epilogue 为什么是”复用 pipeline”的命门</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81CUTLASS-%E7%9A%84-epilogue%EF%BC%9A%E6%8A%8A%E2%80%9D%E8%BE%93%E5%87%BA%E7%AE%97%E5%AD%90%E2%80%9D%E5%81%9A%E6%88%90%E6%A8%A1%E6%9D%BF%E5%8F%82%E6%95%B0"><span class="nav-number">1.2.</span> <span class="nav-text">二、CUTLASS 的 epilogue：把”输出算子”做成模板参数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%86%99%E5%9B%9E%E9%AA%A8%E6%9E%B6-EpilogueBase%EF%BC%88epilogue-base-h-95-228%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 写回骨架 EpilogueBase（epilogue_base.h:95-228）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E9%80%90%E5%85%83%E7%B4%A0%E8%AE%A1%E7%AE%97-LinearCombination%EF%BC%88linear-combination-h-217-250%EF%BC%89"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 逐元素计算 LinearCombination（linear_combination.h:217-250）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E4%BB%BB%E6%84%8F%E8%9E%8D%E5%90%88-LinearCombinationBiasElementwise%EF%BC%88linear-combination-bias-elementwise-h-344-348%EF%BC%89"><span class="nav-number">1.2.3.</span> <span class="nav-text">2.3 任意融合 LinearCombinationBiasElementwise（linear_combination_bias_elementwise.h:344-348）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-3-x-%E7%9A%84%E6%9E%81%E8%87%B4%EF%BC%9Avisitor-%E6%A8%A1%E5%BC%8F-DefaultEpilogue%EF%BC%88collective-default-epilogue-hpp-154-252%EF%BC%89"><span class="nav-number">1.2.4.</span> <span class="nav-text">2.4 3.x 的极致：visitor 模式 DefaultEpilogue（collective&#x2F;default_epilogue.hpp:154-252）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81ORT-%E7%9A%84-bias-broadcast-%E5%B7%A7%E6%B3%95%EF%BC%88gemm-cc-100-142%EF%BC%8C%E9%80%90%E8%A1%8C%E8%A7%A3%E6%9E%90%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、ORT 的 bias broadcast 巧法（gemm.cc:100-142，逐行解析）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E5%90%8C%E4%B8%80%E6%9D%A1-pipeline%EF%BC%8C%E6%8F%8F%E8%BF%B0%E4%BB%BB%E6%84%8F%E7%AE%97%E5%AD%90%EF%BC%88%E5%AF%B9%E7%85%A7%E8%A1%A8%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、同一条 pipeline，描述任意算子（对照表）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%B8%8E%E5%89%8D%E9%9D%A2-L2-%E7%9A%84%E4%B8%B2%E8%81%94"><span class="nav-number">1.5.</span> <span class="nav-text">五、与前面 L2 的串联</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80%EF%BC%88%E5%8A%A8%E6%89%8B%E9%AA%8C%E8%AF%81%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">六、自检（动手验证）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5%EF%BC%88%E7%BB%A7%E7%BB%AD%E6%BA%90%E7%A0%81%E7%BA%BF-%E6%88%96-%E8%BF%9B-L3%EF%BC%89"><span class="nav-number">1.7.</span> <span class="nav-text">七、下一步（继续源码线 或 进 L3）</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">CUTLASS epilogue 组件（bias + 激活 + 写回） vs onnxruntime bias broadcast —— 工业界如何用同一套 pipeline 描述任意算子
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L3_EPILOGUE_FUSION</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="CUTLASS-epilogue-组件（bias-激活-写回）-vs-onnxruntime-bias-broadcast-——-工业界如何用同一套-pipeline-描述任意算子"><a href="#CUTLASS-epilogue-组件（bias-激活-写回）-vs-onnxruntime-bias-broadcast-——-工业界如何用同一套-pipeline-描述任意算子" class="headerlink" title="CUTLASS epilogue 组件（bias + 激活 + 写回） vs onnxruntime bias broadcast —— 工业界如何用同一套 pipeline 描述任意算子"></a>CUTLASS epilogue 组件（bias + 激活 + 写回） vs onnxruntime bias broadcast —— 工业界如何用同一套 pipeline 描述任意算子</h1><blockquote>
+<p>配套文件：<code>cuda_l3_epilogue_fusion.cpp</code>（mini-epilogue 参考实现 + CPU 对拍）、<code>images/fig10_epilogue_fusion.svg</code> + <code>cuda_l3_epilogue_fusion_diagrams.html</code>（四联图）。<br>原始源码备份：<code>_cutlass_src/</code>（epilogue_base.h / linear_combination*.h / collective/default_epilogue.hpp）、<code>_ort_src/gemm.cc</code>。<br>本篇是 <strong>CUDA 源码线的第 3 站</strong>：上一站把 transpose/softmax/layernorm 与 CUTLASS GEMM 分块对照；本篇钻进 GEMM 的<strong>收尾段（epilogue）</strong>——正因为 epilogue 是”可编程的输出算子”，工业框架才得以用一套 MMA+pipeline 描述 GEMM / GEMM+bias / +ReLU / +GELU / +residual 等一整族算子。</p>
+</blockquote>
+<hr>
+<h2 id="一、先立问题：epilogue-为什么是”复用-pipeline”的命门"><a href="#一、先立问题：epilogue-为什么是”复用-pipeline”的命门" class="headerlink" title="一、先立问题：epilogue 为什么是”复用 pipeline”的命门"></a>一、先立问题：epilogue 为什么是”复用 pipeline”的命门</h2><p>一个 GEMM kernel 分两段：</p>
+<ol>
+<li><strong>MMA 段</strong>（前几站的主角）：<code>C += A·B</code>，把结果累加进寄存器/共享内存的 CTA 输出 tile。受 Tensor Core、tiling、双缓冲、pipeline 支配。</li>
+<li><strong>epilogue 段</strong>：把输出 tile <strong>做最后的逐元素加工并写回全局内存</strong>。这一步要做的往往是 <code>D = α·accum + β·C + bias</code>，再套一个激活（ReLU/GELU/Sigmoid）、再决定写 D 还是写 D+T（残差）。</li>
+</ol>
+<p>关键洞察：<strong>MMA 段对所有”GEMM 系算子”几乎一样，差异全在 epilogue</strong>。所以只要把 epilogue 做成”可替换的计算 functor”，同一套 MMA+pipeline 就能服务一整族算子——这正是 CUTLASS 与 ORT 共同的工程答案，只是落地方式不同。</p>
+<hr>
+<h2 id="二、CUTLASS-的-epilogue：把”输出算子”做成模板参数"><a href="#二、CUTLASS-的-epilogue：把”输出算子”做成模板参数" class="headerlink" title="二、CUTLASS 的 epilogue：把”输出算子”做成模板参数"></a>二、CUTLASS 的 epilogue：把”输出算子”做成模板参数</h2><h3 id="2-1-写回骨架-EpilogueBase（epilogue-base-h-95-228）"><a href="#2-1-写回骨架-EpilogueBase（epilogue-base-h-95-228）" class="headerlink" title="2.1 写回骨架 EpilogueBase（epilogue_base.h:95-228）"></a>2.1 写回骨架 <code>EpilogueBase</code>（epilogue_base.h:95-228）</h3><p><code>EpilogueBase</code> 只负责<strong>把 warp 级的累加片段经共享内存重排成全局内存的规整布局</strong>，再合并写回。它定义：</p>
+<ul>
+<li><code>SharedStorage</code>（含 <code>AlignedBuffer</code>，带 <code>Padding</code> 规避 bank conflict——回扣 <strong>L2.1</strong>）；</li>
+<li><code>WarpTileIterator</code> 把每个 warp 的累加 fragment 写进 SMEM；</li>
+<li>warp 在 threadblock tile 内的坐标 <code>(warp_m, warp_n)</code>（<code>add_tile_offset</code>）。</li>
+</ul>
+<p>它本身**不含任何”算”**，只管”搬+写”。真正”算”的是注入的 <code>OutputOp</code>。</p>
+<h3 id="2-2-逐元素计算-LinearCombination（linear-combination-h-217-250）"><a href="#2-2-逐元素计算-LinearCombination（linear-combination-h-217-250）" class="headerlink" title="2.2 逐元素计算 LinearCombination（linear_combination.h:217-250）"></a>2.2 逐元素计算 <code>LinearCombination</code>（linear_combination.h:217-250）</h3><p>这就是 2.x 的默认输出算子：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// D = alpha * accumulator + beta * source   （linear_combination.h:247）</span></span><br><span class="line">intermediate = <span class="built_in">mul_add_source</span>(beta_, converted_source);          <span class="comment">// X = β·C</span></span><br><span class="line">intermediate = <span class="built_in">mul_add_accumulator</span>(alpha_, conv_acc, intermediate); <span class="comment">// D = α·accum + X</span></span><br><span class="line"><span class="keyword">return</span> <span class="built_in">destination_converter</span>(intermediate);                      <span class="comment">// 转回输出精度</span></span><br></pre></td></tr></tbody></table></figure>
+<ul>
+<li><code>source</code> = GEMM 的 <code>C</code>（<strong>bias 就藏在 C 里</strong>——当 C 是广播向量时即 bias）；</li>
+<li><code>alpha/beta</code> 可来自标量、指针、甚至 <strong>per-group 数组</strong>（<code>Params</code> 里的 <code>alpha_ptr_array</code>，支持分组不同缩放）；</li>
+<li><code>is_source_needed()</code> 决定要不要读 C（<code>β==0</code> 时直接跳过，<strong>省一次全局读</strong>，回扣 <strong>L2.1 合并/省带宽</strong>）。</li>
+</ul>
+<h3 id="2-3-任意融合-LinearCombinationBiasElementwise（linear-combination-bias-elementwise-h-344-348）"><a href="#2-3-任意融合-LinearCombinationBiasElementwise（linear-combination-bias-elementwise-h-344-348）" class="headerlink" title="2.3 任意融合 LinearCombinationBiasElementwise（linear_combination_bias_elementwise.h:344-348）"></a>2.3 任意融合 <code>LinearCombinationBiasElementwise</code>（linear_combination_bias_elementwise.h:344-348）</h3><p>这是”描述任意算子”的核心。其 <code>operator()</code> 一句话：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// z = binary_op(alpha_*accum + beta_*C, V[i]);        // V = bias 向量（广播）</span></span><br><span class="line"><span class="comment">// Z = skip_elementwise_ ? z : elementwise_op(z);      // 激活 = 模板参数</span></span><br><span class="line">ElementCompute z = <span class="built_in">binary_op</span>(alpha_ * tmp_Accum[i] + beta_ * tmp_C[i], V[i]);</span><br><span class="line">result_Z[i] = skip_elementwise_ ? z : <span class="built_in">elementwise_op</span>(z, elementwise_args);</span><br></pre></td></tr></tbody></table></figure>
+<ul>
+<li><strong>bias 广播</strong>：<code>V</code> 是一个 <code>ElementVector</code>，epilogue 按 <code>Broadcast</code> 类型（逐行/逐列/标量）只取一次、广播到 tile；</li>
+<li><strong>任意激活</strong>：<code>ElementwiseOp</code> 是<strong>模板参数</strong>（<code>Identity</code> / <code>ReLU</code> / <code>GELU</code> / <code>Sigmoid</code> / …）。换激活 = 换一个类型实参，<strong>MMA 与写回 pipeline 一行不改</strong>；</li>
+<li>**<code>skip_elementwise_</code>**：多 K 段串行归约时，中间段只做 <code>α·accum+β·C</code>、最后一段才激活（<code>set_k_partition</code>，:248-256）——一个算子内部也要分阶段；</li>
+<li>还支持同时写 <code>Z</code> 和 <code>T</code>（残差/中间量，<code>kStoreT</code>），这是 fused residual-add 的工业写法。</li>
+</ul>
+<h3 id="2-4-3-x-的极致：visitor-模式-DefaultEpilogue（collective-default-epilogue-hpp-154-252）"><a href="#2-4-3-x-的极致：visitor-模式-DefaultEpilogue（collective-default-epilogue-hpp-154-252）" class="headerlink" title="2.4 3.x 的极致：visitor 模式 DefaultEpilogue（collective/default_epilogue.hpp:154-252）"></a>2.4 3.x 的极致：visitor 模式 <code>DefaultEpilogue</code>（collective/default_epilogue.hpp:154-252）</h3><p>CUTLASS 3.x 用 <strong>CuTe</strong> 把 epilogue 升格为 <strong>Epilogue Visitor Tree（EVT）</strong>：epilogue 不再是单一 <code>OutputOp</code>，而是一棵由节点组成的计算图——<code>LoadC → BiasAdd → Activation → StoreD (→ StoreT)</code>。每个节点是同一个 <code>accumulators</code> fragment 上的访客。</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// default_epilogue.hpp:239-240  把"算子"直接作用于累加 fragment，再合并写回</span></span><br><span class="line">FragDType fragD = <span class="built_in">epilogue_op</span>(<span class="built_in">accumulators</span>(i), fragC);   <span class="comment">// 任意访客组合</span></span><br><span class="line">arch::<span class="built_in">global_store</span>&lt;FragDType,...&gt;(fragD, &amp;<span class="built_in">tCgD</span>(i), pred);</span><br></pre></td></tr></tbody></table></figure>
+<p>于是”GEMM + LayerNorm + 残差 + 写回”这种复合算子，只是换一棵 visitor 树，<strong>MMA 主循环与线程映射完全复用</strong>。这把”同一套 pipeline 描述任意算子”做到了语法级。</p>
+<hr>
+<h2 id="三、ORT-的-bias-broadcast-巧法（gemm-cc-100-142，逐行解析）"><a href="#三、ORT-的-bias-broadcast-巧法（gemm-cc-100-142，逐行解析）" class="headerlink" title="三、ORT 的 bias broadcast 巧法（gemm.cc:100-142，逐行解析）"></a>三、ORT 的 bias broadcast 巧法（gemm.cc:100-142，逐行解析）</h2><p>ORT 的 <code>Gemm</code> 不手写 fused kernel，而是<strong>复用 cublasLt 库自带的 epilogue</strong>（<code>D = α·A·B + β·C</code>），把 bias 塞进 <code>β·C</code> 项”免费”加上：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// gemm.cc:100-142  把 bias 广播"预填"到输出缓冲 Y</span></span><br><span class="line"><span class="keyword">if</span> (beta_ != <span class="number">0</span> &amp;&amp; B != <span class="literal">nullptr</span>) {</span><br><span class="line">  <span class="keyword">if</span> (b_shape.<span class="built_in">Size</span>() == <span class="number">1</span>) {</span><br><span class="line">    <span class="comment">// 标量 (1,)：cublasCopy 用 incx=0 把同一元素广播到 N*M 个位置（经典 stride-0 广播）</span></span><br><span class="line">    <span class="built_in">cublasCopyHelper</span>(..., M*N, b_data, <span class="comment">/*incx=*/</span><span class="number">0</span>, out_data, <span class="number">1</span>);</span><br><span class="line">  } <span class="keyword">else</span> <span class="keyword">if</span> (b_shape.<span class="built_in">NumDimensions</span>() == <span class="number">1</span> || b_shape[<span class="number">0</span>] == <span class="number">1</span>) {</span><br><span class="line">    <span class="comment">// B 是 (N,)：Y = 1·B(N,1) × ones(1,M) + 0·Y  —— 用一次 GEMM 把 bias 沿行复制</span></span><br><span class="line">    <span class="built_in">cublasGemmHelper</span>(..., N, M, <span class="number">1</span>, &amp;one, b_data,N, <span class="built_in">GetConstOnes</span>&lt;CudaT&gt;(M,...),<span class="number">1</span>, &amp;zero, out_data,N);</span><br><span class="line">  } <span class="keyword">else</span> <span class="keyword">if</span> (b_shape.<span class="built_in">NumDimensions</span>() == <span class="number">2</span> &amp;&amp; b_shape[<span class="number">1</span>] == <span class="number">1</span>) {</span><br><span class="line">    <span class="comment">// B 是 (M,1)：Y = 1·ones(N,1) × B(1,M) + 0·Y</span></span><br><span class="line">    <span class="built_in">cublasGemmHelper</span>(..., N, M, <span class="number">1</span>, &amp;one, <span class="built_in">GetConstOnes</span>&lt;CudaT&gt;(N,...),N, b_data,<span class="number">1</span>, &amp;zero, out_data,N);</span><br><span class="line">  } <span class="keyword">else</span> {</span><br><span class="line">    <span class="built_in">cudaMemcpyAsync</span>(out_data, b_data, M*N*<span class="built_in">sizeof</span>(T), cudaMemcpyDeviceToDevice, ...); <span class="comment">// (M,N) 直接拷</span></span><br><span class="line">  }</span><br><span class="line">}</span><br><span class="line"><span class="comment">// gemm.cc:157-170  真正的 GEMM：注意 β 取 beta_（不是 0！）</span></span><br><span class="line"><span class="comment">// Y = alpha * op(W) × op(X) + beta * Y      // Y 此时已含 bias -&gt; bias 被 epilogue 白送</span></span><br><span class="line"><span class="built_in">cublasGemmHelper</span>(..., &amp;alpha, W, ..., X, ..., B!=<span class="literal">nullptr</span>?&amp;beta:&amp;zero, out_data, N, ...);</span><br></pre></td></tr></tbody></table></figure>
+<p><strong>巧在哪</strong>：</p>
+<ul>
+<li>没有独立的”加 bias kernel”、没有额外的全局访存往返；</li>
+<li>bias 先灌进 <code>Y</code>（一次预填），GEMM 的库 epilogue（<code>β·C</code> 项，<code>C</code> 这里就是 <code>Y</code>）顺手完成 <code>accum + bias</code>；</li>
+<li>这正对应 <strong>L2.3 的算术强度思想</strong>：把逐元素算子融合进 GEMM，省掉 1–2 次 <code>读 D→写 D</code> 的 DRAM 往返（memory-bound 下直接提速）；</li>
+<li>与 CUTLASS <code>LinearCombination</code> 的公式 <code>D = α·accum + β·C</code> 是<strong>同一个数学结构</strong>——ORT 用库的 epilogue 实现，CUTLASS 用自己模板化的 <code>OutputOp</code> 实现。</li>
+</ul>
+<blockquote>
+<p>注：带激活的融合（<code>Gemm+FastGelu</code>/<code>BiasGelu</code>）ORT 走另一条 <code>FusedMatMul</code> 路径再叠一次 elementwise kernel；CUTLASS 则直接在 epilogue visitor 里一次做完——殊途同归。</p>
+</blockquote>
+<hr>
+<h2 id="四、同一条-pipeline，描述任意算子（对照表）"><a href="#四、同一条-pipeline，描述任意算子（对照表）" class="headerlink" title="四、同一条 pipeline，描述任意算子（对照表）"></a>四、同一条 pipeline，描述任意算子（对照表）</h2><table>
+<thead>
+<tr>
+<th>目标算子</th>
+<th>CUTLASS 怎么”换”</th>
+<th>ORT 怎么”换”</th>
+<th>共同点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GEMM</td>
+<td><code>OutputOp = LinearCombination</code>（β=0，不读 C）</td>
+<td><code>cublasGemm</code> β=0</td>
+<td>MMA 主循环不变</td>
+</tr>
+<tr>
+<td>GEMM + bias</td>
+<td><code>OutputOp = LinearCombinationBiasElementwise</code>（C=bias 广播）</td>
+<td>预填 <code>Y=bias</code> + <code>cublasGemm</code> β≠0</td>
+<td>复用 <code>α·accum+β·C</code> 结构</td>
+</tr>
+<tr>
+<td>GEMM + bias + ReLU</td>
+<td>把 <code>ElementwiseOp</code> 换成 <code>ReLU</code>（模板实参）</td>
+<td><code>FusedMatMul</code> 叠 ReLU kernel</td>
+<td>改”输出算子”，不动 MMA</td>
+</tr>
+<tr>
+<td>GEMM + bias + GELU + 残差</td>
+<td>EVT 访客树 <code>LoadC→Bias→GELU→AddResidual→Store</code></td>
+<td>多个融合 kernel 串联</td>
+<td>同一 pipeline，算子=插件</td>
+</tr>
+<tr>
+<td>逐行/逐列 bias</td>
+<td><code>Broadcast</code> 类型决定 <code>V[i]</code> 取值</td>
+<td>(N,)/(M,1) 走不同预填分支</td>
+<td>bias 广播 = 一次取、全 tile 用</td>
+</tr>
+</tbody></table>
+<p><strong>一句话总结</strong>：工业界把”算子差异”收敛到<strong>输出算子（epilogue）这一个可替换点</strong>——CUTLASS 在类型系统里做（模板/visitor），ORT 在调用约定里做（β·C 复用 + 库能力），但两者都守着”MMA+pipeline 唯一、epilogue 可编程”这一条原则。</p>
+<hr>
+<h2 id="五、与前面-L2-的串联"><a href="#五、与前面-L2-的串联" class="headerlink" title="五、与前面 L2 的串联"></a>五、与前面 L2 的串联</h2><ul>
+<li><strong>L2.1 内存层次 / 合并 / bank conflict</strong>：<code>EpilogueBase::SharedStorage</code> 照样带 <code>Padding</code> 规避 bank conflict；<code>is_source_needed()=false</code> 时跳过读 C，<strong>省一次全局读 = 提 AI</strong>（回扣 L2.3）。</li>
+<li><strong>L2.2 warp / occupancy</strong>：epilogue 是逐 warp 处理输出 tile 的子集，和 MMA 共用 occupancy 预算；重激活（”heavy” functor，<code>kIsHeavy</code>）会被抽成不内联以压代码体积——与前几站”寄存器压力/occupancy”同源。</li>
+<li><strong>L2.3 Roofline / compute vs memory-bound</strong>：把 bias/激活融进 epilogue，砍掉输出张量 <code>读 D→写 D</code> 的冗余往返——<strong>对输出张量 D 是 5×→1×（见 <code>analyze_fusion()</code>）</strong>。但要诚实：独立 GEMM 的总流量受 A·B 读取（<code>2·M·N·K</code>）支配，融合在整 op 层面占比很小、单看提速有限；<strong>真正的收益在算子链</strong>（GEMM→Norm→残差每一步都落盘会反复读写中间张量，epilogue 串起来即免落盘）。这恰好说明 L2.3 的”提 AI/减 DRAM”在<strong>链式算子</strong>里才放大量级。</li>
+<li><strong>L2.4 tiling / 双缓冲 / pipeline</strong>：epilogue 站在 MMA 的”下游”，共享同一套 <code>kStages</code> 流水线状态与输出 tile 迭代——这正是”同一套 pipeline”的运行时含义。</li>
+</ul>
+<hr>
+<h2 id="六、自检（动手验证）"><a href="#六、自检（动手验证）" class="headerlink" title="六、自检（动手验证）"></a>六、自检（动手验证）</h2><ol>
+<li><strong>编译 CPU 版</strong>（无 GPU 也能跑）：<code>g++ -O3 -std=c++17 cuda_l3_epilogue_fusion.cpp -o ep &amp;&amp; ./ep</code><br>→ 预期打印 <code>[verify_on_cpu] PASS</code>，并给出 <code>pipeline</code> 与 <code>ORT β-trick</code> 两组的 <code>Z=relu(accum+bias)</code> 数值，二者一致；<code>analyze_fusion()</code> 会打印诚实结论：输出张量 D 往返 5×→1×，但整 op 占比很小、收益在算子链。</li>
+<li><strong>真机 GPU 版</strong>：<code>nvcc -O3 -std=c++17 cuda_l3_epilogue_fusion.cpp -o ep &amp;&amp; ./ep</code><br>→ 同一 CPU 校验通过；<code>gemm_bias_act_epilogue</code> kernel 结构与 <code>MiniOutputOp</code> 一一对应，可在 <code>main()</code> 里 <code>cudaMemcpy</code> 后对拍。</li>
+<li><strong>读源码对照</strong>（已备份）：<ul>
+<li>CUTLASS <code>linear_combination_bias_elementwise.h:344-348</code> → 本文件 <code>MiniOutputOp::operator()</code>；</li>
+<li>CUTLASS <code>epilogue_base.h:137-187</code> → 本文件 <code>epilogue_pipeline</code>（输出 tile 迭代 + 写回概念）；</li>
+<li>ORT <code>gemm.cc:100-142</code> → 本文件 <code>ort_bias_prefill</code> + <code>ref_gemm_with_ort_beta</code>。</li>
+</ul>
+</li>
+<li><strong>思考</strong>：若要让本文件的 <code>epilogue_pipeline</code> 也支持”逐元素 GELU + 残差写 T”，最小的改动在哪？（提示：把 <code>MiniOutputOp</code> 换成带 <code>act</code> 与 <code>store_T</code> 的版本，对应 CUTLASS 的 <code>ElementwiseOp</code> + <code>kStoreT</code>。）</li>
+</ol>
+<hr>
+<h2 id="七、下一步（继续源码线-或-进-L3）"><a href="#七、下一步（继续源码线-或-进-L3）" class="headerlink" title="七、下一步（继续源码线 或 进 L3）"></a>七、下一步（继续源码线 或 进 L3）</h2><ul>
+<li><strong>进 L3 架构级</strong>：kernel fusion / <code>memcpy_async</code>+<code>cp.async</code> 真异步 pipeline / <strong>Tensor Core 深度（WMMA MMA PTX / CUTLASS 3.x CuTe EVT / 混合精度)</strong> / cooperative groups / PTX·SASS 反汇编 / 多 GPU·NVLink·NCCL；</li>
+<li><strong>继续源码线</strong>：把 ORT 的 <code>FusedMatMul</code>（带激活/Scale/Bias 的融合 GEMM kernel）与 CUTLASS 的 EVT 做<strong>端到端对照</strong>，看工业界如何把”一个 ONNX 算子”映射到”一棵 epilogue 访客树 + 一组 MMA 形状”；</li>
+<li>或回到主线，正式进 <strong>L3</strong>。</li>
+</ul>
+<blockquote>
+<p>笔记本篇对应：<code>01CUDA基础学习.docx</code> 的 <strong>L2</strong> 扩展实战（源码线第 3 站：epilogue 融合对照）。</p>
+</blockquote>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L3_EPILOGUE_FUSION</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

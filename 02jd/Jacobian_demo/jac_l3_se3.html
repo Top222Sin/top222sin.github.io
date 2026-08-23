@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3.5 SE(3) 完整位姿雅可比：刚体运动的李群与伴随 一句话：刚体位姿是 SE(3) 李群，运动用 twist ξ&#x3D;(ω,v)∈se(3) 描述；exp_se3&#x2F;log_se3 互转、伴随 Ad(T)、右雅可比 J_r 与”点作用雅可比” J&#x3D;[-R[x]^, R]J_r 四件事，全用有限差分与恒等式对拍。   一、为什么需要 SE(3)平移+旋转一起构成 6 自由度位姿 T&#x3D;(R,p)。直">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3.5 SE(3) 完整位姿雅可比：刚体运动的李群与伴随">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l3_se3.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3.5 SE(3) 完整位姿雅可比：刚体运动的李群与伴随 一句话：刚体位姿是 SE(3) 李群，运动用 twist ξ&#x3D;(ω,v)∈se(3) 描述；exp_se3&#x2F;log_se3 互转、伴随 Ad(T)、右雅可比 J_r 与”点作用雅可比” J&#x3D;[-R[x]^, R]J_r 四件事，全用有限差分与恒等式对拍。   一、为什么需要 SE(3)平移+旋转一起构成 6 自由度位姿 T&#x3D;(R,p)。直">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/Jacobian_demo/images/fig16_se3.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.940Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/Jacobian_demo/images/fig16_se3.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l3_se3">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l3_se3.html","path":"02jd/Jacobian_demo/jac_l3_se3.html","title":"L3.5 SE(3) 完整位姿雅可比：刚体运动的李群与伴随"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3.5 SE(3) 完整位姿雅可比：刚体运动的李群与伴随 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-5-SE-3-%E5%AE%8C%E6%95%B4%E4%BD%8D%E5%A7%BF%E9%9B%85%E5%8F%AF%E6%AF%94%EF%BC%9A%E5%88%9A%E4%BD%93%E8%BF%90%E5%8A%A8%E7%9A%84%E6%9D%8E%E7%BE%A4%E4%B8%8E%E4%BC%B4%E9%9A%8F"><span class="nav-number">1.</span> <span class="nav-text">L3.5 SE(3) 完整位姿雅可比：刚体运动的李群与伴随</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-SE-3"><span class="nav-number">1.1.</span> <span class="nav-text">一、为什么需要 SE(3)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E2%80%9D%E4%BD%8D%E5%A7%BF%E7%9A%84%E5%AF%BC%E6%95%B0%E2%80%9D%E8%A6%81%E7%94%A8-twist-%E8%80%8C%E4%B8%8D%E6%98%AF-6-%E4%B8%AA%E6%95%B0"><span class="nav-number">1.1.1.</span> <span class="nav-text">为什么”位姿的导数”要用 twist 而不是 6 个数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%9B%9B%E4%B8%AA%E5%BE%85%E9%AA%8C%E8%AF%81%E7%9A%84%E6%81%92%E7%AD%89%E5%BC%8F"><span class="nav-number">1.2.</span> <span class="nav-text">二、四个待验证的恒等式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%82%B9%E4%BD%9C%E7%94%A8%E9%9B%85%E5%8F%AF%E6%AF%94%E7%9A%84%E6%8E%A8%E5%AF%BC%EF%BC%88%E4%B8%A4%E4%B8%AA%E4%B8%8D%E5%90%8C%E7%9A%84%E5%AF%BC%E6%95%B0%EF%BC%8C%E5%8B%BF%E6%B7%B7%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">点作用雅可比的推导（两个不同的导数，勿混）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88jac-l3-se3-cpp%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、代码走读（jac_l3_se3.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.4.</span> <span class="nav-text">四、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.6.</span> <span class="nav-text">六、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.7.</span> <span class="nav-text">七、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3.5 SE(3) 完整位姿雅可比：刚体运动的李群与伴随
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Jacobian_demo/">JACOBIAN_DEMO</a></li>
+            <li>JAC_L3_SE3</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-5-SE-3-完整位姿雅可比：刚体运动的李群与伴随"><a href="#L3-5-SE-3-完整位姿雅可比：刚体运动的李群与伴随" class="headerlink" title="L3.5 SE(3) 完整位姿雅可比：刚体运动的李群与伴随"></a>L3.5 SE(3) 完整位姿雅可比：刚体运动的李群与伴随</h1><blockquote>
+<p>一句话：刚体位姿是 <strong>SE(3) 李群</strong>，运动用 <strong>twist ξ=(ω,v)∈se(3)</strong> 描述；<code>exp_se3/log_se3</code> 互转、伴随 <code>Ad(T)</code>、右雅可比 <code>J_r</code> 与”点作用雅可比” <code>J=[-R[x]^, R]J_r</code> 四件事，全用有限差分与恒等式对拍。</p>
+</blockquote>
+<hr>
+<h2 id="一、为什么需要-SE-3"><a href="#一、为什么需要-SE-3" class="headerlink" title="一、为什么需要 SE(3)"></a>一、为什么需要 SE(3)</h2><p>平移+旋转一起构成 6 自由度位姿 <code>T=(R,p)</code>。直接对 6 个数求导既麻烦又丢失结构；李群把”局部运动”看成切空间里的一个 6 维向量（twist）。这带来三个利器：</p>
+<ul>
+<li><strong>指数映射</strong> <code>T = exp_se3(ξ)</code>：把 twist 变成位姿（旋转用 Rodrigues，平移用 <code>V(ω)·v</code>——注意平移项是 V 矩阵作用在<strong>线速度 v</strong> 上，不是 ω）。</li>
+</ul>
+<blockquote>
+<p><strong>符号约定</strong>：本文取 twist 排列 ξ=(ω,v)，<code>exp(ξ̂) = [R, V(ω)v; 0, 1]</code>。指数坐标是<strong>局部坐标</strong>：<code>log</code> 在转角接近 π 时存在轴方向不唯一与数值敏感（旋转向量有 2π 周期/分支），所以”twist 无奇点”是指<strong>避开欧拉角式坐标奇点</strong>，不代表指数映射全局无分支。严格说 <code>log(exp(ξ))=ξ</code> 只在 ‖ω‖&lt;π 的主值分支内成立。</p>
+</blockquote>
+<h3 id="为什么”位姿的导数”要用-twist-而不是-6-个数"><a href="#为什么”位姿的导数”要用-twist-而不是-6-个数" class="headerlink" title="为什么”位姿的导数”要用 twist 而不是 6 个数"></a>为什么”位姿的导数”要用 twist 而不是 6 个数</h3><p>位姿矩阵 T 的微分 <code>dT/dt = ξ̂_s·T</code>（<strong>空间系 twist</strong>；机体系则为 <code>T·ξ̂_b</code>，ξ̂ 含平移：<code>ξ̂ = [[ω]^, v; 0, 0]</code>）——导数在”切空间”里，而切空间的坐标就是 twist。直接对 6 个参数（如 x,y,z,欧拉角）求导会遇到 L2.1 的表示奇点；twist 是流形切空间中的坐标表示，无欧拉角式奇点。李代数的价值 = “在流形上做线性代数”。</p>
+<h2 id="二、四个待验证的恒等式"><a href="#二、四个待验证的恒等式" class="headerlink" title="二、四个待验证的恒等式"></a>二、四个待验证的恒等式</h2><ol>
+<li><strong>roundtrip</strong>：<code>log_se3(exp_se3(ξ)) ≈ ξ</code>（数值误差 ~1e-16）。</li>
+<li><strong>伴随同态</strong>：<code>Ad(T₁·T₂) = Ad(T₁)·Ad(T₂)</code>。</li>
+<li><strong>点作用雅可比</strong>：对 <code>x' = T·x</code>，有 <code>∂x'/∂ξ = [ −R[x]^ , R ] · J_r(ξ)</code>，即先做右雅可比线性化、再投影到世界坐标。</li>
+<li><strong>共轭（链式法则）</strong>：<code>d/dt Log(T₂ exp(tξ) T₂⁻¹)|₀ = Ad(T₂)·ξ</code>——说明”在 T₂ 旁加一个扰动 twist ξ”等价于在 world 系里施加 <code>Ad(T₂)ξ</code>。</li>
+</ol>
+<h3 id="点作用雅可比的推导（两个不同的导数，勿混）"><a href="#点作用雅可比的推导（两个不同的导数，勿混）" class="headerlink" title="点作用雅可比的推导（两个不同的导数，勿混）"></a>点作用雅可比的推导（两个不同的导数，勿混）</h3><p><strong>情形 A——右扰动</strong> <code>T ← T·exp(δξ̂)</code>（机体系扰动，δξ 是扰动坐标）：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">∂(T·exp(δξ̂)·x)/∂δξ|₀ = [−R[x]^, R]      ← 不需要乘 J_r!</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>情形 B——指数坐标求导</strong> <code>T(ξ) = exp(ξ̂)</code>，对全局指数坐标 ξ 求导：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">exp(ξ̂+δξ̂) ≈ exp(ξ̂)·exp(J_r(ξ)·δξ̂)      ← 需右雅可比 J_r 修正坐标</span><br><span class="line">∂(T(ξ)·x)/∂ξ = [−R[x]^, R]·J_r(ξ)</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程含义</strong>：SLAM/BA（L2.6/L3.1）里位姿优化用的是<strong>扰动模型</strong>（情形 A：<code>T ← T·exp(δξ)</code>，雅可比 [−R[x]^, R]），Ceres 的 Manifold <code>Plus(x,δ)=x·exp(δ)</code> 正是它；只有把”全局指数坐标”当优化变量时才用情形 B。本文公式 <code>[−R[x]^, R]·J_r</code> 属于情形 B——文档需明确是哪种变量，不能混用。</p>
+<h2 id="三、代码走读（jac-l3-se3-cpp）"><a href="#三、代码走读（jac-l3-se3-cpp）" class="headerlink" title="三、代码走读（jac_l3_se3.cpp）"></a>三、代码走读（jac_l3_se3.cpp）</h2><ul>
+<li><code>skew</code> / <code>exp_se3</code> / <code>log_se3</code> / <code>inv_se3</code>：SE(3) 基础运算。<code>exp_se3</code> 用 <code>R=I+sK+(1-c)K²</code>、平移 <code>V·ω</code>；<code>log_se3</code> 数值求 <code>V⁻¹</code> 以保证稳健。</li>
+<li><code>Ad</code> / <code>Ad_inv</code> / <code>Jr_se3</code>：伴随与右雅可比（右雅可比用”对数-乘积”的有限差分得到，避开易错的闭式）。</li>
+<li><code>action</code> / <code>fd_action_J</code>：点变换与其雅可比的有限差分。</li>
+<li><code>main</code> 跑 4 个检查，打印 <code>PASS/FAIL</code> 与误差上界。</li>
+</ul>
+<h2 id="四、你会看到什么"><a href="#四、你会看到什么" class="headerlink" title="四、你会看到什么"></a>四、你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">=== SE(3) 完整位姿雅可比 ===</span><br><span class="line">  exp/log roundtrip              err=3.2e-16  PASS</span><br><span class="line">  Ad(T1 T2)=Ad(T1)Ad(T2)        err=4.1e-16  PASS</span><br><span class="line">  action J=[-Rx^,R]Jr            err=6.2e-07  PASS</span><br><span class="line">  conjugation Ad twist          err=5.3e-17  PASS</span><br><span class="line">=== 4 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img src="/02jd/Jacobian_demo/images/fig16_se3.svg" alt="L3.5 SE(3) 完整位姿雅可比"></p>
+<h2 id="五、工程落点（真实项目）"><a href="#五、工程落点（真实项目）" class="headerlink" title="五、工程落点（真实项目）"></a>五、工程落点（真实项目）</h2><ul>
+<li><strong>Sophus / Eigen 的 Lie 支持</strong>：Sophus 库实现 SE3/SO3 的 exp/log/Ad——现代 C++ SLAM 项目的事实标准，本 demo 的四个恒等式 Sophus 全部提供。</li>
+<li><strong>Ceres 的 SE3 参数块</strong>：LocalParameterization/Manifold 用”右扰动 exp(δξ)”——你给 Ceres 提供的就是 <code>∂残差/∂δξ</code>（本 demo 的点作用雅可比正是这种）。</li>
+<li><strong>ORB-SLAM3 / VINS</strong>：位姿状态更新 <code>T ← T·exp(δξ)</code>（流形上的加），雅可比全部相对 δξ 定义——**”扰动模型”是 SLAM 后端统一语言**。</li>
+<li><strong>PX4 EKF2 的姿态/位置误差状态</strong>：误差状态用轴角/扰动（KF_demo 详述），和 SE(3) 扰动是同构思想。</li>
+<li><strong>UR/协作臂的轨迹插值</strong>：笛卡尔空间位姿插值用 exp/log（Lerp on manifold），避免欧拉角插值的奇点。</li>
+</ul>
+<h2 id="六、自检"><a href="#六、自检" class="headerlink" title="六、自检"></a>六、自检</h2><ul>
+<li>把 <code>ξ</code> 的转角 <code>θ</code> 取到接近 π，看 <code>exp/log</code> 是否仍稳定（多值包裹是正常现象，不是 bug）。</li>
+<li>思考：若把”点作用雅可比”写成 <code>Ad(T)</code> 而不是 <code>[-R[x]^, R]·J_r</code>，有限差分会对不上——这说明姿态对 twist 的线性化必须过右雅可比。</li>
+<li>挑战：为什么 <code>log_se3</code> 在 θ→π 附近数值不稳？（SO(3) 对数在 θ=π 处轴方向不唯一、旋转向量分支切换——与 V 矩阵的 1/θ² 形式关系不大；工程上用鲁棒的旋转向量提取 + 半角处理）</li>
+</ul>
+<h2 id="七、下一步"><a href="#七、下一步" class="headerlink" title="七、下一步"></a>七、下一步</h2><p>回到 <a href="/02jd/Jacobian_demo/README.html">README</a> 总览，或看同批的 <a href="/02jd/Jacobian_demo/jac_l3_indrobot.html">L3.9 工业机械臂</a>——那里把”位姿雅可比”用到了真实机器人的奇异回避与控制律。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Jacobian_demo/">JACOBIAN_DEMO</a></li>
+            <li>JAC_L3_SE3</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

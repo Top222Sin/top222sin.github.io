@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="工业级源码线 · 第 4 站：ORT FusedMatMul vs CUTLASS EVT 访客树（端到端对照） 配套代码：cuda_l3_evt_fusion.cpp（纯 C++ 可跑，含 CPU 对拍）图示：images&#x2F;fig11_evt_fusion.svg，浏览器预览见 cuda_l3_evt_fusion_diagrams.html前序：第 3 站把 CUTLASS epilogue（">
+<meta property="og:type" content="website">
+<meta property="og:title" content="工业级源码线 · 第 4 站：ORT FusedMatMul vs CUTLASS EVT 访客树（端到端对照）">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_evt_fusion.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="工业级源码线 · 第 4 站：ORT FusedMatMul vs CUTLASS EVT 访客树（端到端对照） 配套代码：cuda_l3_evt_fusion.cpp（纯 C++ 可跑，含 CPU 对拍）图示：images&#x2F;fig11_evt_fusion.svg，浏览器预览见 cuda_l3_evt_fusion_diagrams.html前序：第 3 站把 CUTLASS epilogue（">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_evt_fusion">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_evt_fusion.html","path":"02jd/cuda_demo/cuda_l3_evt_fusion.html","title":"工业级源码线 · 第 4 站：ORT FusedMatMul vs CUTLASS EVT 访客树（端到端对照）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>工业级源码线 · 第 4 站：ORT FusedMatMul vs CUTLASS EVT 访客树（端到端对照） | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B7%A5%E4%B8%9A%E7%BA%A7%E6%BA%90%E7%A0%81%E7%BA%BF-%C2%B7-%E7%AC%AC-4-%E7%AB%99%EF%BC%9AORT-FusedMatMul-vs-CUTLASS-EVT-%E8%AE%BF%E5%AE%A2%E6%A0%91%EF%BC%88%E7%AB%AF%E5%88%B0%E7%AB%AF%E5%AF%B9%E7%85%A7%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">工业级源码线 · 第 4 站：ORT FusedMatMul vs CUTLASS EVT 访客树（端到端对照）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A7%E9%9B%B6-%E8%BF%99%E4%B8%80%E7%AB%99%E8%A6%81%E5%9B%9E%E7%AD%94%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">1.1.</span> <span class="nav-text">§零 这一站要回答的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A7%E4%B8%80-ONNX-FusedMatMul-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">1.2.</span> <span class="nav-text">§一 ONNX FusedMatMul 是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A7%E4%BA%8C-ORT-%E6%80%8E%E4%B9%88%E8%90%BD%E5%9C%B0%E5%AE%83%EF%BC%9A%E4%B8%80%E4%B8%AA%E3%80%90%E6%9E%9A%E4%B8%BE-epilogue%E3%80%91-%E4%B8%8D%E9%80%8F%E6%98%8E%E7%9A%84-MMA"><span class="nav-number">1.3.</span> <span class="nav-text">§二 ORT 怎么落地它：一个【枚举 epilogue】+ 不透明的 MMA</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E6%B3%A8%E5%86%8C%E9%93%BE%EF%BC%88%E7%9C%9F%E5%AE%9E%E6%BA%90%E7%A0%81%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">2.1 注册链（真实源码）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-ORT-%E7%9A%84%E5%8F%A6%E4%B8%80%E6%9D%A1%E8%B7%AF%E7%BA%BF%EF%BC%9AcuBLASLt-%E7%9A%84%E3%80%90%E6%9E%9A%E4%B8%BE-epilogue%E3%80%91%EF%BC%88%E5%85%B6%E4%BB%96-%E8%BE%83%E6%96%B0%E7%89%88%E6%9C%AC%EF%BC%89"><span class="nav-number">1.3.2.</span> <span class="nav-text">2.2 ORT 的另一条路线：cuBLASLt 的【枚举 epilogue】（其他 &#x2F; 较新版本）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E5%85%B3%E9%94%AE%E9%99%90%E5%88%B6%EF%BC%9AMMA-%E5%BD%A2%E7%8A%B6%E5%AF%B9-ORT-%E4%B8%8D%E9%80%8F%E6%98%8E"><span class="nav-number">1.3.3.</span> <span class="nav-text">2.3 关键限制：MMA 形状对 ORT 不透明</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A7%E4%B8%89-CUTLASS-%E6%80%8E%E4%B9%88%E8%90%BD%E5%9C%B0%E5%AE%83%EF%BC%9A%E4%B8%80%E7%BB%84-GemmShape-%E4%B8%80%E6%A3%B5-EVT-%E6%A0%91"><span class="nav-number">1.4.</span> <span class="nav-text">§三 CUTLASS 怎么落地它：一组 GemmShape + 一棵 EVT 树</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-MMA-%E5%BD%A2%E7%8A%B6%E6%98%BE%E5%BC%8F%E5%86%99%E6%88%90%E4%B8%89%E7%BA%A7-GemmShape"><span class="nav-number">1.4.1.</span> <span class="nav-text">3.1 MMA 形状显式写成三级 GemmShape</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-epilogue-%E6%98%AF%E4%B8%80%E6%A3%B5%E3%80%90%E8%AE%BF%E5%AE%A2%E6%A0%91%E3%80%91%EF%BC%88EVT%EF%BC%8CEpilogue-Visitor-Tree%EF%BC%89"><span class="nav-number">1.4.2.</span> <span class="nav-text">3.2 epilogue 是一棵【访客树】（EVT，Epilogue Visitor Tree）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%BC%80%E6%94%BE%E6%80%A7%EF%BC%9A%E6%8D%A2%E4%B8%80%E4%B8%AA%E8%8A%82%E7%82%B9%E5%8D%B3%E5%8F%AF%EF%BC%8CMMA-%E4%B8%80%E8%A1%8C%E4%B8%8D%E5%8A%A8"><span class="nav-number">1.4.3.</span> <span class="nav-text">3.3 开放性：换一个节点即可，MMA 一行不动</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A7%E5%9B%9B-%E7%AB%AF%E5%88%B0%E7%AB%AF%E5%AF%B9%E7%85%A7%E8%A1%A8"><span class="nav-number">1.5.</span> <span class="nav-text">§四 端到端对照表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A7%E4%BA%94-%E5%BC%80%E6%94%BE-vs-%E9%97%AD%E9%9B%86%EF%BC%9ASwish-%E6%B5%8B%E8%AF%95%EF%BC%88%E4%BB%A3%E7%A0%81%E5%B7%B2%E9%AA%8C%E8%AF%81%E6%80%9D%E8%B7%AF%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">§五 开放 vs 闭集：Swish 测试（代码已验证思路）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A7%E5%85%AD-%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88cuda-l3-evt-fusion-cpp%EF%BC%89"><span class="nav-number">1.7.</span> <span class="nav-text">§六 代码走读（cuda_l3_evt_fusion.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A7%E4%B8%83-OpenCL-%E5%AF%B9%E7%85%A7"><span class="nav-number">1.8.</span> <span class="nav-text">§七 OpenCL 对照</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A7%E5%85%AB-%E8%87%AA%E6%A3%80"><span class="nav-number">1.9.</span> <span class="nav-text">§八 自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E8%AF%91-%E8%BF%90%E8%A1%8C"><span class="nav-number">1.10.</span> <span class="nav-text">编译 &#x2F; 运行</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">工业级源码线 · 第 4 站：ORT FusedMatMul vs CUTLASS EVT 访客树（端到端对照）
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L3_EVT_FUSION</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="工业级源码线-·-第-4-站：ORT-FusedMatMul-vs-CUTLASS-EVT-访客树（端到端对照）"><a href="#工业级源码线-·-第-4-站：ORT-FusedMatMul-vs-CUTLASS-EVT-访客树（端到端对照）" class="headerlink" title="工业级源码线 · 第 4 站：ORT FusedMatMul vs CUTLASS EVT 访客树（端到端对照）"></a>工业级源码线 · 第 4 站：ORT FusedMatMul vs CUTLASS EVT 访客树（端到端对照）</h1><blockquote>
+<p>配套代码：<code>cuda_l3_evt_fusion.cpp</code>（纯 C++ 可跑，含 CPU 对拍）<br>图示：<code>images/fig11_evt_fusion.svg</code>，浏览器预览见 <code>cuda_l3_evt_fusion_diagrams.html</code><br>前序：第 3 站把 CUTLASS epilogue（bias+激活+写回）与 ORT bias 巧法对照；本站把视角拉到<strong>整个算子</strong>——<br>一个 ONNX <code>FusedMatMul</code> 如何端到端映射到「一棵 epilogue 访客树 + 一组 MMA 形状」。</p>
+</blockquote>
+<hr>
+<h2 id="§零-这一站要回答的问题"><a href="#§零-这一站要回答的问题" class="headerlink" title="§零 这一站要回答的问题"></a>§零 这一站要回答的问题</h2><p>第 3 站停留在「epilogue 内部怎么写 bias+激活」。本站问一个更大的问题：</p>
+<blockquote>
+<p><strong>给定一个 ONNX 融合算子 <code>FusedMatMul</code>（= <code>GELU(α·A·B + bias)</code>），工业界两条路线各自怎么把它落到 GPU kernel？</strong></p>
+</blockquote>
+<ul>
+<li><strong>ORT 路线</strong>：把融合交给库封装的「输出算子」。本仓库备份的 <code>_ort_src/</code> 实际走 <strong>cuBLAS <code>cublasGemmHelper</code> + bias β-trick</strong>（与 <code>cuda_l3_epilogue_fusion.md</code> §三一致）；ORT <strong>其他 / 较新版本</strong>另有基于 <strong>cuBLASLt 枚举 epilogue</strong> 的 FusedMatMul 落地路线（见 §2.2，这是「库封装闭集」概念的真实来源）。</li>
+<li><strong>CUTLASS 路线</strong>：把融合写成一棵<strong>epilogue 访客树（EVT）</strong>，MMA 形状<strong>显式</strong>写成一组 <code>GemmShape</code>。</li>
+</ul>
+<p>两条路线最终都收敛到同一句话：</p>
+<blockquote>
+<p><strong>「MMA 计算段对所有 GEMM 系算子固定不变，差异全在『输出算子（epilogue）』这一个可替换点。」</strong></p>
+</blockquote>
+<p>区别只是：ORT 的输出算子（库内）是<strong>闭集枚举</strong>（cuBLASLt 给的有限几种，含真实标准的 <code>DRELU</code> 等），CUTLASS 的输出算子是<strong>开放可组合的树</strong>。</p>
+<hr>
+<h2 id="§一-ONNX-FusedMatMul-是什么"><a href="#§一-ONNX-FusedMatMul-是什么" class="headerlink" title="§一 ONNX FusedMatMul 是什么"></a>§一 ONNX <code>FusedMatMul</code> 是什么</h2><p><code>com.microsoft.FusedMatMul</code>（ORT contrib 算子）是图优化把 <code>MatMul → Add(bias) → 激活</code> 三段融合后的产物：</p>
+<ul>
+<li><strong>输入</strong>：<code>A[M,K]</code>、<code>B[K,N]</code>、可选 <code>Bias[N]</code>（列广播）</li>
+<li><strong>属性</strong>：<code>alpha</code>（默认 1.0）、<code>transA</code>、<code>transB</code>、<code>activation</code>（字符串：<code>"Gelu"</code>/<code>"Relu"</code>/<code>"FastGelu"</code>/<code>"None"</code>）</li>
+<li><strong>语义</strong>：<code>Y = activation( alpha · A @ B + bias )</code></li>
+</ul>
+<p>它就是 Transformer 里 <code>Linear + Bias + Gelu</code> 那一类算子的标准形态。</p>
+<hr>
+<h2 id="§二-ORT-怎么落地它：一个【枚举-epilogue】-不透明的-MMA"><a href="#§二-ORT-怎么落地它：一个【枚举-epilogue】-不透明的-MMA" class="headerlink" title="§二 ORT 怎么落地它：一个【枚举 epilogue】+ 不透明的 MMA"></a>§二 ORT 怎么落地它：一个【枚举 epilogue】+ 不透明的 MMA</h2><h3 id="2-1-注册链（真实源码）"><a href="#2-1-注册链（真实源码）" class="headerlink" title="2.1 注册链（真实源码）"></a>2.1 注册链（真实源码）</h3><table>
+<thead>
+<tr>
+<th>落点</th>
+<th>事实</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>contrib_ops/cuda/math/fused_matmul.cc:19</code></td>
+<td><code>FusedMatMul</code> <strong>注册到 <code>onnxruntime::cuda::MatMul&lt;T&gt;</code> 内核</strong>（不是独立内核）</td>
+</tr>
+<tr>
+<td><code>contrib_ops/cuda/math/fused_matmul.cc:27-30</code></td>
+<td>对 <code>float/double/MLFloat16/BFloat16</code> 各实例化一份 <code>MatMul&lt;T&gt;</code></td>
+</tr>
+<tr>
+<td><code>core/providers/cuda/math/matmul.cc:133-138</code></td>
+<td><code>ComputeInternal</code> 派发到 <code>tunable::TunableMatMul</code> 或 <code>ComputeDefault</code></td>
+</tr>
+<tr>
+<td><code>core/providers/cuda/math/matmul.cc:300-439</code></td>
+<td><code>ComputeDefault</code> 调 <code>cublasGemmHelper</code>（朴素 GEMM，无融合）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>⚠️ <strong>与所引备份源码的对应关系</strong>：本仓库 <code>_ort_src/</code> 中，<code>MatMul&lt;T&gt;::ComputeDefault</code>（<code>matmul.cc:300-439</code>）实际只调 <strong>cuBLAS <code>cublasGemmHelper</code><strong>（非 cuBLASLt，beta=0），<code>FusedMatMul</code> 注册到 <code>MatMul&lt;T&gt;</code>（<code>fused_matmul.cc:19,27-30</code>），bias 经 <code>gemm.cc</code> 的 <strong>β-trick</strong> 融合——</strong>备份里完全没有 <code>cublasLt</code> 调用</strong>（已对 <code>_ort_src/</code> 全量大小写不敏感扫描确认）。下面 §2.2 描述的「<code>cublasLtMatmul</code> + 枚举 epilogue」是 ORT <strong>其他 / 较新版本</strong>里真实存在的另一条 FusedMatMul 落地路线（典型如 <code>TunableMatMul</code> 的 cuBLASLt 后端），它才是「闭集枚举 vs 开放 EVT 树」这个<strong>概念对比</strong>的真实来源；请勿把 §2.2 误读为本备份源码的实现。</p>
+</blockquote>
+<h3 id="2-2-ORT-的另一条路线：cuBLASLt-的【枚举-epilogue】（其他-较新版本）"><a href="#2-2-ORT-的另一条路线：cuBLASLt-的【枚举-epilogue】（其他-较新版本）" class="headerlink" title="2.2 ORT 的另一条路线：cuBLASLt 的【枚举 epilogue】（其他 / 较新版本）"></a>2.2 ORT 的另一条路线：cuBLASLt 的【枚举 epilogue】（其他 / 较新版本）</h3><blockquote>
+<p>本节描述的是 ORT <strong>其他 / 较新版本</strong>里基于 cuBLASLt 的 FusedMatMul 落地（如 <code>TunableMatMul</code> 的 cuBLASLt 后端），<strong>不是</strong>上面 §2.1 所引备份源码的实现（备份走 <code>cublasGemmHelper</code> + β-trick）。它作为「库封装闭集 epilogue」的代表，用来和 CUTLASS 的开放 EVT 树做概念对比。</p>
+</blockquote>
+<p>ORT 把融合交给 <code>cublasLtMatmul</code>，通过设置：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cublasLtMatmulDescAttributes_t attr;</span><br><span class="line"><span class="built_in">cublasLtMatmulDescSetAttribute</span>(desc, CUBLASLT_MATMUL_DESC_EPILOGUE,</span><br><span class="line">                               &amp;epilogue, <span class="built_in">sizeof</span>(epilogue));        <span class="comment">// 枚举，选一个</span></span><br><span class="line"><span class="built_in">cublasLtMatmulDescSetAttribute</span>(desc, CUBLASLT_MATMUL_DESC_BIAS_POINTER,</span><br><span class="line">                               &amp;bias_ptr, <span class="built_in">sizeof</span>(bias_ptr));        <span class="comment">// bias 列广播</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>而 <code>epilogue</code> 只能取<strong>固定枚举</strong>（示意子集，现代 cuBLASLt 已扩展到 10+ 种）：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CUBLASLT_EPILOGUE_DEFAULT | BIAS | RELU | BIAS_RELU | GELU | BIAS_GELU | DRELU</span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li><code>DRELU</code>（<code>CUBLASLT_EPILOGUE_DRELU = 8</code>）是<strong>真实</strong>的 cuBLASLt 标准枚举，含义是「对 matmul 输出求 ReLU 梯度」（用于反向传播，需额外 AUX 输入）；同族还有 <code>DGELU</code>、<code>DRELU_BGRAD</code>、<code>GELU_AUX</code> 等。「7 种」是较早版本的口径，现已过时。</li>
+<li><code>activation="Gelu"</code> + 有 bias ⇒ <code>CUBLASLT_EPILOGUE_BIAS_GELU</code></li>
+<li>没有原生对应（如 <code>FastGelu</code>、<code>Swish</code>、任意自定义链）⇒ <strong>枚举外 ⇒ 融合失败</strong>，ORT 必须把它退化成 <code>MatMul</code> + 独立激活 kernel。</li>
+</ul>
+<h3 id="2-3-关键限制：MMA-形状对-ORT-不透明"><a href="#2-3-关键限制：MMA-形状对-ORT-不透明" class="headerlink" title="2.3 关键限制：MMA 形状对 ORT 不透明"></a>2.3 关键限制：MMA 形状对 ORT 不透明</h3><p><code>cublasLtMatmul</code> 内部用 <strong>autotuner</strong> 自己挑 MMA tile / 调度 / 精度（TF32/FP16…）。<br>ORT <strong>不指定、也拿不到</strong>这些 tile 几何——这是「库封装」的本质：省心但不可控。</p>
+<blockquote>
+<p>这正是 ORT 路线与 CUTLASS 路线的分水岭：<strong>ORT 暴露「选哪个枚举 epilogue」；CUTLASS 暴露「tile 多大 + epilogue 树怎么长」。</strong></p>
+</blockquote>
+<hr>
+<h2 id="§三-CUTLASS-怎么落地它：一组-GemmShape-一棵-EVT-树"><a href="#§三-CUTLASS-怎么落地它：一组-GemmShape-一棵-EVT-树" class="headerlink" title="§三 CUTLASS 怎么落地它：一组 GemmShape + 一棵 EVT 树"></a>§三 CUTLASS 怎么落地它：一组 GemmShape + 一棵 EVT 树</h2><h3 id="3-1-MMA-形状显式写成三级-GemmShape"><a href="#3-1-MMA-形状显式写成三级-GemmShape" class="headerlink" title="3.1 MMA 形状显式写成三级 GemmShape"></a>3.1 MMA 形状显式写成三级 GemmShape</h3><figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cutlass::gemm::GemmShape&lt;<span class="number">128</span>,<span class="number">128</span>,<span class="number">32</span>&gt;,   <span class="comment">// Threadblock 级 tile</span></span><br><span class="line">cutlass::gemm::GemmShape&lt; <span class="number">64</span>, <span class="number">64</span>,<span class="number">32</span>&gt;,   <span class="comment">// Warp 级</span></span><br><span class="line">cutlass::gemm::GemmShape&lt; <span class="number">16</span>,  <span class="number">8</span>,<span class="number">16</span>&gt;,   <span class="comment">// Instruction 级（Tensor Core mma.sync）</span></span><br><span class="line"><span class="comment">/* kStages = 2 */</span>                        <span class="comment">// 双缓冲 pipeline</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>三级形状 + <code>kStages</code> <strong>全部用户指定</strong>——你精确控制占用率、shared memory、pipeline 深度。<br>（详见第 2 站 <code>cuda_l2_cutlass_gemm.*</code> 对 tiling/双缓冲/pipeline 的拆解。）</p>
+<h3 id="3-2-epilogue-是一棵【访客树】（EVT，Epilogue-Visitor-Tree）"><a href="#3-2-epilogue-是一棵【访客树】（EVT，Epilogue-Visitor-Tree）" class="headerlink" title="3.2 epilogue 是一棵【访客树】（EVT，Epilogue Visitor Tree）"></a>3.2 epilogue 是一棵【访客树】（EVT，Epilogue Visitor Tree）</h3><p>CUTLASS 3.x 的 <code>DefaultEpilogue</code> 持有一个 <code>ThreadEpilogueOp</code>（即 EVT 树），逐元素调用<br>（<code>include/cutlass/epilogue/collective/default_epilogue.hpp:63,239,248</code>）：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FragDType fragD = <span class="built_in">epilogue_op</span>(<span class="built_in">accumulators</span>(i), fragC);   <span class="comment">// epilogue_op = 那一棵 EVT</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>EVT 的节点族（<code>include/cutlass/epilogue/collective/sm80_visitor.hpp</code> 一系的 <code>Sm80EVT</code>/<code>Sm90EVT</code>）：</p>
+<table>
+<thead>
+<tr>
+<th>节点（示意名）</th>
+<th>仿自</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>VisitorAuxLoad</code></td>
+<td>叶子</td>
+<td>从某张量取数（bias 列广播 / C 逐元素 / side-output）</td>
+</tr>
+<tr>
+<td><code>VisitorCompute</code></td>
+<td>一元/二元</td>
+<td>对累加器做激活（gelu/relu）或二元组合（plus/multiplies）</td>
+</tr>
+<tr>
+<td><code>VisitorAuxStore</code></td>
+<td>根</td>
+<td>把结果写回 D（或某个 side-output）</td>
+</tr>
+<tr>
+<td><code>VisitorReduction</code></td>
+<td>特殊</td>
+<td>对 tile 内做行/列归约（softmax 类）</td>
+</tr>
+</tbody></table>
+<p>树的后序求值：<strong>根=StoreD</strong>，累加器 <code>accum</code> 自顶向下贯穿，二元 <code>Compute</code> 的左操作数永远是 <code>accum</code>，右操作数是孩子节点。</p>
+<p><code>GELU(α·A·B + bias)</code> 在 CUTLASS 里就是：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Sm80EVT&lt;</span><br><span class="line">  VisitorAuxStore&lt;...&gt;,                              // 根：写 D</span><br><span class="line">  Sm80EVT&lt;</span><br><span class="line">    VisitorCompute&lt;cm::gelu, ...&gt;,                  // GELU</span><br><span class="line">    Sm80EVT&lt;</span><br><span class="line">      VisitorCompute&lt;plus, ...&gt;,                    // α·acc + bias</span><br><span class="line">      VisitorAuxLoad&lt;bias, 列广播&gt;,                 // 加载 bias</span><br><span class="line">      /* accum 作为左操作数隐式传入 */</span><br><span class="line">    &gt;</span><br><span class="line">  &gt;</span><br><span class="line">&gt;</span><br></pre></td></tr></tbody></table></figure>
+
+<p>（<code>cuda_l3_epilogue_fusion.cpp</code> 第 3 站已经实现过 <code>MiniOutputOp</code> 版；本站 <code>run_evt()</code> 用纯 C++ 重写了这棵树的求值。）</p>
+<h3 id="3-3-开放性：换一个节点即可，MMA-一行不动"><a href="#3-3-开放性：换一个节点即可，MMA-一行不动" class="headerlink" title="3.3 开放性：换一个节点即可，MMA 一行不动"></a>3.3 开放性：换一个节点即可，MMA 一行不动</h3><p>要改 <code>GELU</code>→<code>RELU</code>，或加一个 <code>Swish</code>，<strong>只换/加一个 <code>VisitorCompute</code> 节点</strong>，三级 <code>GemmShape</code> 与 pipeline 完全不动。<br>这是「模板元编程 + 编译期树」带来的可组合性。</p>
+<hr>
+<h2 id="§四-端到端对照表"><a href="#§四-端到端对照表" class="headerlink" title="§四 端到端对照表"></a>§四 端到端对照表</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>ORT <code>FusedMatMul</code></th>
+<th>CUTLASS <code>Gemm</code> + EVT</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>算子落点</td>
+<td><strong>其他版本</strong>：<code>cublasLtMatmul</code> + 枚举 epilogue；<strong>本备份</strong>：<code>cublasGemmHelper</code> + β-trick</td>
+<td><code>Gemm&lt;GemmShape…, kStages, EVT&gt;</code></td>
+</tr>
+<tr>
+<td>epilogue 表示</td>
+<td>从 <code>{DEFAULT,BIAS,RELU,BIAS_RELU,GELU,BIAS_GELU,DRELU}</code> 选 1</td>
+<td>用户<strong>任意组合</strong>的访客树</td>
+</tr>
+<tr>
+<td>bias 处理</td>
+<td><code>CUBLASLT_MATMUL_DESC_BIAS_POINTER</code>（列广播）</td>
+<td><code>VisitorAuxLoad&lt;bias&gt;</code> 节点</td>
+</tr>
+<tr>
+<td>MMA 形状</td>
+<td><strong>cuBLASLt 内部 autotuner 选，不透明</strong></td>
+<td><strong>显式</strong> <code>GemmShape&lt;BM,BN,BK&gt;/&lt;WM,WN,WK&gt;/&lt;IM,IN,IK&gt;</code> + <code>kStages</code></td>
+</tr>
+<tr>
+<td>新激活（Swish）</td>
+<td>枚举外 → ❌ 退化成独立 kernel</td>
+<td>✅ 加一个 <code>VisitorCompute</code> 节点</td>
+</tr>
+<tr>
+<td>可融合算子范围</td>
+<td><strong>闭集</strong>（库支持什么融合什么）</td>
+<td><strong>开放</strong>（你能写出的树都能融合）</td>
+</tr>
+<tr>
+<td>可控性</td>
+<td>低（黑盒库）</td>
+<td>高（tile/pipeline/epilogue 全暴露）</td>
+</tr>
+<tr>
+<td>易用性</td>
+<td>高（一行属性）</td>
+<td>低（要写模板/kernel）</td>
+</tr>
+</tbody></table>
+<p><strong>一句话映射</strong>：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ONNX FusedMatMul</span><br><span class="line">   ├─ ORT     →  (1 个枚举 epilogue)            + (bias 指针)        + [MMA 形状：库内部]</span><br><span class="line">   └─ CUTLASS →  (1 棵 epilogue 访客树 EVT)      + (1 组 GemmShape)   + (kStages 双缓冲)</span><br></pre></td></tr></tbody></table></figure>
+
+<hr>
+<h2 id="§五-开放-vs-闭集：Swish-测试（代码已验证思路）"><a href="#§五-开放-vs-闭集：Swish-测试（代码已验证思路）" class="headerlink" title="§五 开放 vs 闭集：Swish 测试（代码已验证思路）"></a>§五 开放 vs 闭集：Swish 测试（代码已验证思路）</h2><ul>
+<li><strong>CUTLASS</strong>：<code>run_evt(Accum, M, N, &amp;bias, h_swish)</code> —— 把激活函数换成 <code>swish(x)=x/(1+e^-x)</code> 即可，<strong>MMA 形状一行未动</strong>，<code>D</code> 正常产出。</li>
+<li><strong>ORT</strong>：<code>ort_map_epi(true,"Swish")</code> 返回 <code>EPI_UNSUPPORTED</code> —— cuBLASLt 没有 Swish 的原生 epilogue，<br>融合失败，必须退化为 <code>[MatMul]</code> + <code>[独立 Swish kernel]</code> 两个 kernel，多一次全局显存往返。</li>
+</ul>
+<p>这就是「库封装」与「可组合模板」的根本权衡：<strong>库的甜区在它支持的那几个 fusion；树的优势在它什么都能拼</strong>。</p>
+<hr>
+<h2 id="§六-代码走读（cuda-l3-evt-fusion-cpp）"><a href="#§六-代码走读（cuda-l3-evt-fusion-cpp）" class="headerlink" title="§六 代码走读（cuda_l3_evt_fusion.cpp）"></a>§六 代码走读（<code>cuda_l3_evt_fusion.cpp</code>）</h2><ol>
+<li><p><strong><code>run_evt(...)</code></strong> —— 用纯 C++ 复刻 CUTLASS EVT 的后序求值：<br><code>StoreD( UnaryOp(act, BinaryOp(plus, AuxLoad(BIAS))) )</code>。</p>
+<ul>
+<li><code>AuxLoad</code>：仿 <code>VisitorAuxLoad</code>，<code>BIAS</code> 走列广播 <code>data[n]</code>，<code>C_TENSOR</code> 走逐元素。</li>
+<li><code>UnaryOp</code>/<code>BinaryOp</code>：仿 <code>VisitorCompute</code>，二元节点左操作数恒为 <code>accum</code>（MMA 累加器）。</li>
+<li><code>StoreD</code>：仿 <code>VisitorAuxStore</code>，写回 <code>D[m*N+n]</code>。</li>
+<li>顶部循环把 <code>Accum[m*N+n]</code>（已含 α 的 MMA 输出）作为 <code>accum</code> 灌入树根。</li>
+</ul>
+</li>
+<li><p><strong><code>ort_map_epi(has_bias, activation)</code></strong> —— 复刻「ONNX 激活名 → cuBLASLt 枚举 epilogue」的<strong>闭集映射</strong>；闭集外返回 <code>EPI_UNSUPPORTED</code>。</p>
+</li>
+<li><p><strong><code>ort_fused_matmul(...)</code></strong> —— <code>G = α·A·B</code>（MMA 由「cuBLASLt 内部」选形状），再套用枚举 epilogue；返回 <code>false</code> 表示退化。</p>
+</li>
+<li><p><strong><code>main()</code> 对拍</strong>：<code>D(EVT)</code>、<code>D(ORT)</code>、<code>D(ref)</code> 三路比对，<code>max|Δ|&lt;1e-4</code> 判 PASS；并演示 Swish 的开放/闭集差异。</p>
+</li>
+</ol>
+<blockquote>
+<p>运行预期：<code>[EVT] PASS</code>、<code>[ORT] PASS</code>，并打印 ORT 融合成功、Swish 在 ORT 侧退化的对照结论。</p>
+</blockquote>
+<hr>
+<h2 id="§七-OpenCL-对照"><a href="#§七-OpenCL-对照" class="headerlink" title="§七 OpenCL 对照"></a>§七 OpenCL 对照</h2><ul>
+<li>OpenCL 没有 cuBLASLt 那种「枚举 epilogue」原语，也没有 CUTLASS 的编译期访客树。</li>
+<li>融合 GEMM+偏置+激活在 OpenCL 里通常要么<strong>手写一个 kernel</strong>（在 kernel 内 <code>acc = alpha*dot + bias; out = gelu(acc);</code>），<br>要么<strong>拆成多个 kernel</strong>（clBLAS <code>gemm</code> + 自定义 <code>activ</code>）——前者接近 CUTLASS 的「可控」但需自己写 tiling，<br>后者接近 ORT 退化路径的「多一次往返」。</li>
+<li>结论一致：<strong>能否「单 kernel 融合任意算子」取决于你的抽象是否开放可组合</strong>，而不取决于具体是哪家的后端。</li>
+</ul>
+<hr>
+<h2 id="§八-自检"><a href="#§八-自检" class="headerlink" title="§八 自检"></a>§八 自检</h2><ul>
+<li><input disabled="" type="checkbox"> 能说出 <code>FusedMatMul</code> 的语义 <code>Y = activation(α·A@B + bias)</code> 及其三个输入/属性。</li>
+<li><input disabled="" type="checkbox"> 能在 <code>fused_matmul.cc</code> 里指出它复用了 <code>MatMul&lt;T&gt;</code> 内核（<code>:19,27-30</code>）。</li>
+<li><input disabled="" type="checkbox"> 能说明 ORT 两条 FusedMatMul 落地路线（本备份 <code>cublasGemmHelper</code> + β-trick；其他版本 <code>cublasLtMatmul</code> + 枚举 epilogue），并背出 cuBLASLt epilogue 枚举（含真实标准的 <code>DRELU</code>，现代已 10+ 种）与 <code>BIAS_POINTER</code> 的作用。</li>
+<li><input disabled="" type="checkbox"> 能解释为什么 ORT 的 MMA 形状是「不透明」的（cuBLASLt autotuner）。</li>
+<li><input disabled="" type="checkbox"> 能画出 CUTLASS 的 EVT 树：<code>StoreD ← gelu ← plus ← [accum, AuxLoad(bias)]</code>。</li>
+<li><input disabled="" type="checkbox"> 能解释 <code>GemmShape&lt;BM,BN,BK&gt;/&lt;WM,WN,WK&gt;/&lt;IM,IN,IK&gt;</code> + <code>kStages</code> 是 MMA 形状的「显式」表达。</li>
+<li><input disabled="" type="checkbox"> 能用「Swish」例子说明开放（CUTLASS 加节点）vs 闭集（ORT 退化）的差异。</li>
+</ul>
+<hr>
+<h2 id="编译-运行"><a href="#编译-运行" class="headerlink" title="编译 / 运行"></a>编译 / 运行</h2><figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 纯 C++（无 GPU 也能跑，g++/clang++ 均可）</span></span><br><span class="line">g++ -O3 -std=c++17 cuda_l3_evt_fusion.cpp -o evt &amp;&amp; ./evt</span><br><span class="line"><span class="comment">#   预期：[EVT] PASS  [ORT] PASS，并打出 ORT 融合成功 / Swish 在 ORT 侧退化的对照结论</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 真机 CUDA（需 nvcc + CUTLASS，取消文件末尾 __CUDACC__ 段的实际调用）：</span></span><br><span class="line"><span class="comment"># nvcc -O3 -std=c++17 -arch=sm_80 cuda_l3_evt_fusion.cpp -o evt &amp;&amp; ./evt</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>备份的真实源码：<code>_ort_src/</code>（fused_matmul.cc、matmul.cc、tunable_matmul.cc）、<code>_cutlass_src/</code>（default_epilogue.hpp、sm90_bias_elementwise.hpp）。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L3_EVT_FUSION</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

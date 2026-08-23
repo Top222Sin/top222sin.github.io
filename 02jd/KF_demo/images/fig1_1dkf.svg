@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L1.1 一维卡尔曼滤波：预测—更新循环与五公式</text>
+  <!-- 预测框 -->
+  <rect x="40" y="70" width="250" height="120" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="165" y="98" font-size="14" font-weight="bold" fill="#1e3a8a" text-anchor="middle">预测 Predict</text>
+  <text x="165" y="124" font-size="13" fill="#1e3a8a" text-anchor="middle">x⁻ = F·x</text>
+  <text x="165" y="148" font-size="13" fill="#1e3a8a" text-anchor="middle">p⁻ = p + q</text>
+  <text x="165" y="172" font-size="12" fill="#555" text-anchor="middle">不确定性变大（加 Q）</text>
+  <!-- 更新框 -->
+  <rect x="390" y="70" width="250" height="120" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="515" y="98" font-size="14" font-weight="bold" fill="#14532d" text-anchor="middle">更新 Update</text>
+  <text x="515" y="124" font-size="13" fill="#14532d" text-anchor="middle">K = p⁻/(p⁻+r)</text>
+  <text x="515" y="148" font-size="13" fill="#14532d" text-anchor="middle">x = x⁻ + K(z − x⁻)</text>
+  <text x="515" y="172" font-size="12" fill="#555" text-anchor="middle">不确定性变小（乘似然）</text>
+  <!-- 循环箭头 -->
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#555"/>
+    </marker>
+  </defs>
+  <line x1="290" y1="110" x2="390" y2="110" stroke="#555" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="390" y1="150" x2="290" y2="150" stroke="#555" stroke-width="2" marker-end="url(#arr)"/>
+  <!-- 输入输出 -->
+  <line x1="515" y1="190" x2="515" y2="240" stroke="#16a34a" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="515" y="260" font-size="13" fill="#14532d" text-anchor="middle">输出：x, p（下一步的先验）</text>
+  <line x1="165" y1="70" x2="165" y2="45" stroke="#2563eb" stroke-width="2" marker-end="url(#arr)" transform="rotate(180 165 57)"/>
+  <text x="165" y="42" font-size="13" fill="#1e3a8a" text-anchor="middle">模型 F, Q</text>
+  <!-- 底部：批量等价 -->
+  <rect x="40" y="280" width="600" height="60" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="340" y="305" font-size="13" fill="#78350f" text-anchor="middle">q=0 时递推结果 ≡ 批量贝叶斯：1/p = 1/p₀ + N/r（demo 对拍差 ~1e-16）</text>
+  <text x="340" y="326" font-size="12" fill="#78350f" text-anchor="middle">KF 不是近似——它就是高斯贝叶斯的递推形式</text>
+</svg>

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L1.4 整定直觉（Ziegler-Nichols &#x2F; 试凑） 增益不是拍脑袋来的。Ziegler-Nichols（Z-N）给了两套”照着取就能用”的公式。   一、两套 Z-N 方法   方法 怎么做 适用    闭环临界振荡法 只用 P，慢慢加大 Kp 直到输出等幅振荡，记下临界增益 Ku 与周期 Pu plant 相位能穿越 −180°（常需纯延迟&#x2F;高阶）   开环阶跃响应法 给 plant">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L1.4 整定直觉（Ziegler-Nichols &#x2F; 试凑）">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/pid_demo/pid_l1_tuning.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L1.4 整定直觉（Ziegler-Nichols &#x2F; 试凑） 增益不是拍脑袋来的。Ziegler-Nichols（Z-N）给了两套”照着取就能用”的公式。   一、两套 Z-N 方法   方法 怎么做 适用    闭环临界振荡法 只用 P，慢慢加大 Kp 直到输出等幅振荡，记下临界增益 Ku 与周期 Pu plant 相位能穿越 −180°（常需纯延迟&#x2F;高阶）   开环阶跃响应法 给 plant">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/pid_demo/images/fig4_tuning.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.960Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/pid_demo/images/fig4_tuning.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/pid_demo/pid_l1_tuning">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/pid_demo/pid_l1_tuning.html","path":"02jd/pid_demo/pid_l1_tuning.html","title":"L1.4 整定直觉（Ziegler-Nichols / 试凑）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L1.4 整定直觉（Ziegler-Nichols / 试凑） | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L1-4-%E6%95%B4%E5%AE%9A%E7%9B%B4%E8%A7%89%EF%BC%88Ziegler-Nichols-%E8%AF%95%E5%87%91%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">L1.4 整定直觉（Ziegler-Nichols &#x2F; 试凑）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%A4%E5%A5%97-Z-N-%E6%96%B9%E6%B3%95"><span class="nav-number">1.1.</span> <span class="nav-text">一、两套 Z-N 方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81FOPDT-%E5%9B%BE%E8%A7%A3%E6%B3%95%E6%8B%9F%E5%90%88"><span class="nav-number">1.2.</span> <span class="nav-text">二、FOPDT 图解法拟合</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#FOPDT-%E6%8B%9F%E5%90%88%E7%9A%84%E5%8E%9F%E7%90%86%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88-63-2-%E7%82%B9%E5%8D%B3-T%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">FOPDT 拟合的原理（为什么 63.2% 点即 T）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81Z-N-%E6%95%B4%E5%AE%9A%E5%85%AC%E5%BC%8F%EF%BC%88%E5%BC%80%E7%8E%AF%E6%B3%95%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、Z-N 整定公式（开环法）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%AC%E5%BC%8F%E7%9B%B4%E8%A7%89%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88-Kp-%E2%88%9D-T-K%C2%B7L-%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">公式直觉（为什么 Kp ∝ T&#x2F;(K·L)）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88pid-l1-tuning-cpp%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、代码走读（pid_l1_tuning.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.5.</span> <span class="nav-text">五、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%B7%A5%E7%A8%8B%E5%9D%91%EF%BC%88%E7%9C%9F%E5%AE%9E%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">六、工程坑（真实）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.7.</span> <span class="nav-text">七、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.8.</span> <span class="nav-text">八、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L1.4 整定直觉（Ziegler-Nichols / 试凑）
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/pid_demo/">PID_DEMO</a></li>
+            <li>PID_L1_TUNING</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L1-4-整定直觉（Ziegler-Nichols-试凑）"><a href="#L1-4-整定直觉（Ziegler-Nichols-试凑）" class="headerlink" title="L1.4 整定直觉（Ziegler-Nichols / 试凑）"></a>L1.4 整定直觉（Ziegler-Nichols / 试凑）</h1><blockquote>
+<p>增益不是拍脑袋来的。Ziegler-Nichols（Z-N）给了两套”照着取就能用”的公式。</p>
+</blockquote>
+<hr>
+<h2 id="一、两套-Z-N-方法"><a href="#一、两套-Z-N-方法" class="headerlink" title="一、两套 Z-N 方法"></a>一、两套 Z-N 方法</h2><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>怎么做</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>闭环临界振荡法</strong></td>
+<td>只用 P，慢慢加大 <code>Kp</code> 直到输出<strong>等幅振荡</strong>，记下临界增益 <code>Ku</code> 与周期 <code>Pu</code></td>
+<td>plant 相位能穿越 −180°（常需纯延迟/高阶）</td>
+</tr>
+<tr>
+<td><strong>开环阶跃响应法</strong></td>
+<td>给 plant 一个阶跃，把响应拟合成 FOPDT（一阶+纯延迟），读出 <code>K,T,L</code></td>
+<td>带纯延迟的一阶/二阶系统（最常用）</td>
+</tr>
+</tbody></table>
+<p>本 demo 用<strong>开环阶跃响应法</strong>（也叫 process-reaction / Cohen-Coon 同源），因为它对”带延迟的一阶 plant”最稳。</p>
+<h2 id="二、FOPDT-图解法拟合"><a href="#二、FOPDT-图解法拟合" class="headerlink" title="二、FOPDT 图解法拟合"></a>二、FOPDT 图解法拟合</h2><p>开环阶跃响应形如 <code>y(t) = K·(1 − e^{−(t−L)/T})</code>，三个参数一眼读出：</p>
+<ul>
+<li><strong>K</strong> = 终值（稳态增益）</li>
+<li><strong>L</strong> = 死区时间（响应开始前的平坦段）</li>
+<li><strong>T</strong> = 时间常数（从 <code>L</code> 到达到 63.2% 终值所用时间）</li>
+</ul>
+<p>本 demo 故意加 ±0.003 噪声，验证拟合对测量噪声不敏感。</p>
+<blockquote>
+<p>拟合细节：理想 FOPDT 的上升段是<strong>单调凹向下的指数曲线，无内部拐点</strong>。工程读取 L/T 用<strong>最大斜率切线法</strong>：对响应最大斜率处作切线，与时间轴交点估 L、与终值线交点估 L+T。带噪声时”肉眼读拐点”不可靠，用最小二乘拟合或切线法（LS_demo 的递推最小二乘是进阶）。</p>
+</blockquote>
+<h3 id="FOPDT-拟合的原理（为什么-63-2-点即-T）"><a href="#FOPDT-拟合的原理（为什么-63-2-点即-T）" class="headerlink" title="FOPDT 拟合的原理（为什么 63.2% 点即 T）"></a>FOPDT 拟合的原理（为什么 63.2% 点即 T）</h3><p>一阶响应 <code>y(t)=K(1−e^{−t/T})</code> 在 <code>t=T</code> 处达到 <code>K(1−e^{−1}) ≈ 0.632·K</code>——所以”从 L 到 63.2% 终值的时间 = T”。图解法的全部原理就是这一条：<strong>63.2% 是时间常数 T 的几何标记点</strong>。延迟段 L 则从响应”开始明显上升”的拐点之前读出。</p>
+<h2 id="三、Z-N-整定公式（开环法）"><a href="#三、Z-N-整定公式（开环法）" class="headerlink" title="三、Z-N 整定公式（开环法）"></a>三、Z-N 整定公式（开环法）</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Kp = 1.2 · T / (K · L)</span><br><span class="line">Ti = 2.0 · L      →  Ki = Kp / Ti</span><br><span class="line">Td = 0.5 · L      →  Kd = Kp · Td</span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="公式直觉（为什么-Kp-∝-T-K·L-）"><a href="#公式直觉（为什么-Kp-∝-T-K·L-）" class="headerlink" title="公式直觉（为什么 Kp ∝ T/(K·L)）"></a>公式直觉（为什么 Kp ∝ T/(K·L)）</h3><p>这是 Z-N 的经验公式，<strong>不是严格推导</strong>——下面的积分器+延迟近似只提供量级直觉：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">把对象近似成积分器+延迟 G ≈ (K/T)·(1/s)·e^{−Ls}（工作频率满足 ωT≫1 时）:</span><br><span class="line">积分器+纯延迟的临界相位条件: −90° − ωL = −180° → ω ≈ π/(2L) ≈ 1.57/L</span><br><span class="line">Z-N 取 Kp = 1.2·T/(K·L) —— 1.2 是经验系数(比 1.57 保守), 不是由临界条件推出的</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>直觉</strong>：T 大（反应慢）→ 需要更大 Kp 推动；K 大（对象本身增益高）→ Kp 要小；L 大（延迟久）→ 只能保守（Kp 小）。<strong>延迟是整定的头号敌人</strong>——L 在分母，延迟越大增益上限越低。</p>
+<h2 id="四、代码走读（pid-l1-tuning-cpp）"><a href="#四、代码走读（pid-l1-tuning-cpp）" class="headerlink" title="四、代码走读（pid_l1_tuning.cpp）"></a>四、代码走读（pid_l1_tuning.cpp）</h2><ul>
+<li><code>openStep()</code>：合成带延迟 L 的一阶 plant 阶跃响应（+噪声）。</li>
+<li><code>fitFOPDT()</code>：图解法取 K/T/L。</li>
+<li><code>closedLoop()</code>：带纯延迟的闭环 PID（零阶保持）。</li>
+<li>对拍：① 拟合误差 &lt; 容差；② 纯 P(<code>Kp=1</code>) 有明显稳态误差、Z-N PID 把误差压到 &lt;0.1；③ Z-N 超调不夸张（&lt;70%）、不发散。</li>
+</ul>
+<p><img src="/02jd/pid_demo/images/fig4_tuning.svg" alt="L1.4 整定直觉"></p>
+<h2 id="五、你会看到什么"><a href="#五、你会看到什么" class="headerlink" title="五、你会看到什么"></a>五、你会看到什么</h2><ul>
+<li>左图：阶跃响应先”躺平” <code>L</code> 秒（死区），再爬升；拟合出的 <code>K/T/L</code> 与真值吻合。</li>
+<li>右图：纯 P 停在 0.5（余差），Z-N PID 贴到 1.0 且只有轻微超调——<strong>自动整定一键消除稳态误差</strong>。</li>
+</ul>
+<h2 id="六、工程坑（真实）"><a href="#六、工程坑（真实）" class="headerlink" title="六、工程坑（真实）"></a>六、工程坑（真实）</h2><ol>
+<li><strong>Z-N 只是起点不是终点</strong>：Z-N 公式目标是”鲁棒可用”（超调往往 20<del>50%），生产上通常再手动微调（Z-N 增益 ×0.5</del>0.8 常见）——别把 Z-N 当最优解。</li>
+<li><strong>FOPDT 拟合对噪声敏感的点在 L</strong>：K/T 对噪声鲁棒，但 L 是”肉眼读拐点”，噪声会把 L 读大 → Kp 偏小（保守）。工程上多用最小二乘拟合（LS_demo 的递推最小二乘可作进阶）。</li>
+<li><strong>临界振荡法的风险</strong>：闭环临界振荡要”故意把系统调到发散边缘”——真机上很危险（可能撞限位/烧执行器）。relay 法（L3.1）用小振幅振荡安全地逼近同一信息，是工业替代。</li>
+<li><strong>增益单位一致性</strong>：不同 plant 的 K 量纲不同（位置/速度/电压），Z-N 公式的 K 必须与你的误差信号量纲匹配——整定前先确认”K 的单位是 输出/输入”。</li>
+</ol>
+<h2 id="七、自检"><a href="#七、自检" class="headerlink" title="七、自检"></a>七、自检</h2><ul>
+<li>把 plant 的 <code>L</code> 从 0.5 加到 1.5，看 <code>Kp</code> 如何被（因 <code>L</code> 在分母）<strong>压低</strong>——延迟越大越难控、增益越保守，这正是 L2.2/ L3.2 的伏笔。</li>
+<li>把 Z-N 换成”闭环临界法”思路：把 <code>Kp</code> 加大到接近发散，再按 <code>0.6Ku / 0.5Pu / 0.125Pu</code> 取增益（L3.1 会用 relay 法自动找到 <code>Ku/Pu</code>）。</li>
+</ul>
+<h2 id="八、下一步"><a href="#八、下一步" class="headerlink" title="八、下一步"></a>八、下一步</h2><p>进入 <a href="/02jd/pid_demo/pid_l1_antiwindup.html">L1.5 抗积分饱和基础</a>：整定好了，但执行器会饱和——积分器会”作妖”。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/pid_demo/">PID_DEMO</a></li>
+            <li>PID_L1_TUNING</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

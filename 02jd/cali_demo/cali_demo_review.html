@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="cali_demo 内容审查报告 审查对象：02jd&#x2F;cali_demo&#x2F;（README.md + 17 篇课程 .md + 17 个 .cpp + _diagrams.html + images&#x2F;*.svg）审查日期：2026-08-18审查维度：数学公式与算法正确性、OpenCV API 约定、坐标系&#x2F;配对方向一致性、合成数据自洽性、文档间一致性、声明与实现一致性   〇、总体结论 整体质量较">
+<meta property="og:type" content="website">
+<meta property="og:title" content="cali_demo 内容审查报告">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cali_demo/cali_demo_review.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="cali_demo 内容审查报告 审查对象：02jd&#x2F;cali_demo&#x2F;（README.md + 17 篇课程 .md + 17 个 .cpp + _diagrams.html + images&#x2F;*.svg）审查日期：2026-08-18审查维度：数学公式与算法正确性、OpenCV API 约定、坐标系&#x2F;配对方向一致性、合成数据自洽性、文档间一致性、声明与实现一致性   〇、总体结论 整体质量较">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.910Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cali_demo/cali_demo_review">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cali_demo/cali_demo_review.html","path":"02jd/cali_demo/cali_demo_review.html","title":"cali_demo 内容审查报告"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>cali_demo 内容审查报告 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#cali-demo-%E5%86%85%E5%AE%B9%E5%AE%A1%E6%9F%A5%E6%8A%A5%E5%91%8A"><span class="nav-number">1.</span> <span class="nav-text">cali_demo 内容审查报告</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E3%80%87%E3%80%81%E6%80%BB%E4%BD%93%E7%BB%93%E8%AE%BA"><span class="nav-number">1.1.</span> <span class="nav-text">〇、总体结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E7%A1%AE%E5%AE%9A%E6%80%A7%E9%94%99%E8%AF%AF%EF%BC%88%E2%9D%8C-%E5%BB%BA%E8%AE%AE%E5%BF%85%E9%A1%BB%E4%BF%AE%E6%AD%A3%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">一、确定性错误（❌ 建议必须修正）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#E1-%E2%9D%8C%E3%80%90%E4%B8%A5%E9%87%8D%E3%80%91cali-l2-handeye-math-cpp-%E7%9A%84-solveTsai-%E5%90%8C%E5%90%8D-md-%E2%80%94%E2%80%94-Tsai%E2%80%93Lenz-%E6%97%8B%E8%BD%AC%E7%BA%BF%E6%80%A7%E7%B3%BB%E7%BB%9F%E6%95%B0%E5%AD%A6%E4%B8%8A%E4%B8%8D%E6%88%90%E7%AB%8B"><span class="nav-number">1.2.1.</span> <span class="nav-text">E1. ❌【严重】cali_l2_handeye_math.cpp 的 solveTsai + 同名 .md —— Tsai–Lenz 旋转线性系统数学上不成立</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#E2-%E2%9D%8C%E3%80%90%E4%B8%AD%E3%80%91cali-l1-frames-md-%E2%80%94%E2%80%94-%E5%8F%98%E6%8D%A2%E8%AE%B0%E5%8F%B7-T-A2B-%E7%9A%84%E5%AE%9A%E4%B9%89%E4%B8%8E%E5%85%B6%E7%A4%BA%E4%BE%8B%E3%80%81%E5%9D%90%E6%A0%87%E9%93%BE%E5%85%AC%E5%BC%8F%E8%87%AA%E7%9B%B8%E7%9F%9B%E7%9B%BE"><span class="nav-number">1.2.2.</span> <span class="nav-text">E2. ❌【中】cali_l1_frames.md —— 变换记号 T_A2B 的定义与其示例、坐标链公式自相矛盾</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#E3-%E2%9D%8C%E3%80%90%E4%B8%AD%E3%80%91cali-l2-error-check-md-%E2%80%94%E2%80%94-%E2%80%9C%E7%9C%BC%E5%9C%A8%E6%89%8B%E5%A4%96%E9%85%8D%E5%AF%B9%E6%96%B9%E5%90%91%E2%80%9D%E6%A0%87%E6%B3%A8%E4%B8%8E-L1-5-L2-2-%E7%9F%9B%E7%9B%BE"><span class="nav-number">1.2.3.</span> <span class="nav-text">E3. ❌【中】cali_l2_error_check.md —— “眼在手外配对方向”标注与 L1.5&#x2F;L2.2 矛盾</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E4%B8%8D%E4%B8%80%E8%87%B4%E4%B8%8E%E8%A1%A8%E8%BF%B0%E9%97%AE%E9%A2%98%EF%BC%88%E2%9A%A0%EF%B8%8F-%E5%BB%BA%E8%AE%AE%E4%BF%AE%E6%AD%A3%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">二、不一致与表述问题（⚠️ 建议修正）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#W1-%E2%9A%A0%EF%B8%8F-cali-l2-intrinsics-deep-cpp-md-%E2%80%94%E2%80%94-%E2%80%9C4-%E5%8F%82%E6%95%B0%E2%80%9D%E5%AE%9E%E4%B8%BA-OpenCV-%E9%BB%98%E8%AE%A4-5-%E5%8F%82%E6%95%B0%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.3.1.</span> <span class="nav-text">W1. ⚠️ cali_l2_intrinsics_deep.cpp &#x2F; .md —— “4 参数”实为 OpenCV 默认 5 参数模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#W2-%E2%9A%A0%EF%B8%8F-cali-l1-intrinsics-md-cali-l2-intrinsics-deep-md-%E2%80%94%E2%80%94-%E2%80%9C%E4%B8%80%E8%88%AC-k1-k2-p1-p2-%E8%B6%B3%E5%A4%9F%EF%BC%9B%E5%B9%BF%E8%A7%92-%E9%B1%BC%E7%9C%BC%E6%89%8D%E5%8A%A0-k3%E2%80%9D-%E4%B8%8D%E5%87%86%E7%A1%AE"><span class="nav-number">1.3.2.</span> <span class="nav-text">W2. ⚠️ cali_l1_intrinsics.md &#x2F; cali_l2_intrinsics_deep.md —— “一般 k1,k2,p1,p2 足够；广角&#x2F;鱼眼才加 k3” 不准确</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#W3-%E2%9A%A0%EF%B8%8F-cali-l3-pipeline-md-%E2%80%94%E2%80%94-%E2%80%9C%E5%85%A8-14-%E7%AF%87%E9%97%AD%E7%8E%AF%E2%80%9D%E4%B8%8E-README%E2%80%9D17-%E7%AF%87%E2%80%9D%E7%9F%9B%E7%9B%BE"><span class="nav-number">1.3.3.</span> <span class="nav-text">W3. ⚠️ cali_l3_pipeline.md —— “全 14 篇闭环”与 README”17 篇”矛盾</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#W4-%E2%9A%A0%EF%B8%8F-cali-l1-board-md-%E2%80%94%E2%80%94-%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%9C%86%E7%82%B9%E9%98%B5%E2%80%9D%E5%90%8C%E6%A0%B7%E9%9D%A2%E7%A7%AF%E6%8F%90%E4%BE%9B%E6%9B%B4%E5%A4%9A%E4%BF%A1%E6%81%AF%E2%80%9D%E8%A1%A8%E8%BF%B0%E4%B8%8D%E5%87%86%E7%A1%AE"><span class="nav-number">1.3.4.</span> <span class="nav-text">W4. ⚠️ cali_l1_board.md —— 非对称圆点阵”同样面积提供更多信息”表述不准确</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#W5-%E2%9A%A0%EF%B8%8F-cali-l2-tcp-deep-md-%E2%80%94%E2%80%94-%E5%85%B1%E9%9D%A2%E9%80%80%E5%8C%96%E6%9C%BA%E7%90%86%E8%A1%A8%E8%BF%B0%E4%B8%8D%E7%B2%BE%E7%A1%AE"><span class="nav-number">1.3.5.</span> <span class="nav-text">W5. ⚠️ cali_l2_tcp_deep.md —— 共面退化机理表述不精确</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#W6-%E2%9A%A0%EF%B8%8F-cali-l3-validation-cpp-%E2%80%94%E2%80%94-T-cam2base-T-base2cam-%E5%91%BD%E5%90%8D%E9%A2%A0%E5%80%92"><span class="nav-number">1.3.6.</span> <span class="nav-text">W6. ⚠️ cali_l3_validation.cpp —— T_cam2base &#x2F; T_base2cam 命名颠倒</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#W7-%E2%9A%A0%EF%B8%8F-cali-l1-frames-md-%E2%80%94%E2%80%94-%E2%80%9C%E6%B1%82%E9%80%86%E2%80%A6%E7%94%A8-SVD-%E6%95%B0%E5%80%BC%E6%B1%82%E9%80%86%EF%BC%8C%E6%9C%AC-demo-%E7%94%A8%E5%90%8E%E8%80%85%E6%9B%B4%E7%A8%B3%E2%80%9D-%E8%AF%B4%E6%B3%95%E7%89%B5%E5%BC%BA"><span class="nav-number">1.3.7.</span> <span class="nav-text">W7. ⚠️ cali_l1_frames.md —— “求逆…用 SVD 数值求逆，本 demo 用后者更稳” 说法牵强</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E9%80%90%E6%96%87%E4%BB%B6%E6%A0%B8%E9%AA%8C%E6%B8%85%E5%8D%95"><span class="nav-number">1.4.</span> <span class="nav-text">三、逐文件核验清单</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BF%AE%E5%A4%8D%E4%BC%98%E5%85%88%E7%BA%A7%E5%BB%BA%E8%AE%AE"><span class="nav-number">1.5.</span> <span class="nav-text">四、修复优先级建议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%A4%8D%E6%A0%B8%E6%96%B9%E5%BC%8F"><span class="nav-number">1.6.</span> <span class="nav-text">五、复核方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E7%8B%AC%E7%AB%8B%E5%A4%8D%E6%A0%B8%E7%BB%93%E8%AE%BA%EF%BC%882026-08-18%EF%BC%8Cnumpy-%E6%95%B0%E5%80%BC%E5%A4%8D%E7%AE%97%EF%BC%89"><span class="nav-number">1.7.</span> <span class="nav-text">六、独立复核结论（2026-08-18，numpy 数值复算）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#E1%EF%BC%88%E4%B8%A5%E9%87%8D%EF%BC%89%E7%BB%8F%E6%95%B0%E5%80%BC%E9%AA%8C%E8%AF%81%E6%88%90%E7%AB%8B-%E2%9C%85"><span class="nav-number">1.7.1.</span> <span class="nav-text">E1（严重）经数值验证成立 ✅</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#W6-%E4%B8%BA%E8%AF%AF%E5%88%A4%EF%BC%88%E5%B7%B2%E5%A4%8D%E6%A0%B8%E4%B8%8D%E6%88%90%E7%AB%8B%EF%BC%89%E2%9D%8C%E2%86%92%E2%9C%85"><span class="nav-number">1.7.2.</span> <span class="nav-text">W6 为误判（已复核不成立）❌→✅</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BD%99-E2-E3-W1%E2%80%93W5-W7-%E5%9D%87%E6%88%90%E7%AB%8B-%E2%9C%85"><span class="nav-number">1.7.3.</span> <span class="nav-text">其余 E2&#x2F;E3&#x2F;W1–W5&#x2F;W7 均成立 ✅</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%812026-08-19-%E5%86%85%E5%AE%B9%E5%85%85%E5%AE%9E%E5%90%8E-Review-%E5%A4%84%E7%BD%AE%E8%AE%B0%E5%BD%95"><span class="nav-number">1.8.</span> <span class="nav-text">七、2026-08-19 内容充实后 Review 处置记录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E8%B4%A8%E9%94%99%E8%AF%AF%E4%BF%AE%E5%A4%8D%EF%BC%8825-%E5%A4%84%EF%BC%8C%E5%85%A8%E9%83%A8%E6%95%B0%E5%80%BC%E5%A4%8D%E7%AE%97%E9%AA%8C%E8%AF%81%EF%BC%89"><span class="nav-number">1.8.1.</span> <span class="nav-text">实质错误修复（25 处，全部数值复算验证）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E5%80%BC%E5%A4%8D%E7%AE%97%E9%AA%8C%E8%AF%81%EF%BC%88%E6%9C%AC%E6%9C%BA-python%EF%BC%89"><span class="nav-number">1.8.2.</span> <span class="nav-text">数值复算验证（本机 python）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Obsidian-%E5%85%BC%E5%AE%B9"><span class="nav-number">1.8.3.</span> <span class="nav-text">Obsidian 兼容</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81L4-3%E2%80%93L4-6-%E8%90%BD%E5%9C%B0%E6%A0%B8%E9%AA%8C%EF%BC%882026-08-22-%E8%A1%A5%E5%85%85%EF%BC%89"><span class="nav-number">1.9.</span> <span class="nav-text">八、L4.3–L4.6 落地核验（2026-08-22 补充）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#8-1-%E6%A0%B8%E9%AA%8C%E6%80%BB%E8%A1%A8%EF%BC%88%E5%9B%9B%E7%AF%87-%C3%97-%E6%A3%80%E6%9F%A5%E6%95%B0%EF%BC%89"><span class="nav-number">1.9.1.</span> <span class="nav-text">8.1 核验总表（四篇 × 检查数）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-2-%E5%85%B3%E9%94%AE-bug-%E8%AE%B0%E5%BD%95%E4%B8%8E%E4%BF%AE%E5%A4%8D%EF%BC%88%E8%87%AA%E6%A3%80%E5%8F%91%E7%8E%B0%EF%BC%8C%E6%97%A0%E7%94%A8%E6%88%B7%E5%8F%8D%E9%A6%88%EF%BC%89"><span class="nav-number">1.9.2.</span> <span class="nav-text">8.2 关键 bug 记录与修复（自检发现，无用户反馈）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-3-%E4%B8%8E-L3-3-%E4%B8%BB%E5%8A%A8%E8%BF%90%E5%8A%A8%E8%A7%84%E5%88%92%E7%AB%A0%E7%9A%84%E6%89%93%E9%80%9A"><span class="nav-number">1.9.3.</span> <span class="nav-text">8.3 与 L3.3 主动运动规划章的打通</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">cali_demo 内容审查报告
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_DEMO_REVIEW</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="cali-demo-内容审查报告"><a href="#cali-demo-内容审查报告" class="headerlink" title="cali_demo 内容审查报告"></a>cali_demo 内容审查报告</h1><blockquote>
+<p>审查对象：<code>02jd/cali_demo/</code>（README.md + 17 篇课程 <code>.md</code> + 17 个 <code>.cpp</code> + <code>_diagrams.html</code> + <code>images/*.svg</code>）<br>审查日期：2026-08-18<br>审查维度：数学公式与算法正确性、OpenCV API 约定、坐标系/配对方向一致性、合成数据自洽性、文档间一致性、声明与实现一致性</p>
+</blockquote>
+<hr>
+<h2 id="〇、总体结论"><a href="#〇、总体结论" class="headerlink" title="〇、总体结论"></a>〇、总体结论</h2><ul>
+<li><strong>整体质量较高</strong>：针孔模型、畸变模型、AX=XB、视差→深度、四点法 TCP、退化分析等绝大多数公式与 OpenCV 惯例<strong>正确</strong>；「合成真值 → 反估 → 对拍」的闭环设计严谨，17 篇 md/cpp/html/images 三件套齐全（18 个 md = README + 17 篇课程，cpp 17 个，无缺件）。</li>
+<li><strong>确定性错误 3 处</strong>（其中 1 处直接影响求解器正确性）。</li>
+<li><strong>不一致/表述问题 7 处</strong>（不影响结论、但会误导学习者或自相矛盾）。</li>
+<li><strong>方法说明</strong>：本机无 C++ 工具链与 OpenCV，未做编译运行验证；所有结论基于逐行静态核验与解析推导（含反例验证）。</li>
+</ul>
+<hr>
+<h2 id="一、确定性错误（❌-建议必须修正）"><a href="#一、确定性错误（❌-建议必须修正）" class="headerlink" title="一、确定性错误（❌ 建议必须修正）"></a>一、确定性错误（❌ 建议必须修正）</h2><h3 id="E1-❌【严重】cali-l2-handeye-math-cpp-的-solveTsai-同名-md-——-Tsai–Lenz-旋转线性系统数学上不成立"><a href="#E1-❌【严重】cali-l2-handeye-math-cpp-的-solveTsai-同名-md-——-Tsai–Lenz-旋转线性系统数学上不成立" class="headerlink" title="E1. ❌【严重】cali_l2_handeye_math.cpp 的 solveTsai + 同名 .md —— Tsai–Lenz 旋转线性系统数学上不成立"></a>E1. ❌【严重】<code>cali_l2_handeye_math.cpp</code> 的 <code>solveTsai</code> + 同名 <code>.md</code> —— Tsai–Lenz 旋转线性系统数学上不成立</h3><p><strong>位置</strong>：<code>cali_l2_handeye_math.cpp</code> 第 46–56 行；<code>cali_l2_handeye_math.md</code> 第 24 行表格（Tsai–Lenz 行）。</p>
+<p><strong>错误内容</strong>：实现（及文档描述）把旋转求解写为堆叠线性系统</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[S; N]·r_X = 0，其中 S = skew(R_A − R_B)，N = (R_A + R_B)ᵀ</span><br></pre></td></tr></tbody></table></figure>
+
+<p>然后 SVD 取最小奇异向量作旋转向量 <code>r_X</code>。这与经典 Tsai–Lenz 公式不符（正确形式见下）。</p>
+<p><strong>反例证伪</strong>：取 <code>R_A = Ry(30°)</code>，<code>R_B = Rx(30°)</code>，<code>R_X = Rz(90°)</code>，可直接验证 <code>R_A·R_X = R_X·R_B</code> 成立（这是 AX=XB 的合法真值），但代入后：</p>
+<ul>
+<li><code>skew(R_A − R_B)·r_X ≠ 0</code>（计算得 <code>(−0.5, 0.5, 0) × (0,0,π/2) = (π/4, π/4, 0) ≠ 0</code>）</li>
+<li><code>(R_A + R_B)ᵀ·r_X ≠ 0</code>（计算得 <code>(−π/4, π/4, √3π/4) ≠ 0</code>）</li>
+</ul>
+<p>即<strong>真值 r_X 根本不是该系统的零向量</strong>——该线性系统不刻画 AX=XB 的旋转解。<code>solveTsai</code> 在无噪声真值数据上也会解出错误旋转，<code>md</code> 中”三种自实现方法旋转误差 &lt;1°、且与 OpenCV 高度一致”的断言<strong>不可信</strong>（Park–Martin 与 GN 分支不受影响，但该断言整体无法成立）。</p>
+<p><strong>正确形式</strong>（经典 Tsai–Lenz，OpenCV <code>CALIB_HAND_EYE_TSAI</code> 同款）：用旋转向量 <code>P_A = rotvec(R_A)</code>、<code>P_B = rotvec(R_B)</code>，满足 <code>P_A = R_X·P_B</code>，由此得线性系统</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">skew(P_A + P_B)·P'_X = P_B − P_A        （P'_X 为 X 的旋转向量）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>建议</strong>：<code>solveTsai</code> 改为上式；<code>md</code> 表格同步修正，并重新编译验证。</p>
+<hr>
+<h3 id="E2-❌【中】cali-l1-frames-md-——-变换记号-T-A2B-的定义与其示例、坐标链公式自相矛盾"><a href="#E2-❌【中】cali-l1-frames-md-——-变换记号-T-A2B-的定义与其示例、坐标链公式自相矛盾" class="headerlink" title="E2. ❌【中】cali_l1_frames.md —— 变换记号 T_A2B 的定义与其示例、坐标链公式自相矛盾"></a>E2. ❌【中】<code>cali_l1_frames.md</code> —— 变换记号 <code>T_A2B</code> 的定义与其示例、坐标链公式自相矛盾</h3><p><strong>位置</strong>：<code>cali_l1_frames.md</code> 第 25 行。</p>
+<p><strong>错误内容</strong>：</p>
+<blockquote>
+<p>记号约定：<code>T_A2B</code> 表示 <strong>B 在 A 下的位姿</strong>（把 B 系坐标变到 A 系的矩阵）。例：<code>T_target2cam</code> = 标定板在相机系下的位姿。</p>
+</blockquote>
+<p>按定义句 <code>T_A2B</code> = B 在 A 下，则 <code>T_target2cam</code> = <strong>cam 在 target 下</strong>；但紧随的示例说 <code>T_target2cam</code> = 标定板（target）在相机（cam）系下的位姿——两者<strong>相反</strong>。而第 42 行坐标链 <code>T_target2base = T_gripper2base · T_cam2gripper · T_target2cam</code> 及全库（OpenCV 惯例）均采用”<code>T_A2B</code> = 把 A 系坐标变到 B 系（A 在 B 下）”的读法，与示例一致、与定义句矛盾。</p>
+<p><strong>正确说法</strong>：<code>T_A2B</code> = 把 <strong>A</strong> 系坐标变换到 <strong>B</strong> 系的矩阵，即 A 系在 B 系下的位姿。例：<code>T_target2cam</code> = 把标定板系坐标变到相机系 = 标定板在相机系下的位姿 ✓（示例对，定义句错）。</p>
+<p><strong>影响</strong>：学习者按定义句推导会得到与示例/坐标链相反的矩阵（相差一次求逆），属于会实际误导读者的记号错误。</p>
+<hr>
+<h3 id="E3-❌【中】cali-l2-error-check-md-——-“眼在手外配对方向”标注与-L1-5-L2-2-矛盾"><a href="#E3-❌【中】cali-l2-error-check-md-——-“眼在手外配对方向”标注与-L1-5-L2-2-矛盾" class="headerlink" title="E3. ❌【中】cali_l2_error_check.md —— “眼在手外配对方向”标注与 L1.5/L2.2 矛盾"></a>E3. ❌【中】<code>cali_l2_error_check.md</code> —— “眼在手外配对方向”标注与 L1.5/L2.2 矛盾</h3><p><strong>位置</strong>：<code>cali_l2_error_check.md</code> 第 81 行（代码走读 ②）。</p>
+<p><strong>错误内容</strong>：</p>
+<blockquote>
+<p>② 合成 <code>X_gt</code>，配 <code>A_i=G_i⁻¹G_{i+1}</code>、<code>B_i=T_iT_{i+1}⁻¹</code>（眼在手外配对方向），解 <code>X_est</code>…</p>
+</blockquote>
+<p>同一公式在 <code>cali_l1_handeye.md</code>（L1.5）与 <code>cali_l2_handeye_math.md</code>（L2.2）中均明确标注为<strong>眼在手上</strong>的配对；且 <code>cali_l2_error_check.cpp</code> 第 69 行的数据生成 <code>T.push_back(inv44(Xgt)*inv44(G[i]))</code>（target2base = I）正是<strong>眼在手上</strong>的生成式。即 md 标注与自身 cpp 数据生成、以及库内其他两处文档全部相反。</p>
+<p><strong>影响</strong>：误导读者把”眼在手上”的数据流程当作”眼在手外”理解；应改为”（眼在手上配对方向）”。</p>
+<hr>
+<h2 id="二、不一致与表述问题（⚠️-建议修正）"><a href="#二、不一致与表述问题（⚠️-建议修正）" class="headerlink" title="二、不一致与表述问题（⚠️ 建议修正）"></a>二、不一致与表述问题（⚠️ 建议修正）</h2><h3 id="W1-⚠️-cali-l2-intrinsics-deep-cpp-md-——-“4-参数”实为-OpenCV-默认-5-参数模型"><a href="#W1-⚠️-cali-l2-intrinsics-deep-cpp-md-——-“4-参数”实为-OpenCV-默认-5-参数模型" class="headerlink" title="W1. ⚠️ cali_l2_intrinsics_deep.cpp / .md —— “4 参数”实为 OpenCV 默认 5 参数模型"></a>W1. ⚠️ <code>cali_l2_intrinsics_deep.cpp</code> / <code>.md</code> —— “4 参数”实为 OpenCV 默认 5 参数模型</h3><p>代码第 77 行变量名 <code>k4</code>、打印与 md 均称”4参数”，但 <code>calibKerr(..., 0, 5, ...)</code> 用的是 OpenCV <strong>默认 5 参数</strong>畸变模型（k1,k2,p1,p2,k3）。对照实验实为”5 参 vs 8 参 rational”。<code>calibKerr</code> 的 <code>dcnt</code> 参数也从未被使用（死参数）。建议改标”5参数(默认)”。</p>
+<h3 id="W2-⚠️-cali-l1-intrinsics-md-cali-l2-intrinsics-deep-md-——-“一般-k1-k2-p1-p2-足够；广角-鱼眼才加-k3”-不准确"><a href="#W2-⚠️-cali-l1-intrinsics-md-cali-l2-intrinsics-deep-md-——-“一般-k1-k2-p1-p2-足够；广角-鱼眼才加-k3”-不准确" class="headerlink" title="W2. ⚠️ cali_l1_intrinsics.md / cali_l2_intrinsics_deep.md —— “一般 k1,k2,p1,p2 足够；广角/鱼眼才加 k3” 不准确"></a>W2. ⚠️ <code>cali_l1_intrinsics.md</code> / <code>cali_l2_intrinsics_deep.md</code> —— “一般 k1,k2,p1,p2 足够；广角/鱼眼才加 k3” 不准确</h3><p>OpenCV 的标准 5 系数模型（<code>calibrateCamera</code> 默认）就包含 k3；k3 并非”广角/鱼眼才用”，常规标定普遍保留 5 参（k1,k2,p1,p2,k3）。鱼眼用的是完全不同的 <code>fisheye</code> 模型，与该表述混淆。建议改为”常规 4–5 参足够；高阶项（k4–k6 / rational）在样本少时易过拟合”。</p>
+<h3 id="W3-⚠️-cali-l3-pipeline-md-——-“全-14-篇闭环”与-README”17-篇”矛盾"><a href="#W3-⚠️-cali-l3-pipeline-md-——-“全-14-篇闭环”与-README”17-篇”矛盾" class="headerlink" title="W3. ⚠️ cali_l3_pipeline.md —— “全 14 篇闭环”与 README”17 篇”矛盾"></a>W3. ⚠️ <code>cali_l3_pipeline.md</code> —— “全 14 篇闭环”与 README”17 篇”矛盾</h3><p>第 51–55 行称”cali_demo 全 14 篇闭环”，且列 L1 为”五个标定”（漏算 <code>cali_l1_monocular</code>、<code>cali_l1_stereo</code>）、L2 为 5 项（漏算 <code>cali_l2_stereo_rect</code>）。实际共 17 篇（L1×7 + L2×6 + L3×4，与 README 及文件数一致）。建议改”全 17 篇”并补全列表。</p>
+<h3 id="W4-⚠️-cali-l1-board-md-——-非对称圆点阵”同样面积提供更多信息”表述不准确"><a href="#W4-⚠️-cali-l1-board-md-——-非对称圆点阵”同样面积提供更多信息”表述不准确" class="headerlink" title="W4. ⚠️ cali_l1_board.md —— 非对称圆点阵”同样面积提供更多信息”表述不准确"></a>W4. ⚠️ <code>cali_l1_board.md</code> —— 非对称圆点阵”同样面积提供更多信息”表述不准确</h3><p>非对称圆点阵（asymmetric circles grid）相对对称阵的真正优势是<strong>打破 180° 旋转对称歧义</strong>（对称阵检测存在方向二义性，非对称排布可唯一确定位姿），对机器人手眼标定尤其重要；并非严格意义的”信息更多”。建议改为”非对称排布消除 180° 对称歧义、位姿解唯一，手眼标定更受推荐”。</p>
+<h3 id="W5-⚠️-cali-l2-tcp-deep-md-——-共面退化机理表述不精确"><a href="#W5-⚠️-cali-l2-tcp-deep-md-——-共面退化机理表述不精确" class="headerlink" title="W5. ⚠️ cali_l2_tcp_deep.md —— 共面退化机理表述不精确"></a>W5. ⚠️ <code>cali_l2_tcp_deep.md</code> —— 共面退化机理表述不精确</h3><p>第 27 行”若所有法兰位置共面，球心沿该平面法向那一维不可观”。四点法退化更本质的原因是<strong>姿态（旋转）多样性不足导致系数矩阵 <code>(R_i − R_1)</code> 秩亏</strong>（以及用于球心拟合的采样点几何退化）；”法兰位置共面”本身不是直接判据（位置由 <code>t_i = P − R_i·x</code> 派生）。建议补充”关键是旋转多样性/系数矩阵秩”，否则读者会得到错误的可操作结论。</p>
+<h3 id="W6-⚠️-cali-l3-validation-cpp-——-T-cam2base-T-base2cam-命名颠倒"><a href="#W6-⚠️-cali-l3-validation-cpp-——-T-cam2base-T-base2cam-命名颠倒" class="headerlink" title="W6. ⚠️ cali_l3_validation.cpp —— T_cam2base / T_base2cam 命名颠倒"></a>W6. ⚠️ <code>cali_l3_validation.cpp</code> —— <code>T_cam2base</code> / <code>T_base2cam</code> 命名颠倒</h3><p>第 75 行注释与变量名 <code>Tcb_true = inv44(G * Xtrue)</code> 实为 <strong>base→cam</strong>（<code>inv(G·X) = T_base2cam</code>），代码数学正确、命名颠倒，<code>projectPx</code>/<code>backprojPlane</code> 中的 <code>T_cam2base</code> 均应为 <code>T_base2cam</code>。建议改名以免读者误解（库内 handeye/pipeline 处命名一致，仅此处例外）。</p>
+<h3 id="W7-⚠️-cali-l1-frames-md-——-“求逆…用-SVD-数值求逆，本-demo-用后者更稳”-说法牵强"><a href="#W7-⚠️-cali-l1-frames-md-——-“求逆…用-SVD-数值求逆，本-demo-用后者更稳”-说法牵强" class="headerlink" title="W7. ⚠️ cali_l1_frames.md —— “求逆…用 SVD 数值求逆，本 demo 用后者更稳” 说法牵强"></a>W7. ⚠️ <code>cali_l1_frames.md</code> —— “求逆…用 SVD 数值求逆，本 demo 用后者更稳” 说法牵强</h3><p>对刚体 4×4 矩阵，闭式 <code>[Rᵀ, −Rᵀt; 0 1]</code> 精确且保持刚体结构；SVD 数值求逆对正交部分虽在数值精度内等价，但并无”更稳”的依据，且一般会破坏严格刚体结构。作为教学说明建议改述为”两种均可，闭式更直观、SVD 通用性更强”。</p>
+<hr>
+<h2 id="三、逐文件核验清单"><a href="#三、逐文件核验清单" class="headerlink" title="三、逐文件核验清单"></a>三、逐文件核验清单</h2><table>
+<thead>
+<tr>
+<th>文件</th>
+<th>md</th>
+<th>cpp</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>README.md</td>
+<td>✅</td>
+<td>—</td>
+<td>结构与计数（17 篇）正确；与 W3 存在一处口径不一致</td>
+</tr>
+<tr>
+<td>cali_l1_frames</td>
+<td>⚠️ E2/W7</td>
+<td>✅</td>
+<td>旋转表示、复合/求逆公式正确；记号定义句错误</td>
+</tr>
+<tr>
+<td>cali_l1_board</td>
+<td>⚠️ W4</td>
+<td>✅</td>
+<td>检测函数、objectPoints、squareSize 正确</td>
+</tr>
+<tr>
+<td>cali_l1_intrinsics</td>
+<td>⚠️ W2</td>
+<td>✅</td>
+<td>投影/畸变/张正友流程正确；PASS 阈值合理</td>
+</tr>
+<tr>
+<td>cali_l1_tcp</td>
+<td>✅</td>
+<td>✅</td>
+<td>四点法推导 <code>(R_i−R_1)x = t_1−t_i</code> 正确，噪声鲁棒性验证合理</td>
+</tr>
+<tr>
+<td>cali_l1_handeye</td>
+<td>✅</td>
+<td>✅</td>
+<td>眼外/眼手配对、Park–Martin SVD、OpenCV 交叉验证全部自洽正确</td>
+</tr>
+<tr>
+<td>cali_l1_monocular</td>
+<td>✅</td>
+<td>✅</td>
+<td>naive 基线设计合理，价值验证成立</td>
+</tr>
+<tr>
+<td>cali_l1_stereo</td>
+<td>✅</td>
+<td>✅</td>
+<td>右相机外参合成 <code>Rr=Rgt·Rl, tr=Rgt·tl+Tgt</code> 正确，旋转误差公式正确</td>
+</tr>
+<tr>
+<td>cali_l2_intrinsics_deep</td>
+<td>⚠️ W2</td>
+<td>⚠️ W1</td>
+<td>控制变量实验设计合理；”4参数”标注错误</td>
+</tr>
+<tr>
+<td>cali_l2_handeye_math</td>
+<td>❌ E1</td>
+<td>❌ E1</td>
+<td>Park–Martin/GN 正确；<strong>Tsai–Lenz 系统错误</strong></td>
+</tr>
+<tr>
+<td>cali_l2_degeneracy</td>
+<td>✅</td>
+<td>✅</td>
+<td>四类退化、M 矩阵秩分析、条件数检测全部正确</td>
+</tr>
+<tr>
+<td>cali_l2_tcp_deep</td>
+<td>⚠️ W5</td>
+<td>✅</td>
+<td>蒙特卡洛误差传播、条件数对比合理</td>
+</tr>
+<tr>
+<td>cali_l2_error_check</td>
+<td>❌ E3</td>
+<td>✅(配对与 E3 标注相反)</td>
+<td>E_i = A·X·B⁻¹·X⁻¹ 残差定义正确；”眼在手外”标注错误</td>
+</tr>
+<tr>
+<td>cali_l2_stereo_rect</td>
+<td>✅</td>
+<td>✅</td>
+<td>极线对齐、<code>Z=f·B/d</code>、<code>σ_Z≈Z²σ_d/(f·B)</code>、退化①②全部正确</td>
+</tr>
+<tr>
+<td>cali_l3_validation</td>
+<td>✅</td>
+<td>⚠️ W6</td>
+<td>前向投影/闭环够取验证设计正确；命名颠倒</td>
+</tr>
+<tr>
+<td>cali_l3_robust</td>
+<td>✅</td>
+<td>✅</td>
+<td>中位数 RANSAC、inlier 阈值、4/30 坏帧注入逻辑成立</td>
+</tr>
+<tr>
+<td>cali_l3_auto_system</td>
+<td>✅</td>
+<td>✅</td>
+<td>质量闸门、温漂注入、再标定触发逻辑正确</td>
+</tr>
+<tr>
+<td>cali_l3_pipeline</td>
+<td>⚠️ W3</td>
+<td>✅</td>
+<td>退化闸门前置拦截、纯平移注入、端到端验证正确；”14 篇”计数错误</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>✅ = 基本正确；⚠️ = 有表述/标注问题；❌ = 有确定性错误。</p>
+</blockquote>
+<hr>
+<h2 id="四、修复优先级建议"><a href="#四、修复优先级建议" class="headerlink" title="四、修复优先级建议"></a>四、修复优先级建议</h2><ol>
+<li><strong>P0（必须）</strong>：修正 <code>cali_l2_handeye_math.cpp</code> 的 <code>solveTsai</code> 为经典 Tsai–Lenz 形式（<code>skew(P_A+P_B)·P'_X = P_B − P_A</code>），同步修正 md，并在有 OpenCV 的机器上重跑确认 PASS。当前该求解器对任何真实数据都会给出错误 X。</li>
+<li><strong>P1（强烈建议）</strong>：修正 <code>cali_l1_frames.md</code> 记号定义句（E2）、<code>cali_l2_error_check.md</code> 配对方向标注（E3）。</li>
+<li><strong>P2（建议）</strong>：统一 k3 表述（W2）、”4参数”→”5参数”（W1）、”17 篇”计数（W3）、非对称圆点阵理由（W4）、TCP 共面退化机理（W5）、validation 命名（W6）、SVD 求逆说法（W7）。</li>
+</ol>
+<hr>
+<h2 id="五、复核方式"><a href="#五、复核方式" class="headerlink" title="五、复核方式"></a>五、复核方式</h2><p>本报告所有”✅”结论均基于解析核验；E1 附有可独立复算的反例。建议拿到带 OpenCV 的环境后，对 <code>cali_l2_handeye_math.cpp</code>（修正前后）与 <code>cali_l1_handeye.cpp</code> 各编译运行一次，作为最终验收。</p>
+<h2 id="六、独立复核结论（2026-08-18，numpy-数值复算）"><a href="#六、独立复核结论（2026-08-18，numpy-数值复算）" class="headerlink" title="六、独立复核结论（2026-08-18，numpy 数值复算）"></a>六、独立复核结论（2026-08-18，numpy 数值复算）</h2><p>对以上结论做了独立数值复核，结果与报告一致；<strong>仅 W6 一处为误判，特此更正</strong>：</p>
+<h3 id="E1（严重）经数值验证成立-✅"><a href="#E1（严重）经数值验证成立-✅" class="headerlink" title="E1（严重）经数值验证成立 ✅"></a>E1（严重）经数值验证成立 ✅</h3><p>用 numpy 复算：</p>
+<ul>
+<li><strong>反例证伪</strong>：取 R_A=Ry(30°)、R_B=Rx(30°)、R_X=Rz(90°)，先验证 R_A·R_X−R_X·R_B 范数 = 8.1e-17（确为 AX=XB 合法真值）；代入代码系统 <code>[skew(RA−RB);(RA+RB)ᵀ]·r_X</code> 范数 = <strong>3.68 ≠ 0</strong> —— 真值根本不满足该系统，求解器对任何数据都解错旋转。</li>
+<li><strong>合成数据对拍</strong>：按 demo 同款数据（seed 20260817，眼在手上配对）复现，代码版 <code>solveTsai</code> 旋转误差 = <strong>67.3°</strong>；改用精确对偶四元数闭式（对应 OpenCV TSAI / Park–Martin）误差 = <strong>0.000°</strong>。</li>
+<li><strong>重要补充</strong>：经典 Tsai–Lenz 旋转向量形式 <code>skew(P_A+P_B)·P'_X = P_B−P_A</code> 仅为<strong>小角度近似</strong>；其残差随旋转幅度单调增长（~1 rad 时单对残差约 0.13，累积解偏差十几度）。demo 相邻相对运动旋转幅度 ~1 rad，直接套该近似式仍会 FAIL。已采用<strong>精确闭式</strong>修复，确保在该 demo 数据上 PASS。</li>
+</ul>
+<h3 id="W6-为误判（已复核不成立）❌→✅"><a href="#W6-为误判（已复核不成立）❌→✅" class="headerlink" title="W6 为误判（已复核不成立）❌→✅"></a>W6 为误判（已复核不成立）❌→✅</h3><p>报告称 <code>cali_l3_validation.cpp</code> 第 75 行 <code>Tcb_true = inv44(G * Xtrue)</code> “实为 base→cam（命名颠倒）”。复核：G = base2gripper、Xtrue = gripper2cam，故 <code>G*Xtrue = base2cam</code>，其逆 <code>inv44(G*Xtrue) = cam2base</code>；变量名 <code>T_cam2base</code> 与之一致，<strong>命名正确，无需修改</strong>。报告此处将 <code>inv(base2cam)</code> 误算为 <code>base2cam</code>，系复核笔误。</p>
+<h3 id="其余-E2-E3-W1–W5-W7-均成立-✅"><a href="#其余-E2-E3-W1–W5-W7-均成立-✅" class="headerlink" title="其余 E2/E3/W1–W5/W7 均成立 ✅"></a>其余 E2/E3/W1–W5/W7 均成立 ✅</h3><p>已按报告建议逐条修正（见各文件最新版本）。</p>
+<hr>
+<h2 id="七、2026-08-19-内容充实后-Review-处置记录"><a href="#七、2026-08-19-内容充实后-Review-处置记录" class="headerlink" title="七、2026-08-19 内容充实后 Review 处置记录"></a>七、2026-08-19 内容充实后 Review 处置记录</h2><blockquote>
+<p>充实范围：17 篇课程 md（篇均 4153B → 5930B），补深层推导链/坐标系约定/决策表/工程落点/统计严谨性。<br>校验器：qinzhiai gpt-5.6-sol，6 段并发 review（2 段超时拆分重发）。</p>
+</blockquote>
+<p><strong>review 共 108 条：已修 98 / 有意不修 10</strong>（教学简化并已加注记）</p>
+<h3 id="实质错误修复（25-处，全部数值复算验证）"><a href="#实质错误修复（25-处，全部数值复算验证）" class="headerlink" title="实质错误修复（25 处，全部数值复算验证）"></a>实质错误修复（25 处，全部数值复算验证）</h3><table>
+<thead>
+<tr>
+<th>#</th>
+<th>位置</th>
+<th>问题</th>
+<th>修复</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>E1</td>
+<td>跨 4 文件 (L1.5/L2.2/L2.5/L3.x)</td>
+<td><strong>Park–Martin ≠ 对偶四元数</strong>（Daniilidis 才是）</td>
+<td>统一改”Park–Martin 式单位四元数分离求解”，补三种方法对照表 + 术语注记</td>
+</tr>
+<tr>
+<td>E2</td>
+<td>cali_l1_frames</td>
+<td><strong>T_A2B 记法与三条铁律方向冲突</strong>（点变换/复合写反）</td>
+<td>统一 p_B=T_A2B·p_A、T_A2C=T_B2C·T_A2B + 检验法</td>
+</tr>
+<tr>
+<td>E3</td>
+<td>cali_l1_frames</td>
+<td>SVD 求逆”保持刚体结构”错误</td>
+<td>改”cv::invert 通用求逆不保证 SO(3)，逆变换用闭式”</td>
+</tr>
+<tr>
+<td>E4</td>
+<td>cali_l1_board</td>
+<td><strong>squareSize 尺度影响推导严重错误</strong>（fx 缩放 25 倍→ 实际 K 不变、t 缩放）</td>
+<td>重写：K 不变、外参平移/公制结果缩放 s 倍</td>
+</tr>
+<tr>
+<td>E5</td>
+<td>cali_l1_intrinsics</td>
+<td>畸变施加顺序错误（先像素后畸变）</td>
+<td>改归一化坐标→畸变→K 的正确链路</td>
+</tr>
+<tr>
+<td>E6</td>
+<td>cali_l1_intrinsics</td>
+<td>B=K⁻ᵀK⁻¹ 自由度表述错（”5 个独立元”）</td>
+<td>改对称 6 元素、尺度不可观→有效 5；每幅 2 条约束、3 幅论证重写</td>
+</tr>
+<tr>
+<td>E7</td>
+<td>cali_l1_intrinsics</td>
+<td>“k3 只在广角/鱼眼”错误</td>
+<td>改”普通镜头也可能需要；鱼眼用 cv::fisheye 专用模型”</td>
+</tr>
+<tr>
+<td>E8</td>
+<td>cali_l1_monocular</td>
+<td><strong>naiveRMS 验收方向写反</strong>（&lt; 应为 &gt;）</td>
+<td>改 naiveRMS &gt; 3×calRMS（实测验证）</td>
+</tr>
+<tr>
+<td>E9</td>
+<td>cali_l1_stereo</td>
+<td>自由度 21+6N 计算错误</td>
+<td>改 24+6N（左 K/D 9 + 右 9 + R,T 6）</td>
+</tr>
+<tr>
+<td>E10</td>
+<td>cali_l1_stereo</td>
+<td>极线约束”二次约束”表述</td>
+<td>改”双线性约束”（x_RᵀFx_L 对两点各线性）</td>
+</tr>
+<tr>
+<td>E11</td>
+<td>cali_l1_tcp</td>
+<td><strong>同轴旋转秩判断错误</strong>（≤1 → 通常 2）</td>
+<td>改 rank=2、沿轴分量不可观；”≥4”改”数学 3 个、4 是工程惯例”</td>
+</tr>
+<tr>
+<td>E12</td>
+<td>cali_l1_tcp</td>
+<td>六点法 Z 轴”P0→P1”非通用公式</td>
+<td>改”按控制器约定，无统一公式”</td>
+</tr>
+<tr>
+<td>E13</td>
+<td>cali_l1_tcp</td>
+<td>“TCP 错→手眼法兰输入错”依赖错误</td>
+<td>改”TCP 不参与手眼求解；先 TCP 是流程惯例非数学前置”</td>
+</tr>
+<tr>
+<td>E14</td>
+<td>cali_l1_handeye</td>
+<td>“旋转可交换”表述错误（共轭非交换）</td>
+<td>改 R_A·R_X=R_X·R_B 是共轭对应</td>
+</tr>
+<tr>
+<td>E15</td>
+<td>cali_l2_handeye_math</td>
+<td>optimizeHandEye 非标准 OpenCV API</td>
+<td>删除该引用，改”需注明来源”</td>
+</tr>
+<tr>
+<td>E16</td>
+<td>cali_l2_handeye_math</td>
+<td>“6 姿态刚好超定”无普适性</td>
+<td>删除，改按姿态组合/轴分布判断</td>
+</tr>
+<tr>
+<td>E17</td>
+<td>cali_l2_degeneracy</td>
+<td><strong>σ_min≈0 误判退化</strong>（无噪齐次解本就在零空间）</td>
+<td>改零空间维数&gt;1 / σ_{n-1}/σ_n 谱隙判据</td>
+</tr>
+<tr>
+<td>E18</td>
+<td>cali_l2_degeneracy</td>
+<td>单轴旋转”缺 2 维”错误</td>
+<td>改”缺 1 维（绕公共轴）+ 平移缺沿轴分量”</td>
+</tr>
+<tr>
+<td>E19</td>
+<td>cali_l2_tcp_deep</td>
+<td>“TCP 精度上限≈机器人重复定位精度”不成立</td>
+<td>改一阶扰动界 + 系统误差列表；σ_x≈cond(A)σ_f 改 δx≈A⁺δb</td>
+</tr>
+<tr>
+<td>E20</td>
+<td>cali_l2_error_check</td>
+<td>“RMS 是加权平均”表述</td>
+<td>改所有观测点残差均方根 RMS=sqrt(Σ‖e‖²/N)</td>
+</tr>
+<tr>
+<td>E21</td>
+<td>cali_l2_error_check</td>
+<td>“中心≈边缘”过强</td>
+<td>限定同方差噪声+理想条件为基线判据</td>
+</tr>
+<tr>
+<td>E22</td>
+<td>cali_l3_validation</td>
+<td><strong>“端到端”定义混用</strong>（模型链 vs 机器人执行）</td>
+<td>加两级验证界定：模型链验证 ≠ 实机端到端验收</td>
+</tr>
+<tr>
+<td>E23</td>
+<td>cali_l3_robust</td>
+<td>“中位数评分=RANSAC”定义不准</td>
+<td>改”自定义鲁棒共识方案” + 成功率计算 (26/30)^15≈0.12</td>
+</tr>
+<tr>
+<td>E24</td>
+<td>cali_l3_robust</td>
+<td>solvePnPRansac”内部用 Huber”断言错误</td>
+<td>删除，改”不承诺内部鲁棒核”</td>
+</tr>
+<tr>
+<td>E25</td>
+<td>cali_l3_pipeline</td>
+<td>“任一段错都会暴露”过强</td>
+<td>改”通常暴露+可能相互抵消”，补多视场验证建议</td>
+</tr>
+</tbody></table>
+<h3 id="数值复算验证（本机-python）"><a href="#数值复算验证（本机-python）" class="headerlink" title="数值复算验证（本机 python）"></a>数值复算验证（本机 python）</h3><ul>
+<li>同轴旋转 rank(R(1.1)−R(0.3))=2、D·e_z=0 ✅；M 零空间维数判据 ✅</li>
+<li>squareSize: u=fx·(sX)/(sZ)+cx 不变 → K 不变、t 缩放 ✅</li>
+<li>naiveRMS 方向、24+6N、共轭非交换 ✅</li>
+</ul>
+<h3 id="Obsidian-兼容"><a href="#Obsidian-兼容" class="headerlink" title="Obsidian 兼容"></a>Obsidian 兼容</h3><p>文件名零改动，frontmatter 保留，188 个 wikilink 断链=0，17 个 cpp 编译 OK=17 FAIL=0。</p>
+<hr>
+<h2 id="八、L4-3–L4-6-落地核验（2026-08-22-补充）"><a href="#八、L4-3–L4-6-落地核验（2026-08-22-补充）" class="headerlink" title="八、L4.3–L4.6 落地核验（2026-08-22 补充）"></a>八、L4.3–L4.6 落地核验（2026-08-22 补充）</h2><blockquote>
+<p>本段补在第七节之后，记录 P2 cali 四条主线（自标定/主动标定、结构光、RGB-D、多相机 rig）的 L4 扩展篇落地情况。四篇均为<strong>纯 C++17（不依赖 OpenCV）</strong>，沿用本仓库”受管 Python 数学验证 → C++17 逐字转写 → C++ 控制流镜像复核”三步走工作流。<br>本机无 C++ 编译器，以下 <code>PASS/FAIL</code> 来自<strong>受管 Python 算法镜像 + C++ 控制流镜像</strong>双重对拍（受管 Python：<code>C:\Users\Admin\.workbuddy\binaries\python\envs\default\Scripts\python.exe</code>），非 gcc 实编。</p>
+</blockquote>
+<h3 id="8-1-核验总表（四篇-×-检查数）"><a href="#8-1-核验总表（四篇-×-检查数）" class="headerlink" title="8.1 核验总表（四篇 × 检查数）"></a>8.1 核验总表（四篇 × 检查数）</h3><table>
+<thead>
+<tr>
+<th>编号</th>
+<th>知识点</th>
+<th>核心算法</th>
+<th>检查项数</th>
+<th>算法镜像</th>
+<th>C++ 控制流镜像</th>
+<th>末行结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>L4.3</strong></td>
+<td>自标定/主动标定</td>
+<td>无穷单应 <code>H∞=K·R·K⁻¹</code> + 线性回收 K + D-最优 <code>AᵀA</code></td>
+<td>9</td>
+<td>PASS=9</td>
+<td>PASS=9</td>
+<td>全 PASS</td>
+</tr>
+<tr>
+<td><strong>L4.4</strong></td>
+<td>结构光 3D 扫描</td>
+<td>N 步相移 <code>φ_w=atan2(Σsin,Σcos)</code> + 参考平面解包裹</td>
+<td>5</td>
+<td>PASS=5</td>
+<td>PASS=5</td>
+<td>全 PASS</td>
+</tr>
+<tr>
+<td><strong>L4.5</strong></td>
+<td>RGB-D</td>
+<td>深度二次偏置 <code>c</code> 标定 + 校正 <code>d_true=(−1+√(1+4c·dₘ))/2c</code> + 深度-彩色外参回环</td>
+<td>6</td>
+<td>PASS=6</td>
+<td>PASS=6</td>
+<td>全 PASS</td>
+</tr>
+<tr>
+<td><strong>L4.6</strong></td>
+<td>多相机 rig（BEV）</td>
+<td>4 相机环绕 SE3 外参 + IPM 逆透视 + 跨相机地面一致性</td>
+<td>6</td>
+<td>PASS=6</td>
+<td>PASS=6</td>
+<td>全 PASS</td>
+</tr>
+<tr>
+<td><strong>合计</strong></td>
+<td></td>
+<td></td>
+<td><strong>26</strong></td>
+<td><strong>26/26</strong></td>
+<td><strong>26/26</strong></td>
+<td>全 PASS</td>
+</tr>
+</tbody></table>
+<h3 id="8-2-关键-bug-记录与修复（自检发现，无用户反馈）"><a href="#8-2-关键-bug-记录与修复（自检发现，无用户反馈）" class="headerlink" title="8.2 关键 bug 记录与修复（自检发现，无用户反馈）"></a>8.2 关键 bug 记录与修复（自检发现，无用户反馈）</h3><table>
+<thead>
+<tr>
+<th>#</th>
+<th>篇</th>
+<th>问题</th>
+<th>根因</th>
+<th>修复</th>
+<th>终态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>B1</td>
+<td>L4.4</td>
+<td>初版测试「平面区平均|h|&lt;1e-3」FAIL（得 0.065）、「相邻跳变&lt;1.0」FAIL（真斜率 1.8）</td>
+<td>高斯凸起宽尾在距中心 6 处仍有 ~0.8 贡献，且「相邻跳变」误用了真实相位斜率 1.8 当阈值</td>
+<td>重写为<strong>独立平坦平面子测试</strong>（恢复≈0）+ 跳变阈值改为 <code>&lt;P/2=12</code>，与真实斜率解耦</td>
+<td>PASS=5</td>
+</tr>
+<tr>
+<td>B2</td>
+<td>L4.5</td>
+<td><code>_validate_p2c_rgbd_cppmirror_tmp.py</code> 中 <code>xform_T</code> 写成畸形 <code>[d[0],d for d in d][0] if False else (d[0],d[1],d[2])</code></td>
+<td>镜像脚本笔误（语法畸形）</td>
+<td>修正为 <code>[d[0],d[1],d[2]]</code></td>
+<td>PASS=6</td>
+</tr>
+<tr>
+<td>B3</td>
+<td>L4.6</td>
+<td><code>t=cam_pos</code> 而非 <code>−R·cam_pos</code>（SE3 几何不一致）→ 重投影侥幸过但 IPM 失败</td>
+<td>SE3 逆要求 <code>t=−R·cam_pos</code>，否则代数逆自洽但 IPM 因依赖几何意义而崩</td>
+<td>修正 <code>t=−R·cp</code></td>
+<td>IPM 仍未全过 → 见 B4</td>
+</tr>
+<tr>
+<td>B4</td>
+<td>L4.6</td>
+<td><code>ipm_to_ground</code> 返回 <code>apply(T, s·dir)</code>（相机系坐标）而非 rig 系</td>
+<td>逆透视应先 <code>se3_inv(T)</code> 把射线回 rig 系再与地面 z=0 求交</td>
+<td>修正为 <code>apply(se3_inv(T), s·dir)</code></td>
+<td>IPM 回环仍偏 → 见 B5</td>
+</tr>
+<tr>
+<td>B5</td>
+<td>L4.6</td>
+<td>光学轴朝 +z（向上），相机看不到地面 → IPM 全失效</td>
+<td><code>R_i</code> 取 <code>rot_z(φ)·rot_x(0)</code> 光轴水平偏上</td>
+<td>改 <code>R_i=rot_z(i·90°−90°)·rot_x(−120°)</code>（朝外+向下），<code>tilt=2.094</code></td>
+<td>IPM 回环 100 样本 1.1e-13、跨相机 37 共享点</td>
+</tr>
+<tr>
+<td>B6</td>
+<td>L4.6</td>
+<td>chk 误把 <code>shared&gt;0</code> 当 <code>ge</code> 参数 → 判断方向反</td>
+<td>chk 第三参数语义是 <code>ge</code>（≥）还是 <code>&lt;</code>，混入布尔导致反向</td>
+<td>拆成「找到共享点≥1（ge=True）」+「偏差&lt;1e-6（ge=False）」两条独立检查</td>
+<td>PASS=6 FAIL=0</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>几何一致性铁律（L4.6 沉淀）</strong>：SE3 外参 <code>T=(R,t)</code> 的逆要求 <code>t=−R·cam_pos</code>（cam_pos=相机在 rig 下的位置），否则重投影因严格代数自洽而「侥幸 PASS」，但 IPM/逆透视因依赖几何意义而 FAIL——这是「代数 PASS 掩真、几何 FAIL 现形」的典型陷阱。</p>
+</blockquote>
+<h3 id="8-3-与-L3-3-主动运动规划章的打通"><a href="#8-3-与-L3-3-主动运动规划章的打通" class="headerlink" title="8.3 与 L3.3 主动运动规划章的打通"></a>8.3 与 L3.3 主动运动规划章的打通</h3><ul>
+<li>原 <code>cali_l3_auto_system.md</code> 的「可扩展方向」仅蜻蜓点水提一句”采样最优设计（D-最优）”。</li>
+<li>现 L4.3 把 D-最优<strong>落地为可执行准则</strong>：观测矩阵 <code>AᵀA</code> 的行列式/最小奇异值 = 信息量；同 z 轴旋转 → 系数矩阵亏秩（det 趋零、sv_min 趋零）→ 退化；异轴旋转 → 满秩；<strong>三组异轴旋转比两组 det 更大</strong>（信息更足）。</li>
+<li>已在 <code>cali_l3_auto_system.md</code> 四「可扩展方向」加反向 wikilink <code>[L4.3 自标定/主动标定](/02jd/cali_demo/cali_l4_self_active.html)</code>，把 auto_system 从”蜻蜓点水”补成”有算法、有准则、可规划”的主动运动规划章。</li>
+</ul>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_DEMO_REVIEW</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

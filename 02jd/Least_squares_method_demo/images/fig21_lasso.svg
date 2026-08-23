@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 320" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="320" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L4.6 稀疏正则化：Lasso (L1 惩罚最小二乘)</text>
+  <rect x="40" y="50" width="600" height="62" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="340" y="74" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">问题: min ½‖Ax−b‖² + λ‖x‖₁</text>
+  <text x="340" y="95" font-size="12" fill="#1e3a8a" text-anchor="middle">L1 菱形约束 → 切点落坐标轴 → 系数压零 (稀疏); L2 圆则不然 (岭回归 L1.3)</text>
+  <rect x="40" y="125" width="290" height="80" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="185" y="150" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">ISTA / FISTA (近端梯度)</text>
+  <text x="185" y="172" font-size="12" fill="#14532d" text-anchor="middle">梯度 ∇=Aᵀ(Ax−b), η=1/L</text>
+  <text x="185" y="192" font-size="12" fill="#14532d" text-anchor="middle">软阈值 soft(z,ηλ); FISTA 加速 O(1/k²)</text>
+  <rect x="350" y="125" width="290" height="80" rx="9" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="495" y="150" font-size="13" font-weight="bold" fill="#78350f" text-anchor="middle">坐标下降 (独立参考解)</text>
+  <text x="495" y="172" font-size="12" fill="#78350f" text-anchor="middle">逐坐标 x_j←S(w_j/‖A_j‖², λ/‖A_j‖²)</text>
+  <text x="495" y="192" font-size="12" fill="#78350f" text-anchor="middle">与 ISTA 殊途同归 (误差一致)</text>
+  <rect x="40" y="220" width="600" height="80" rx="9" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="340" y="244" font-size="13" font-weight="bold" fill="#4c1d95" text-anchor="middle">工业方向⑨: 稀疏建模 — 验证结果</text>
+  <text x="340" y="266" font-size="12" fill="#4c1d95" text-anchor="middle">稀疏恢复 17/17 压零·3非零; 大λ→全零; 压缩感知 m=18&lt;n=40 支撑命中</text>
+  <text x="340" y="287" font-size="12" fill="#4c1d95" text-anchor="middle">Lasso vs OLS: OLS 铺开15 · Lasso 选3 {2,7,13} (特征选择/异常检测)</text>
+</svg>

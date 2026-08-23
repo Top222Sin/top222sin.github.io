@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#ffffff"/>
+
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L1.3 机械臂速度运动学：ẋ = J(q) · q̇</text>
+  <text x="20" y="56" font-size="12" fill="#555">关节角速度 q̇ 经雅可比 J(q) 映射为末端 Cartesian 速度 ẋ</text>
+
+  <g transform="translate(60,80)">
+    <!-- base -->
+    <circle cx="0" cy="160" r="6" fill="#475569"/>
+    <text x="-6" y="180" font-size="10" fill="#334155">基座</text>
+    <!-- link1 -->
+    <line x1="0" y1="160" x2="90" y2="90" stroke="#2563eb" stroke-width="5"/>
+    <circle cx="90" cy="90" r="6" fill="#1d4ed8"/>
+    <text x="30" y="120" font-size="10" fill="#1e40af">L1, q1</text>
+    <!-- link2 -->
+    <line x1="90" y1="90" x2="190" y2="40" stroke="#2563eb" stroke-width="5"/>
+    <circle cx="190" cy="40" r="6" fill="#1d4ed8"/>
+    <text x="120" y="62" font-size="10" fill="#1e40af">L2, q2</text>
+    <!-- end effector -->
+    <circle cx="190" cy="40" r="7" fill="#dc2626"/>
+    <text x="198" y="44" font-size="10" fill="#991b1b">末端 x</text>
+    <!-- end-effector velocity -->
+    <line x1="190" y1="40" x2="240" y2="10" stroke="#059669" stroke-width="3" marker-end="url(#arr3)"/>
+    <text x="244" y="14" font-size="10" fill="#065f46">ẋ</text>
+    <!-- joint velocity arrows -->
+    <path d="M 90 70 A 22 22 0 0 1 110 86" fill="none" stroke="#d97706" stroke-width="2" marker-end="url(#arr3o)"/>
+    <text x="108" y="64" font-size="9" fill="#92400e">q̇1</text>
+    <path d="M 190 20 A 22 22 0 0 1 210 36" fill="none" stroke="#d97706" stroke-width="2" marker-end="url(#arr3o)"/>
+    <text x="214" y="18" font-size="9" fill="#92400e">q̇2</text>
+  </g>
+  <defs>
+    <marker id="arr3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#059669"/></marker>
+    <marker id="arr3o" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#d97706"/></marker>
+  </defs>
+
+  <!-- 公式 -->
+  <g transform="translate(360,110)" font-size="13" fill="#222">
+    <text x="0" y="0">[ ẋ ]   [ ∂x/∂q1  ∂x/∂q2 ] [ q̇1 ]</text>
+    <text x="0" y="26">[ ẏ ] = [ ∂y/∂q1  ∂y/∂q2 ]·[ q̇2 ]</text>
+    <text x="0" y="58" font-size="12" fill="#2563eb">ẋ = J(q) · q̇</text>
+  </g>
+
+  <text x="20" y="350" font-size="11" fill="#666">要点：对二连杆，J 的两列正是"单独转动各关节时末端的速度方向"。demo 用有限差分验证 J(q)·q̇ 与 ẋ 完全一致。</text>
+</svg>

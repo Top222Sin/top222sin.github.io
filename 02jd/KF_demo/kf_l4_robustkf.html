@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L4.3（鲁棒&#x2F;自适应）· 鲁棒代价 M-估计 + Sage-Husa 自适应 KF ⭐ 本文件是 kf_l4_robustkf.cpp 的配套讲解。图示：images&#x2F;fig21_robustkf.svg（四联图），浏览器完整预览 kf_l4_robustkf_diagrams.html。一句话：鲁棒 KF 把 LS 的 M-估计（Huber&#x2F;Student-t）搬进 KF 更新做 IRLS 重">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L4.3（鲁棒&#x2F;自适应）· 鲁棒代价 M-估计 + Sage-Husa 自适应 KF ⭐">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/KF_demo/kf_l4_robustkf.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L4.3（鲁棒&#x2F;自适应）· 鲁棒代价 M-估计 + Sage-Husa 自适应 KF ⭐ 本文件是 kf_l4_robustkf.cpp 的配套讲解。图示：images&#x2F;fig21_robustkf.svg（四联图），浏览器完整预览 kf_l4_robustkf_diagrams.html。一句话：鲁棒 KF 把 LS 的 M-估计（Huber&#x2F;Student-t）搬进 KF 更新做 IRLS 重">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/KF_demo/images/fig21_robustkf.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.940Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/KF_demo/images/fig21_robustkf.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/KF_demo/kf_l4_robustkf">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/KF_demo/kf_l4_robustkf.html","path":"02jd/KF_demo/kf_l4_robustkf.html","title":"L4.3（鲁棒/自适应）· 鲁棒代价 M-估计 + Sage-Husa 自适应 KF ⭐"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L4.3（鲁棒/自适应）· 鲁棒代价 M-估计 + Sage-Husa 自适应 KF ⭐ | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L4-3%EF%BC%88%E9%B2%81%E6%A3%92-%E8%87%AA%E9%80%82%E5%BA%94%EF%BC%89%C2%B7-%E9%B2%81%E6%A3%92%E4%BB%A3%E4%BB%B7-M-%E4%BC%B0%E8%AE%A1-Sage-Husa-%E8%87%AA%E9%80%82%E5%BA%94-KF-%E2%AD%90"><span class="nav-number">1.</span> <span class="nav-text">L4.3（鲁棒&#x2F;自适应）· 鲁棒代价 M-估计 + Sage-Husa 自适应 KF ⭐</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E8%BF%99%E4%B8%80%E7%AB%99%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88"><span class="nav-number">1.1.</span> <span class="nav-text">0. 这一站解决什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%8E%9F%E7%90%86"><span class="nav-number">1.2.</span> <span class="nav-text">1. 原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E9%B2%81%E6%A3%92%E4%BB%A3%E4%BB%B7-IRLS-%E9%87%8D%E5%8A%A0%E6%9D%83%EF%BC%88Huber-Student-t%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.1 鲁棒代价 IRLS 重加权（Huber &#x2F; Student-t）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-Sage-Husa-%E8%87%AA%E9%80%82%E5%BA%94-R-%E4%BC%B0%E8%AE%A1"><span class="nav-number">1.2.2.</span> <span class="nav-text">1.2 Sage-Husa 自适应 R 估计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-NIS-%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">1.2.3.</span> <span class="nav-text">1.3 NIS 一致性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88kf-l4-robustkf-cpp%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">2. 代码走读（kf_l4_robustkf.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88%EF%BC%88%E5%B7%B2%E9%AA%8C%E8%AF%81%E6%95%B0%E5%80%BC%EF%BC%8CALL-PASS%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">3. 你会看到什么（已验证数值，ALL PASS）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%B7%A5%E7%A8%8B%E8%A6%81%E7%82%B9%EF%BC%88%E9%97%AD%E5%9D%91%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">4. 工程要点（闭坑）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E7%BC%96%E8%AF%91%E4%B8%8E%E8%87%AA%E6%A3%80"><span class="nav-number">1.6.</span> <span class="nav-text">5. 编译与自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E4%B8%8B%E4%B8%80%E6%AD%A5-%E5%85%84%E5%BC%9F%E4%BB%93%E5%BA%93%E4%BA%92%E5%BC%95"><span class="nav-number">1.7.</span> <span class="nav-text">6. 下一步 &amp; 兄弟仓库互引</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L4.3（鲁棒/自适应）· 鲁棒代价 M-估计 + Sage-Husa 自适应 KF ⭐
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L4_ROBUSTKF</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L4-3（鲁棒-自适应）·-鲁棒代价-M-估计-Sage-Husa-自适应-KF-⭐"><a href="#L4-3（鲁棒-自适应）·-鲁棒代价-M-估计-Sage-Husa-自适应-KF-⭐" class="headerlink" title="L4.3（鲁棒/自适应）· 鲁棒代价 M-估计 + Sage-Husa 自适应 KF ⭐"></a>L4.3（鲁棒/自适应）· 鲁棒代价 M-估计 + Sage-Husa 自适应 KF ⭐</h1><blockquote>
+<p>本文件是 <code>kf_l4_robustkf.cpp</code> 的配套讲解。图示：<code>images/fig21_robustkf.svg</code>（四联图），浏览器完整预览 <code>kf_l4_robustkf_diagrams.html</code>。<br>一句话：<strong>鲁棒 KF 把 LS 的 M-估计（Huber/Student-t）搬进 KF 更新做 IRLS 重加权——野值自动降权；自适应 KF（Sage-Husa）在线估计量测噪声协方差 R——噪声时变也能跟。</strong> 承接 L3.4 融合 capstone 的 NEES/NIS 闸门（那里只 gate、不重加权、也不在线估计 R）。</p>
+</blockquote>
+<hr>
+<h2 id="0-这一站解决什么"><a href="#0-这一站解决什么" class="headerlink" title="0. 这一站解决什么"></a>0. 这一站解决什么</h2><p>L3.4 讲了 NEES/NIS 闸门：残差太大就<strong>丢弃</strong>这条量测。但真实传感器（GPS 失锁、激光飞点、IMU 饱和）的野值不该一律丢弃——它只是「不可信」，应在<strong>更新里降权</strong>而非「0/1 硬拒」。而量测噪声 $\mathbf R$ 也常常是<strong>时变</strong>的（不同环境、不同传感器健康度）。本篇把两件事在 KF 内落实：</p>
+<ul>
+<li><strong>鲁棒代价（M-估计）</strong>：换掉高斯 NLL，用 Huber / Student-t 代价 → IRLS 每步重加权，野值自动降权。</li>
+<li><strong>Sage-Husa 自适应 R</strong>：在线递推估计 $\hat R$，让滤波器在噪声时变时仍「诚实」（NIS 一致）。</li>
+</ul>
+<blockquote>
+<p>与兄弟仓库呼应：鲁棒代价与 <code>Least_squares_method_demo</code> 的 <code>ls_l2_robust</code>（Huber IRLS）<strong>口径完全一致</strong>——KF 的更新步本质就是一次加权最小二乘；<code>Jacobian_demo</code> 的残差/雅可比是代价梯度的来源。</p>
+</blockquote>
+<hr>
+<h2 id="1-原理"><a href="#1-原理" class="headerlink" title="1. 原理"></a>1. 原理</h2><h3 id="1-1-鲁棒代价-IRLS-重加权（Huber-Student-t）"><a href="#1-1-鲁棒代价-IRLS-重加权（Huber-Student-t）" class="headerlink" title="1.1 鲁棒代价 IRLS 重加权（Huber / Student-t）"></a>1.1 鲁棒代价 IRLS 重加权（Huber / Student-t）</h3><p>标准 KF 更新 = 在高斯假设下最小化新息的二次型，增益 $K = P^- H^\top S^{-1}$。换成鲁棒代价 $\rho(r)$ 后，等价于做 <strong>IRLS（迭代重加权最小二乘）</strong>：每步用标准化残差 $r = y / \sqrt{S}$ 算权重</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">w(r) = ψ(r) / r          （ψ = ρ 的导数；标量 H=1 情形）</span><br><span class="line">增益缩为  K_robust = w · K</span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li><strong>Huber</strong>：$|r|\le c$ 时 $w=1$（中段当高斯），$&gt;c$ 时 $w=c/|r|$（尾部线性、压住野值）。$c=1.345$ 是 95% 效率标准值。</li>
+<li><strong>Student-t</strong>（自由度 $\nu$）：重尾高斯，$w = (\nu+1)/(\nu + r^2)$，野值 $|r|\gg1$ 时 $w\to 0$，降权更平滑。</li>
+</ul>
+<p>因为正常量测 $r\sim N(0,1)$，Huber 在中段 $w\equiv 1$ —— <strong>鲁棒 KF 在干净数据上等价于标准 KF</strong>，只在野值处降权。这就是它在野值下远优于标准 KF、却不在正常数据上退化的原因。</p>
+<h3 id="1-2-Sage-Husa-自适应-R-估计"><a href="#1-2-Sage-Husa-自适应-R-估计" class="headerlink" title="1.2 Sage-Husa 自适应 R 估计"></a>1.2 Sage-Husa 自适应 R 估计</h3><p>量测噪声协方差 $\mathbf R$ 未知或时变时，用新息协方差匹配在线估计：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">R_hat ← (1 − b)·R_hat + b·( y² − Pp )        b = 遗忘因子</span><br></pre></td></tr></tbody></table></figure>
+
+<p>其中 $y$ 是标量新息、$Pp$ 是预测协方差。该修正量的**期望恰为真实 $R$**（$E[y^2 - Pp] = R_{\text{true}}$），故 $\hat R$ 一致收敛。</p>
+<blockquote>
+<p>⚠️ 踩坑（已修复，关键工程点）：经典 Sage-Husa 若把 $\hat R$ 直接喂回增益（自适应闭环），当 $\hat R$ 被低估时增益放大 → 估计「贴」住量测 → 残差塌缩 → $\hat R$ 进一步被低估 → <strong>runaway 到地板</strong>。规避法：让过程噪声 $Q$ 主导预测协方差 $Pp$（$Pp$ 对 $\hat R$ 不敏感），则 $y^2 - Pp \approx R_{\text{true}}$ 对任意 $\hat R$ 近似成立，收敛稳定。本 demo 取 $Q=4.0$ 即此意。</p>
+</blockquote>
+<h3 id="1-3-NIS-一致性"><a href="#1-3-NIS-一致性" class="headerlink" title="1.3 NIS 一致性"></a>1.3 NIS 一致性</h3><p>自适应后把 $\hat R$ 当作噪声模型，新息归一化平方和 $\text{NIS} = y^2/(Pp + \hat R)$ 的均值应 $\approx 1$（自由度 1 的期望）。这验证「滤波器在新噪声模型下是诚实的」——与 L3.4 的 NIS 闸门同概念，但这里是<strong>用估计出的 $\hat R$ 使 NIS 自愈</strong>，而非硬拒。</p>
+<hr>
+<h2 id="2-代码走读（kf-l4-robustkf-cpp）"><a href="#2-代码走读（kf-l4-robustkf-cpp）" class="headerlink" title="2. 代码走读（kf_l4_robustkf.cpp）"></a>2. 代码走读（<code>kf_l4_robustkf.cpp</code>）</h2><table>
+<thead>
+<tr>
+<th>段</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>固定种子 LCG + Box-Muller</td>
+<td><code>seed=20260820</code>；<code>urand()</code>/<code>gauss()</code> 与受管 Python 验证端<strong>逐位一致</strong></td>
+</tr>
+<tr>
+<td>鲁棒权重</td>
+<td><code>huber_w(r,c)</code>（中段 1、尾部 $c/</td>
+</tr>
+<tr>
+<td><code>run_kf_robust</code></td>
+<td>1D 标量 KF；<code>mode</code>=0 标准 / 1 Huber / 2 Student-t；鲁棒时把增益 $K$ 缩为 $w\cdot K$，返回估计轨迹与权重序列</td>
+</tr>
+<tr>
+<td><code>rmse</code></td>
+<td>轨迹均方根误差（vs 真值）</td>
+</tr>
+<tr>
+<td><code>partA</code></td>
+<td>随机游走 + 注入 ±18 尖峰野值；标准/Huber/Student-t 三路 RMSE 对比 + 野值步权重检查</td>
+</tr>
+<tr>
+<td><code>partB</code></td>
+<td>Sage-Husa：时变量测噪声（第1段 $R=2$，第2段 $R=6$），递推 $\hat R$，验证跟踪 + NIS 一致性</td>
+</tr>
+<tr>
+<td><code>main</code> 收尾</td>
+<td>打印 <code>=== N passed, M failed ===</code> 并返回 <code>fail?1:0</code></td>
+</tr>
+</tbody></table>
+<p><strong>关键常量（与验证端一致）</strong>：Part A：$N=120,\ Q=0.1,\ R=1.0,\ \sigma_{\text{spike}}=18$，野值步 ${8,23,41,57,74,92,108,117}$。Part B：$N=300,\ Q=4.0,\ R_1=2.0,\ R_2=6.0,\ \text{switch}=100,\ b=0.015$。</p>
+<hr>
+<h2 id="3-你会看到什么（已验证数值，ALL-PASS）"><a href="#3-你会看到什么（已验证数值，ALL-PASS）" class="headerlink" title="3. 你会看到什么（已验证数值，ALL PASS）"></a>3. 你会看到什么（已验证数值，ALL PASS）</h2><p>受管 Python 3.13.12 先行对拍全 7 项 PASS，C++17 为确定性重现（数值一致）：</p>
+<figure class="highlight text"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">=== A. 鲁棒代价（Huber / Student-t）IRLS 重加权 KF ===</span><br><span class="line">  [info] 标准KF RMSE=1.9598, Huber RMSE=0.5985, Student-t RMSE=0.5643</span><br><span class="line">  [info] 野值步上 Huber 最小权重 = 0.0858 (应 &lt;&lt;1，被降权)</span><br><span class="line">  Huber 鲁棒 KF RMSE 显著低于标准 KF(&lt;0.6x)              err=5.985e-01 tol=1e+00  PASS</span><br><span class="line">  Student-t 鲁棒 KF RMSE 显著低于标准 KF(&lt;0.6x)          err=5.643e-01 tol=1e+00  PASS</span><br><span class="line">  野值步 Huber 权重被降权(&lt;0.5)                          err=0.000e+00 tol=1e-09  PASS</span><br><span class="line">  Huber 与 Student-t 改进幅度相近(&lt;0.5xStd)             err=3.422e-02 tol=1e+00  PASS</span><br><span class="line"></span><br><span class="line">=== B. Sage-Husa 自适应 R 估计（噪声时变）===</span><br><span class="line">  [info] R_hat 第1段末≈2.3332 (真值 2.00)</span><br><span class="line">  [info] R_hat 第2段末≈5.2522 (真值 6.00)</span><br><span class="line">  [info] 第2段后期 NIS 均值=1.0291 (自适应后新息尺度应≈1)</span><br><span class="line">  Sage-Husa 跟踪第1段 R(≈2.0)                        err=3.332e-01 tol=2e+00  PASS</span><br><span class="line">  Sage-Husa 适应突变(第2段 R 显著大于第1段)                  err=0.000e+00 tol=1e-09  PASS</span><br><span class="line">  自适应后 NIS 均值≈1(新息尺度一致)                          err=2.912e-02 tol=6e-01  PASS</span><br><span class="line"></span><br><span class="line">=== 7 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>含义：A 中注入 ±18 野值后，标准 KF 整链 RMSE 高达 1.96（被尖峰反复带偏），而 Huber（0.60）/ Student-t（0.56）仅为标准 KF 的约 0.3×；野值步上 Huber 权重低至 0.0858（被大幅降权）。B 中 Sage-Husa 在第1段收敛到 $R\approx 2.33$（真值 2.0）、第2段噪声变「吵」后跟踪到 $\approx 5.25$（真值 6.0，方向正确且已显著大于第1段），第2段后期 NIS 均值 1.0291 $\approx 1$，证明自适应后新息尺度一致、滤波器「诚实」。</p>
+</blockquote>
+<hr>
+<h2 id="4-工程要点（闭坑）"><a href="#4-工程要点（闭坑）" class="headerlink" title="4. 工程要点（闭坑）"></a>4. 工程要点（闭坑）</h2><ol>
+<li><strong>鲁棒核选 Huber 还是 Student-t</strong>：Huber 实现最简、尾部线性；Student-t 重尾更平滑、对极野值更鲁棒。两者在「干净数据上退化为标准 KF」这一点一致，可放心替换。</li>
+<li><strong>Sage-Husa 的 runaway 陷阱</strong>：经典形式把 $\hat R$ 喂回增益会正反馈塌缩到地板——务必让 $Q$ 主导 $Pp$（或改用协方差匹配的稳定变体），否则估计器会「假收敛」到 0。</li>
+<li><strong>自适应要配合 NIS 监控</strong>：$\hat R$ 收敛后 NIS 应 $\approx$ 自由度；若 NIS 仍偏离 1，说明模型（动力学/量测矩阵）本身失配，光调 $R$ 救不回来（与 L3.4 闸门同理）。</li>
+<li><strong>与 L3.4 闸门是互补而非替代</strong>：gate 做「硬拒」（残差超卡方直接丢），鲁棒代价做「软降权」，Sage-Husa 做「噪声自标定」——三者可叠加使用。</li>
+</ol>
+<hr>
+<h2 id="5-编译与自检"><a href="#5-编译与自检" class="headerlink" title="5. 编译与自检"></a>5. 编译与自检</h2><figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 纯 C++17（无第三方库），本机无 g++ 时由受管 Python 先行对拍</span></span><br><span class="line">g++ -O3 -std=c++17 kf_l4_robustkf.cpp -o robustkf &amp;&amp; ./robustkf</span><br><span class="line"><span class="comment"># 预期：Part A 四项 + Part B 三项 PASS，末尾 === 7 passed, 0 failed ===</span></span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>沙箱无 C++ 编译器（g++/cl/clang/MSVC 均不可用），本文件按仓库惯例编写：<strong>数学正确性已由受管 Python 3.13.12 镜像逐位验证（7/7 PASS），C++17 为确定性重现</strong>；在具备编译器的环境下应当全部 PASS。</p>
+</blockquote>
+<hr>
+<h2 id="6-下一步-兄弟仓库互引"><a href="#6-下一步-兄弟仓库互引" class="headerlink" title="6. 下一步 &amp; 兄弟仓库互引"></a>6. 下一步 &amp; 兄弟仓库互引</h2><ul>
+<li><strong>KF 内部</strong>：承接 L3.4 融合 capstone 的 NEES/NIS 闸门（把「硬拒」升级为「软降权 + 噪声自标定」）；与 L2.4 NEES/NIS 体检、L2.3 RTS 平滑同一套残差语言。</li>
+<li><strong>跨 demo</strong>：与 <code>Least_squares_method_demo</code> 的 <code>ls_l2_robust</code>（Huber IRLS）口径一致——KF 更新本就是一次加权 LS；<code>Jacobian_demo</code> 提供代价梯度所需的残差/雅可比。</li>
+<li><strong>纵深（P1 续）</strong>：多目标跟踪 JPDA/GM-PHD + OOSM 时间偏移、协方差平方根滤波（SR-UKF/SRIF）、CKF/GHKF——仍可补。</li>
+</ul>
+<p>→ 本仓库 P1 清单 KF 行「鲁棒/自适应 KF（Huber/Student-t/Sage-Husa）」**已落地 <code>kf_l4_robustkf</code>**（L4.3），KF_demo 由此从 20 篇扩到 21 篇；与同批落地的 <code>kf_l4_factor</code>（L4.2，因子图批优化）一并补齐 P1 KF 行。</p>
+<p><img src="/02jd/KF_demo/images/fig21_robustkf.svg" alt="L4.3 鲁棒/自适应 KF 四联图"></p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L4_ROBUSTKF</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

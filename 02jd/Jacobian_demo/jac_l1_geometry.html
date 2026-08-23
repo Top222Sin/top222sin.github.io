@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L1.2 雅可比的几何意义：行列式 &#x3D; 局部缩放因子，秩 &#x3D; 维数 一句话：**|det J(p)|** 是映射 f 在 p 处对”面积 &#x2F; 体积”的局部放大率；rank J &lt; n 意味着该邻域被”降维压扁”，映射不可逆——这与机械臂奇异位形同源。   一、行列式 &#x3D; 局部面积缩放考虑 p 附近一个微小平行四边形（边长 h 的两个基向量），它在 f 下的像仍然是一个平行四边形，其面积恰好等">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L1.2 雅可比的几何意义：行列式 &#x3D; 局部缩放因子，秩 &#x3D; 维数">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l1_geometry.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L1.2 雅可比的几何意义：行列式 &#x3D; 局部缩放因子，秩 &#x3D; 维数 一句话：**|det J(p)|** 是映射 f 在 p 处对”面积 &#x2F; 体积”的局部放大率；rank J &lt; n 意味着该邻域被”降维压扁”，映射不可逆——这与机械臂奇异位形同源。   一、行列式 &#x3D; 局部面积缩放考虑 p 附近一个微小平行四边形（边长 h 的两个基向量），它在 f 下的像仍然是一个平行四边形，其面积恰好等">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/Jacobian_demo/images/fig2_geometry.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/Jacobian_demo/images/fig2_geometry.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l1_geometry">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l1_geometry.html","path":"02jd/Jacobian_demo/jac_l1_geometry.html","title":"L1.2 雅可比的几何意义：行列式 = 局部缩放因子，秩 = 维数"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L1.2 雅可比的几何意义：行列式 = 局部缩放因子，秩 = 维数 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L1-2-%E9%9B%85%E5%8F%AF%E6%AF%94%E7%9A%84%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89%EF%BC%9A%E8%A1%8C%E5%88%97%E5%BC%8F-%E5%B1%80%E9%83%A8%E7%BC%A9%E6%94%BE%E5%9B%A0%E5%AD%90%EF%BC%8C%E7%A7%A9-%E7%BB%B4%E6%95%B0"><span class="nav-number">1.</span> <span class="nav-text">L1.2 雅可比的几何意义：行列式 &#x3D; 局部缩放因子，秩 &#x3D; 维数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E8%A1%8C%E5%88%97%E5%BC%8F-%E5%B1%80%E9%83%A8%E9%9D%A2%E7%A7%AF%E7%BC%A9%E6%94%BE"><span class="nav-number">1.1.</span> <span class="nav-text">一、行列式 &#x3D; 局部面积缩放</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A8%E5%AF%BC%E7%9B%B4%E8%A7%89%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF-det%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">推导直觉（为什么是 det）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E7%A7%A9-%E7%BB%B4%E6%95%B0%EF%BC%88%E6%96%B9%E9%98%B5%E6%83%85%E5%BD%A2%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">二、秩 &#x3D; 维数（方阵情形）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%A9%E4%BA%8F%E7%9A%84%E6%B7%B1%E5%B1%82%E5%90%AB%E4%B9%89%EF%BC%9A%E4%B8%8D%E5%8F%AF%E9%80%86%E4%B8%8E%E4%B8%8D%E5%8F%AF%E8%A7%82%EF%BC%88%E5%B8%A6%E6%9D%A1%E4%BB%B6%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">秩亏的深层含义：不可逆与不可观（带条件）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88jac-l1-geometry-cpp%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、代码走读（jac_l1_geometry.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.4.</span> <span class="nav-text">四、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.6.</span> <span class="nav-text">六、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.7.</span> <span class="nav-text">七、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L1.2 雅可比的几何意义：行列式 = 局部缩放因子，秩 = 维数
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Jacobian_demo/">JACOBIAN_DEMO</a></li>
+            <li>JAC_L1_GEOMETRY</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L1-2-雅可比的几何意义：行列式-局部缩放因子，秩-维数"><a href="#L1-2-雅可比的几何意义：行列式-局部缩放因子，秩-维数" class="headerlink" title="L1.2 雅可比的几何意义：行列式 = 局部缩放因子，秩 = 维数"></a>L1.2 雅可比的几何意义：行列式 = 局部缩放因子，秩 = 维数</h1><blockquote>
+<p>一句话：**|det J(p)|** 是映射 f 在 p 处对”面积 / 体积”的局部放大率；<strong>rank J &lt; n</strong> 意味着该邻域被”降维压扁”，映射不可逆——这与机械臂奇异位形同源。</p>
+</blockquote>
+<hr>
+<h2 id="一、行列式-局部面积缩放"><a href="#一、行列式-局部面积缩放" class="headerlink" title="一、行列式 = 局部面积缩放"></a>一、行列式 = 局部面积缩放</h2><p>考虑 p 附近一个微小平行四边形（边长 h 的两个基向量），它在 f 下的像仍然是一个平行四边形，其面积恰好等于</p>
+<blockquote>
+<p>像面积 = |det J(p)| · h²</p>
+</blockquote>
+<ul>
+<li><strong>线性映射</strong>：这个关系精确成立，面积就是 |det J| 倍。</li>
+<li><strong>非线性映射</strong>：在足够小的 h 下，局部面积 ≈ |det J(p)|·h²。</li>
+</ul>
+<h3 id="推导直觉（为什么是-det）"><a href="#推导直觉（为什么是-det）" class="headerlink" title="推导直觉（为什么是 det）"></a>推导直觉（为什么是 det）</h3><p>线性映射下，平行四边形两个基向量 v1,v2 变成 J·v1、J·v2：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">像面积 = |det[J·v1, J·v2]| = |det(J)| · |det[v1,v2]| = |det J| · 原面积</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>行列式 = 线性变换对”有向体积”的缩放因子</strong>——这是线性代数核心定理。非线性映射在无穷小尺度上退化为 J（L1.1 的线性化），所以局部面积缩放 = |det J(p)|。</p>
+<h2 id="二、秩-维数（方阵情形）"><a href="#二、秩-维数（方阵情形）" class="headerlink" title="二、秩 = 维数（方阵情形）"></a>二、秩 = 维数（方阵情形）</h2><p>对<strong>方阵</strong>雅可比 J (Rⁿ→Rⁿ)：若 rank J(p) &lt; n，则 |det J| = 0。此时一阶微分映射退化（存在零方向）：</p>
+<blockquote>
+<p>det J(p)=0  ⟺  该点的微分映射不满秩（一阶信息丢失）</p>
+</blockquote>
+<p><strong>注意</strong>：单点 det=0 不必然推出”整个邻域降维”或”局部不可逆”。反例 f(x)=x³（f’(0)=0 但局部是双射）、f(x,y)=(x,y³)（原点秩亏但局部双射）。严格结论：</p>
+<ul>
+<li>det J(p)≠0 → 逆函数定理保证存在局部可微逆（<strong>充分条件</strong>）；</li>
+<li>det J(p)=0 → 逆函数定理不适用，映射在该点<strong>可能</strong>退化（如机械臂奇异、投影秩亏），但需逐例分析；</li>
+<li>若想断言”像空间是低维流形”，需要邻域内<strong>恒定秩</strong>（常秩定理）。</li>
+</ul>
+<p>本 demo 的 f3(x,y)=(x,x²) 恰好整个映射只依赖一个参数（像本来就是抛物线），所以秩亏是”结构性”的——这是特例而非通则。</p>
+<h3 id="秩亏的深层含义：不可逆与不可观（带条件）"><a href="#秩亏的深层含义：不可逆与不可观（带条件）" class="headerlink" title="秩亏的深层含义：不可逆与不可观（带条件）"></a>秩亏的深层含义：不可逆与不可观（带条件）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">方阵 rank J &lt; n ⟺ det J = 0 ⟹ 逆函数定理不适用 (不保证局部可微逆, 非必然不可逆)</span><br><span class="line">数值上: 接近奇异时 JJᵀ 或 JᵀJ 病态 → 未阻尼逆解范数 ~1/σ_min 爆炸</span><br><span class="line">       (Moore-Penrose 伪逆本身在精确秩亏点仍有限, 但求逆公式 Jᵀ(JJᵀ)⁻¹ 不可用)</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>跨领域同构（需限定条件）</strong>：机器人的奇异位形（J 列共线，2×2 特例）、单目相机深度不可观（观测维度不足/深度方向存在零空间，非方阵行列式）、SLAM 退化场景——都是”雅可比/观测映射存在零方向”这一现象在不同物理世界的投影。**识别”某个雅可比亏秩”= 识别”这个系统在这个状态可能没法完全控制/估计”**（严格可观性还需结合状态转移与多时刻观测，见 KF_demo）。</p>
+<h2 id="三、代码走读（jac-l1-geometry-cpp）"><a href="#三、代码走读（jac-l1-geometry-cpp）" class="headerlink" title="三、代码走读（jac_l1_geometry.cpp）"></a>三、代码走读（jac_l1_geometry.cpp）</h2><p>三个合成映射分别演示三种情形：</p>
+<table>
+<thead>
+<tr>
+<th>映射</th>
+<th>雅可比</th>
+<th>现象</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>f1</code> 线性 (2x+0.3y, 0.5x+1.5y)</td>
+<td><code>J1</code>（常数，det=2.85）</td>
+<td>单位正方形面积精确放大 2.85 倍</td>
+</tr>
+<tr>
+<td><code>f2</code> 非线性 (x², y)</td>
+<td><code>J2</code>=diag(2x,1)</td>
+<td>局部面积 ≈ |det J2|·h²</td>
+</tr>
+<tr>
+<td><code>f3</code> 秩亏 (x, x²)</td>
+<td><code>J3</code> 第二列恒为 0，det≡0</td>
+<td>平面被压成一条抛物线（维数坍缩）</td>
+</tr>
+</tbody></table>
+<p><code>det2</code> 求 2×2 行列式，<code>cross</code> 用叉积算带符号面积。断言：f1 的面积缩放与 |det J| 在 1e-9 内一致；f2 局部面积与 |det J|·h² 在 1e-7 内一致；f3 各点 det 均 ≈ 0。</p>
+<h2 id="四、你会看到什么"><a href="#四、你会看到什么" class="headerlink" title="四、你会看到什么"></a>四、你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[L1.2] 线性 f1 面积缩放 = 2.850000  |det J| = 2.850000</span><br><span class="line">[L1.2] 非线性 f2 局部面积 = 5.99e-06  近似 |det J|·h^2 = 6.00e-06</span><br><span class="line">[L1.2] 秩亏 f3 各点 det J = 0  (应≡0 → 平面被压成抛物线)</span><br><span class="line">[PASS] det=局部缩放因子 / 秩=维数 直觉成立</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img src="/02jd/Jacobian_demo/images/fig2_geometry.svg" alt="L1.2 雅可比的几何意义"></p>
+<h2 id="五、工程落点（真实项目）"><a href="#五、工程落点（真实项目）" class="headerlink" title="五、工程落点（真实项目）"></a>五、工程落点（真实项目）</h2><ul>
+<li><strong>机械臂奇异检测</strong>：实时监控 <code>w = √det(JJᵀ)</code>（可操作度，L2.2），低于阈值触发奇异规避/降速——KUKA/FANUC 等工业控制器的”singularity zone”就是这么判的。</li>
+<li>**可操作度椭球 (Manipulability Ellipsoid)**：Yoshikawa 1971 提出，用 JJᵀ 特征值画末端速度能力椭球——路径规划时避开椭球被压扁的方向。</li>
+<li><strong>卡尔曼滤波的可观性</strong>：观测雅可比 H 亏秩 = 状态不可观（KF_demo L3.2 的同一判据）——单目 SLAM 初始化时的”退化”正是 H 亏秩。</li>
+<li><strong>数值积分变换</strong>：极坐标↔直角坐标、机器人关节空间↔工作空间的概率密度变换都要乘 |det J|（Change of Variables）——滤波器做坐标变换时这是隐式依赖。</li>
+</ul>
+<h2 id="六、自检"><a href="#六、自检" class="headerlink" title="六、自检"></a>六、自检</h2><ul>
+<li>把 f2 的 p 换成 (0.1,4)，看局部面积如何随 2x 变化（det∝x）。</li>
+<li>思考：f3 把 R² 压成 R¹（抛物线），这正对应”单目相机深度不可观”的那类退化。</li>
+<li>挑战：对 3×3 雅可比，|det J| 对应”体积”缩放——推广到 n 维就是”体积元缩放”，这是贝叶斯滤波里坐标变换的基础。</li>
+</ul>
+<h2 id="七、下一步"><a href="#七、下一步" class="headerlink" title="七、下一步"></a>七、下一步</h2><p>进入 <a href="/02jd/Jacobian_demo/jac_l1_manipulator.html">L1.3 机械臂速度运动学 J·q̇=ẋ</a>：把”面积缩放”换成”末端能往哪动”。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Jacobian_demo/">JACOBIAN_DEMO</a></li>
+            <li>JAC_L1_GEOMETRY</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

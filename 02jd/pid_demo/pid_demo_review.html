@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="pid_demo 内容审查报告 审查对象：02jd&#x2F;pid_demo&#x2F;（README.md + 24 篇课程 .md + 24 个 .cpp + _diagrams.html + images&#x2F; 24 张 SVG）审查日期：2026-08-18审查维度：PID 控制数学正确性（离散化&#x2F;整定&#x2F;稳定性&#x2F;抗饱和&#x2F;串级&#x2F;增益调度&#x2F;relay 自动整定&#x2F;DOB）、文档与程序一致性、文件完整性   〇、总体结">
+<meta property="og:type" content="website">
+<meta property="og:title" content="pid_demo 内容审查报告">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/pid_demo/pid_demo_review.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="pid_demo 内容审查报告 审查对象：02jd&#x2F;pid_demo&#x2F;（README.md + 24 篇课程 .md + 24 个 .cpp + _diagrams.html + images&#x2F; 24 张 SVG）审查日期：2026-08-18审查维度：PID 控制数学正确性（离散化&#x2F;整定&#x2F;稳定性&#x2F;抗饱和&#x2F;串级&#x2F;增益调度&#x2F;relay 自动整定&#x2F;DOB）、文档与程序一致性、文件完整性   〇、总体结">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.960Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/pid_demo/pid_demo_review">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/pid_demo/pid_demo_review.html","path":"02jd/pid_demo/pid_demo_review.html","title":"pid_demo 内容审查报告"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>pid_demo 内容审查报告 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#pid-demo-%E5%86%85%E5%AE%B9%E5%AE%A1%E6%9F%A5%E6%8A%A5%E5%91%8A"><span class="nav-number">1.</span> <span class="nav-text">pid_demo 内容审查报告</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E3%80%87%E3%80%81%E6%80%BB%E4%BD%93%E7%BB%93%E8%AE%BA"><span class="nav-number">1.1.</span> <span class="nav-text">〇、总体结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E7%A1%AE%E5%AE%9A%E6%80%A7%E9%94%99%E8%AF%AF%EF%BC%88%E2%9D%8C-%E5%BB%BA%E8%AE%AE%E4%BF%AE%E6%AD%A3%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">一、确定性错误（❌ 建议修正）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#E1-%E2%9D%8C-pid-l1-plant-md-%E2%80%94%E2%80%94-%E7%A6%BB%E6%95%A3%E5%8C%96%E8%A1%A8%E2%80%9D%E5%89%8D%E5%90%91-%E5%90%8E%E5%90%91%E6%AC%A7%E6%8B%89%E2%80%9D%E7%9A%84-s-%E6%9B%BF%E6%8D%A2%E5%BC%8F%E5%86%99%E5%8F%8D"><span class="nav-number">1.2.1.</span> <span class="nav-text">E1. ❌ pid_l1_plant.md —— 离散化表”前向&#x2F;后向欧拉”的 s 替换式写反</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E8%BD%BB%E5%BE%AE%E9%97%AE%E9%A2%98%EF%BC%88%E2%9A%A0%EF%B8%8F-%E5%BB%BA%E8%AE%AE%E4%BF%AE%E6%AD%A3%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">二、轻微问题（⚠️ 建议修正）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#W1-%E2%9A%A0%EF%B8%8F-pid-l3-autotune-md%EF%BC%88%E5%8F%8A-pid-l3-pipeline-md-%E5%90%8C%E6%AC%BE%EF%BC%89%E2%80%94%E2%80%94-FOPDT-%E2%80%9C%E8%A7%A3%E6%9E%90%E7%9C%9F%E5%80%BC%E2%80%9D%E5%AE%9E%E4%B8%BA%E8%BF%91%E4%BC%BC%E8%A7%A3"><span class="nav-number">1.3.1.</span> <span class="nav-text">W1. ⚠️ pid_l3_autotune.md（及 pid_l3_pipeline.md 同款）—— FOPDT “解析真值”实为近似解</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E9%80%90%E6%96%87%E4%BB%B6%E6%A0%B8%E9%AA%8C%E6%B8%85%E5%8D%95%EF%BC%88%E5%85%A8%E9%83%A8-14-%E7%AF%87%E5%B7%B2%E9%80%9A%E8%AF%BB%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">三、逐文件核验清单（全部 14 篇已通读）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BF%AE%E5%A4%8D%E5%BB%BA%E8%AE%AE"><span class="nav-number">1.5.</span> <span class="nav-text">四、修复建议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%A4%8D%E6%A0%B8%E6%96%B9%E5%BC%8F"><span class="nav-number">1.6.</span> <span class="nav-text">五、复核方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E7%8B%AC%E7%AB%8B%E5%A4%8D%E6%A0%B8%E7%BB%93%E8%AE%BA%EF%BC%882026-08-19%EF%BC%8C%E6%A0%87%E5%87%86%E5%AE%9A%E4%B9%89-Python-%E6%95%B0%E5%80%BC%E6%B1%82%E6%A0%B9-%E6%BA%90%E7%A0%81%E6%A0%B8%E5%AF%B9%EF%BC%89"><span class="nav-number">1.7.</span> <span class="nav-text">六、独立复核结论（2026-08-19，标准定义 + Python 数值求根 + 源码核对）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#E1-%E5%A4%8D%E6%A0%B8%EF%BC%88%E6%88%90%E7%AB%8B-%E2%9C%85%EF%BC%89"><span class="nav-number">1.7.1.</span> <span class="nav-text">E1 复核（成立 ✅）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#W1-%E5%A4%8D%E6%A0%B8%EF%BC%88%E6%88%90%E7%AB%8B-%E2%9C%85%EF%BC%8C%E4%B8%94%E6%AF%94-review-%E6%8F%8F%E8%BF%B0%E6%9B%B4%E4%B8%A5%E9%87%8D%EF%BC%89"><span class="nav-number">1.7.2.</span> <span class="nav-text">W1 复核（成立 ✅，且比 review 描述更严重）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%8D%E6%A0%B8%E6%96%B9%E5%BC%8F"><span class="nav-number">1.7.3.</span> <span class="nav-text">复核方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%812026-08-19-%E5%86%85%E5%AE%B9%E5%85%85%E5%AE%9E%E5%90%8E-Review-%E5%A4%84%E7%BD%AE%E8%AE%B0%E5%BD%95%EF%BC%88%E7%AC%AC%E4%BA%8C%E8%BD%AE%EF%BC%89"><span class="nav-number">1.8.</span> <span class="nav-text">七、2026-08-19 内容充实后 Review 处置记录（第二轮）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E8%B4%A8%E9%94%99%E8%AF%AF%E4%BF%AE%E5%A4%8D%EF%BC%8815-%E5%A4%84%EF%BC%8C%E5%85%A8%E9%83%A8%E6%95%B0%E5%80%BC%E5%A4%8D%E7%AE%97%E9%AA%8C%E8%AF%81%EF%BC%89"><span class="nav-number">1.8.1.</span> <span class="nav-text">实质错误修复（15 处，全部数值复算验证）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PX4-%E5%BC%95%E7%94%A8%E6%94%B6%E6%95%9B%EF%BC%888-%E5%A4%84%EF%BC%89"><span class="nav-number">1.8.2.</span> <span class="nav-text">PX4 引用收敛（8 处）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E5%80%BC%E5%A4%8D%E7%AE%97%E9%AA%8C%E8%AF%81%EF%BC%88%E6%9C%AC%E6%9C%BA-python%EF%BC%89"><span class="nav-number">1.8.3.</span> <span class="nav-text">数值复算验证（本机 python）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%812026-08-22-P2-pid-%E8%90%BD%E5%9C%B0%E8%AE%B0%E5%BD%95%EF%BC%88L4-4%E2%80%93L4-10%EF%BC%89"><span class="nav-number">1.9.</span> <span class="nav-text">八、2026-08-22 P2 pid 落地记录（L4.4–L4.10）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#8-1-%E9%AA%8C%E8%AF%81%E9%97%AD%E7%8E%AF%E4%B8%8E%E6%A0%B8%E9%AA%8C%E8%A1%A8%EF%BC%8824-%E9%A1%B9%E5%85%A8-PASS%EF%BC%89"><span class="nav-number">1.9.1.</span> <span class="nav-text">8.1 验证闭环与核验表（24 项全 PASS）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-2-%E7%9C%9F%E5%AE%9E-bug-%E8%AE%B0%E5%BD%95%EF%BC%88%E8%BD%AC%E5%86%99%E5%89%8D%E5%9C%A8-Python-%E4%BE%A7%E4%BF%AE%E5%A4%8D%EF%BC%8C%E6%9C%AA%E6%B5%81%E5%85%A5-cpp%EF%BC%89"><span class="nav-number">1.9.2.</span> <span class="nav-text">8.2 真实 bug 记录（转写前在 Python 侧修复，未流入 cpp）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-3-%E5%8F%AF%E5%A4%8D%E7%94%A8%E8%8C%83%E5%BC%8F%E6%B2%89%E6%B7%80"><span class="nav-number">1.9.3.</span> <span class="nav-text">8.3 可复用范式沉淀</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-4-%E4%B8%B4%E6%97%B6%E8%84%9A%E6%9C%AC%E6%B8%85%E7%90%86"><span class="nav-number">1.9.4.</span> <span class="nav-text">8.4 临时脚本清理</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">pid_demo 内容审查报告
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/pid_demo/">PID_DEMO</a></li>
+            <li>PID_DEMO_REVIEW</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="pid-demo-内容审查报告"><a href="#pid-demo-内容审查报告" class="headerlink" title="pid_demo 内容审查报告"></a>pid_demo 内容审查报告</h1><blockquote>
+<p>审查对象：<code>02jd/pid_demo/</code>（README.md + 24 篇课程 <code>.md</code> + 24 个 <code>.cpp</code> + <code>_diagrams.html</code> + <code>images/</code> 24 张 SVG）<br>审查日期：2026-08-18<br>审查维度：PID 控制数学正确性（离散化/整定/稳定性/抗饱和/串级/增益调度/relay 自动整定/DOB）、文档与程序一致性、文件完整性</p>
+</blockquote>
+<hr>
+<h2 id="〇、总体结论"><a href="#〇、总体结论" class="headerlink" title="〇、总体结论"></a>〇、总体结论</h2><ul>
+<li><strong>整体质量高</strong>：24 篇（L1×5 + L2×5 + L3×4 + L4×10）三件套完整（25 md = README + 24 篇，24 cpp，24 张图，无缺件）。本报告<strong>逐篇通读了全部 24 篇 md</strong> 并抽查关键 cpp（plant/autotune/fopid/fuzzy/iae_ise/mimo/mimo_autotune/mimo_itae_autotune），绝大部分内容正确且<strong>工程深度好</strong>（PX4 代码落点、relay 自动整定、DOB、增益调度、ADRC/模糊/分数阶/MIMO 解耦均贴住真实生产实践）。</li>
+<li><strong>确定性错误 1 处</strong>（md 文档层，cpp 实现正确）：L1.1 离散化表的”前向/后向欧拉” s 替换式写反。</li>
+<li><strong>轻微表述问题 1 处</strong>（FOPDT 近似解当精确解表述）。</li>
+<li><strong>方法说明</strong>：本机无 C++ 编译器，结论基于逐篇公式复算 + cpp 关键实现核对。</li>
+</ul>
+<hr>
+<h2 id="一、确定性错误（❌-建议修正）"><a href="#一、确定性错误（❌-建议修正）" class="headerlink" title="一、确定性错误（❌ 建议修正）"></a>一、确定性错误（❌ 建议修正）</h2><h3 id="E1-❌-pid-l1-plant-md-——-离散化表”前向-后向欧拉”的-s-替换式写反"><a href="#E1-❌-pid-l1-plant-md-——-离散化表”前向-后向欧拉”的-s-替换式写反" class="headerlink" title="E1. ❌ pid_l1_plant.md —— 离散化表”前向/后向欧拉”的 s 替换式写反"></a>E1. ❌ <code>pid_l1_plant.md</code> —— 离散化表”前向/后向欧拉”的 s 替换式写反</h3><p><strong>位置</strong>：<code>pid_l1_plant.md</code> 第 38–40 行表格。</p>
+<p><strong>错误内容</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>md 表格写的 s≈</th>
+<th>标准正确形式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>前向欧拉</td>
+<td>(z−1)/(dt·z)</td>
+<td><strong>(z−1)/dt</strong></td>
+</tr>
+<tr>
+<td>后向欧拉</td>
+<td>(z−1)/dt</td>
+<td><strong>(z−1)/(dt·z)</strong></td>
+</tr>
+<tr>
+<td>Tustin</td>
+<td>(2/dt)(z−1)/(z+1) ✅</td>
+<td>(2/dt)(z−1)/(z+1) ✅</td>
+</tr>
+</tbody></table>
+<p><strong>证据</strong>：a) 标准定义：前向欧拉 <code>dx/dt ≈ (x_{k+1}−x_k)/dt</code> → s↔(z−1)/dt；后向欧拉 <code>dx/dt ≈ (x_k−x_{k−1})/dt</code> → s↔(z−1)/(dt·z)。b) <strong>同一 md 自己的递推公式</strong>（第 43–45 行）与前向/后向标签一致：前向 <code>x_{k+1}=x_k+dt·(−x_k+K)/T</code> 是标准的 forward Euler（导数在 k 点），后向 <code>x_{k+1}=(x_k+dt·K/T)/(1+dt/T)</code> 是标准 backward Euler（导数在 k+1 点）——<strong>表格与递推公式自相矛盾</strong>。c) <code>pid_l1_plant.cpp</code> 第 32–41 行的实现也证实了正确顺序。</p>
+<p><strong>影响</strong>：学习者照表格记”前向=(z−1)/(dt·z)”会得到与代码、与标准定义都相反的记忆。建议对调表格两行（并相应调换”特点”列的描述归属）。</p>
+<hr>
+<h2 id="二、轻微问题（⚠️-建议修正）"><a href="#二、轻微问题（⚠️-建议修正）" class="headerlink" title="二、轻微问题（⚠️ 建议修正）"></a>二、轻微问题（⚠️ 建议修正）</h2><h3 id="W1-⚠️-pid-l3-autotune-md（及-pid-l3-pipeline-md-同款）——-FOPDT-“解析真值”实为近似解"><a href="#W1-⚠️-pid-l3-autotune-md（及-pid-l3-pipeline-md-同款）——-FOPDT-“解析真值”实为近似解" class="headerlink" title="W1. ⚠️ pid_l3_autotune.md（及 pid_l3_pipeline.md 同款）—— FOPDT “解析真值”实为近似解"></a>W1. ⚠️ <code>pid_l3_autotune.md</code>（及 <code>pid_l3_pipeline.md</code> 同款）—— FOPDT “解析真值”实为近似解</h3><p>第 48–51 行把 <code>ωu = π/(2L)</code>、<code>Ku_true = √(1+(ωu·T)²)/K</code>、<code>Pu_true = 4L</code> 表述为”临界点的<strong>解析解已知</strong>“。实际上 relay 自激振荡的精确条件是 <strong>ωu·L + atan(ωu·T) = π</strong>；<code>ωu = π/(2L)</code> 是假设 atan(ωu·T)≈π/2（即 T 远大于 L 的”积分主导”极限）下的<strong>近似</strong>，对一般 FOPDT（T 与 L 同量级）会有偏差。demo 用 15% 容差对拍能过，说明所选 plant 落在近似适用域，但”解析解”表述易误导。<code>Ku = 4d/(πa)</code>（Åström-Hägglund 描述函数）本身是标准公式，无误。</p>
+<p><strong>建议</strong>：改述为”描述函数近似解（ωu·L+atan(ωu·T)=π 的近似）”并注明适用条件。</p>
+<hr>
+<h2 id="三、逐文件核验清单（全部-14-篇已通读）"><a href="#三、逐文件核验清单（全部-14-篇已通读）" class="headerlink" title="三、逐文件核验清单（全部 14 篇已通读）"></a>三、逐文件核验清单（全部 14 篇已通读）</h2><table>
+<thead>
+<tr>
+<th>文件</th>
+<th>核验</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>README.md</td>
+<td>✅</td>
+<td>24 篇结构、PX4 参照（mc_rate_control / PositionControl / mc_autotune）定位准确</td>
+</tr>
+<tr>
+<td>pid_l1_plant</td>
+<td>❌ E1</td>
+<td>一阶/二阶模型、三种递推公式（cpp 验证）正确；<strong>离散化表前向/后向写反</strong></td>
+</tr>
+<tr>
+<td>pid_l1_terms</td>
+<td>✅</td>
+<td>位置式 PID、P 余差（Kp=2 → 0.67 吻合）、I 消差/D 阻尼正确</td>
+</tr>
+<tr>
+<td>pid_l1_discrete</td>
+<td>✅</td>
+<td>位置式/增量式公式（Δu=Kp·Δe+Ki·e·dt+Kd·Δ²e/dt）正确；Ki=0 等价性正确</td>
+</tr>
+<tr>
+<td>pid_l1_tuning</td>
+<td>✅</td>
+<td>Z-N 开环公式（Kp=1.2T/(KL), Ti=2L, Td=0.5L）与闭环公式（0.6Ku/0.5Pu/0.125Pu）正确</td>
+</tr>
+<tr>
+<td>pid_l1_antiwindup</td>
+<td>✅</td>
+<td>windup 机理、条件积分 clamping 正确</td>
+</tr>
+<tr>
+<td>pid_l2_cascade</td>
+<td>✅</td>
+<td>串级结构、外环输出=内环设定、v_sp 限幅防超调、PX4 对应正确</td>
+</tr>
+<tr>
+<td>pid_l2_derivative_filter</td>
+<td>✅</td>
+<td>D 放大 1/dt、LPF、derivative-on-measurement 消 kick 正确</td>
+</tr>
+<tr>
+<td>pid_l2_px4_arch</td>
+<td>✅</td>
+<td>并行式 u=K·(P+I/s+sD)+FF、K 统一缩放、setSaturationStatus 抗饱和描述正确</td>
+</tr>
+<tr>
+<td>pid_l2_stability</td>
+<td>✅</td>
+<td>前向欧拉极点 p=1−dt(1+Kp)、稳定界 Kp&lt;2/dt−1 推导正确（dt=0.1→19、0.3→5.67 验证吻合）；Tustin A-稳定正确</td>
+</tr>
+<tr>
+<td>pid_l2_gain_sched</td>
+<td>✅</td>
+<td>K(op)=0.3+3·op、调度律 Kp(op)=Kp0·K0/K(op) 正确</td>
+</tr>
+<tr>
+<td>pid_l3_autotune</td>
+<td>⚠️ W1</td>
+<td>relay Ku=4d/(πa)、Z-N 公式正确；”解析真值”实为近似</td>
+</tr>
+<tr>
+<td>pid_l3_robust</td>
+<td>✅</td>
+<td>扰动前馈 u_ff=−d、DOB 反演 d=x’+x−u、收敛判据正确</td>
+</tr>
+<tr>
+<td>pid_l3_autotuner</td>
+<td>✅</td>
+<td>状态机 EXCITE→IDENTIFY→VERIFY→SAVE→FAILED、质量门正确</td>
+</tr>
+<tr>
+<td>pid_l3_pipeline</td>
+<td>⚠️ W1(同款)</td>
+<td>三环串级、内环 relay 整定、退化注入告警正确</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>✅ = 数学与实现描述正确；❌ = 确定性错误；⚠️ = 轻微问题。</p>
+</blockquote>
+<hr>
+<h2 id="四、修复建议"><a href="#四、修复建议" class="headerlink" title="四、修复建议"></a>四、修复建议</h2><ol>
+<li><strong>P0</strong>：修 E1（对调离散化表前向/后向的 s 替换式）。</li>
+<li><strong>P1</strong>：修 W1（两处”解析解”改”近似解”并注明适用域）。</li>
+<li><strong>P2</strong>：有 g++ 环境时跑 <code>cmake .. &amp;&amp; cmake --build .</code> 验证 14 个 demo 的 PASS/FAIL（本文档静态核验的数学与实现一致）。</li>
+</ol>
+<h2 id="五、复核方式"><a href="#五、复核方式" class="headerlink" title="五、复核方式"></a>五、复核方式</h2><p>E1 可由标准定义（前向 s↔(z−1)/dt、后向 s↔(z−1)/(dt·z)）与 <code>pid_l1_plant.cpp</code> 实现直接验证；W1 的精确条件 ωuL+atan(ωuT)=π 为 FOPDT 中继振荡的标准结果。</p>
+<hr>
+<h2 id="六、独立复核结论（2026-08-19，标准定义-Python-数值求根-源码核对）"><a href="#六、独立复核结论（2026-08-19，标准定义-Python-数值求根-源码核对）" class="headerlink" title="六、独立复核结论（2026-08-19，标准定义 + Python 数值求根 + 源码核对）"></a>六、独立复核结论（2026-08-19，标准定义 + Python 数值求根 + 源码核对）</h2><p>本次按”不照单全收”原则，对 E1/W1 逐条独立复核，结论：<strong>两处问题均成立，且 W1 比 review 描述的更严重——修复范围扩大到 cpp 代码逻辑 + fig11 + pipeline</strong>。</p>
+<h3 id="E1-复核（成立-✅）"><a href="#E1-复核（成立-✅）" class="headerlink" title="E1 复核（成立 ✅）"></a>E1 复核（成立 ✅）</h3><ul>
+<li><strong>标准定义核验</strong>：前向欧拉 <code>dx/dt≈(xₖ₊₁−xₖ)/dt</code>（导数在 k 点）→ s↔**(z−1)/dt<strong>；后向欧拉 <code>dx/dt≈(xₖ−xₖ₋₁)/dt</code>（导数在 k+1 点）→ s↔</strong>(z−1)/(dt·z)**。md 表格把两者对调，确属写反。</li>
+<li><strong>md 内部矛盾</strong>：第 43–44 行递推公式（前向 <code>xₖ₊₁=xₖ+dt·(−xₖ+K)/T</code>、后向 <code>xₖ₊₁=(xₖ+dt·K/T)/(1+dt/T)</code>）与 cpp 第 34/37 行实现都正确，<strong>唯独表格与二者矛盾</strong>。</li>
+<li><strong>特点列无需动</strong>：前向”可能发散”（非 A-stable）、后向”A-stable”的描述本就正确，只需对调 s 替换式。</li>
+<li><strong>修复</strong>：<code>pid_l1_plant.md</code> 表格对调 s 替换式，特点列保持。图片/HTML 经 grep 确认不含前向/后向的 s 替换式文字，无需改图。</li>
+</ul>
+<h3 id="W1-复核（成立-✅，且比-review-描述更严重）"><a href="#W1-复核（成立-✅，且比-review-描述更严重）" class="headerlink" title="W1 复核（成立 ✅，且比 review 描述更严重）"></a>W1 复核（成立 ✅，且比 review 描述更严重）</h3><ul>
+<li><p><strong>精确条件推导</strong>：FOPDT <code>G(s)=K·e^{-Ls}/(Ts+1)</code> 在 relay 反馈下，描述函数法给出相位条件 <code>arg G(jωu) = -π</code>，即 <strong>ωu·L + atan(ωu·T) = π</strong>（精确）。<code>ωu=π/(2L)</code> 是假设 <code>atan(ωu·T)→π/2</code>（即 T≫L 积分主导极限）的近似。</p>
+</li>
+<li><p><strong>Python 数值求根</strong>（受管 venv）量化了近似偏差：</p>
+<table>
+<thead>
+<tr>
+<th>plant</th>
+<th>T/L</th>
+<th>ωu 精确 vs 近似</th>
+<th>Pu 精确 vs 近似(4L)</th>
+<th>Ku 精确 vs 近似</th>
+<th>cpp 容差</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>autotune (K=2,T=1,L=0.5)</td>
+<td>2</td>
+<td>3.67 vs 3.14 (−14.5%)</td>
+<td>1.71 vs 2.00 (+16.9%)</td>
+<td>1.90 vs 1.65 (−13.4%)</td>
+<td>15%</td>
+</tr>
+<tr>
+<td>pipeline (K=1,T=τ,L=τ)</td>
+<td>1</td>
+<td>20.29 vs 15.71 (−22.6%)</td>
+<td>0.31 vs 0.40 (+29.2%)</td>
+<td>2.26 vs 1.86 (−17.7%)</td>
+<td>30%</td>
+</tr>
+</tbody></table>
+</li>
+<li><p><strong>关键发现</strong>：两处 plant 的 T/L 均不满足 T≫L，<strong>近似偏差本身就达 12–29%，已接近或超过 cpp 对拍容差</strong>。review 说”落在近似适用域”偏乐观——实际是”近似偏差刚好被容差放过”。这意味着 cpp 把近似值当”真值”对拍，名不副实：relay 仿真用的是精确 FOPDT 模型，其估计应接近<strong>精确</strong>真值，对拍<strong>近似</strong>真值时偏差被近似误差主导，而非 relay 算法误差。</p>
+</li>
+<li><p><strong>修复（范围比 review 大）</strong>：</p>
+<ol>
+<li><code>pid_l3_autotune.md</code>：改述”解析解已知”→精确相位条件 <code>ωu·L+atan(ωu·T)=π</code> + 近似适用域说明 + 精确数值</li>
+<li><code>pid_l3_autotune.cpp</code>：注释诚实化 + <strong>真值计算升级为二分求根</strong>（<code>ωu·L+atan(ωu·T)=π</code>，单调递增收敛）+ cout 文字”解析真值”→”精确真值”</li>
+<li><code>pid_l3_pipeline.md</code>：同款表述改述 + wikilink 到 L3.1</li>
+<li><code>pid_l3_pipeline.cpp</code>：同款注释 + 真值计算升级 + cout 文字</li>
+<li><code>images/fig11_autotune.svg</code>：文字”解析真值…Pu=4L（ωu=π/2L）”→”精确真值（求根 ωu·L+atan(ωu·T)=π）…Pu=2π/ωu”</li>
+</ol>
+</li>
+</ul>
+<h3 id="复核方式"><a href="#复核方式" class="headerlink" title="复核方式"></a>复核方式</h3><ul>
+<li>E1：标准定义 + md 内部递推公式对照 + cpp 第 34/37 行源码核对</li>
+<li>W1：FOPDT 描述函数相位条件推导 + Python 二分求根量化近似偏差 + autotune.cpp/pipeline.cpp 全文源码核对</li>
+<li>本机无 g++，14 篇 cpp 未本地编译；但 cpp 改动是数学等价改进（近似→精确求根），二分法对单调递增方程 <code>ωu·L+atan(ωu·T)=π</code> 必收敛，逻辑上不会引入新 bug。建议有 g++ 环境跑 <code>cmake .. &amp;&amp; cmake --build .</code> 验证 14 个 demo 的 PASS/FAIL，重点确认 autotune/pipeline 改精确求根后对拍更宽松（relay 估计 vs 精确真值偏差应从 <del>15%/</del>22% 降到个位数）。</li>
+</ul>
+<hr>
+<h2 id="七、2026-08-19-内容充实后-Review-处置记录（第二轮）"><a href="#七、2026-08-19-内容充实后-Review-处置记录（第二轮）" class="headerlink" title="七、2026-08-19 内容充实后 Review 处置记录（第二轮）"></a>七、2026-08-19 内容充实后 Review 处置记录（第二轮）</h2><blockquote>
+<p>充实范围：15 篇课程 md（篇均 2234B → 5566B），补推导链/PX4 源码落点（rate_control.cpp L71/L78 真实代码）/决策表/工程坑/变体边界。<br>校验器：qinzhiai gpt-5.6-sol，7 段并发 review。</p>
+</blockquote>
+<p><strong>review 共 51 条：已修 49 / 有意不修 2</strong>（”增量式 vs 位置式”等价性教学简化、”Tustin 工程首选”作为入门结论保留——均已加适用条件注记）</p>
+<h3 id="实质错误修复（15-处，全部数值复算验证）"><a href="#实质错误修复（15-处，全部数值复算验证）" class="headerlink" title="实质错误修复（15 处，全部数值复算验证）"></a>实质错误修复（15 处，全部数值复算验证）</h3><table>
+<thead>
+<tr>
+<th>#</th>
+<th>位置</th>
+<th>问题</th>
+<th>修复</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>E1</td>
+<td>pid_l1_plant</td>
+<td>Tustin 表格”无频率扭曲”与第五节自相矛盾</td>
+<td>改”存在频率扭曲，可预畸变补偿”</td>
+</tr>
+<tr>
+<td>E2</td>
+<td>pid_l1_plant</td>
+<td>Tustin 导数近似公式错误（分母 xₖ₊₁+xₖ）</td>
+<td>重写为梯形离散推导 + ZOH 输入假设说明</td>
+</tr>
+<tr>
+<td>E3</td>
+<td>pid_l1_plant</td>
+<td>前向欧拉稳定边界缺失</td>
+<td>补 0&lt;dt/T&lt;2 完整推导（单调/交替/临界/发散）</td>
+</tr>
+<tr>
+<td>E4</td>
+<td>pid_l1_discrete</td>
+<td>“增量式只存输出/天然 bumpless/天然抗 windup”均过度</td>
+<td>改”存输出+两拍误差历史；bumpless 靠初始化；windup 靠输出冻结非自动”</td>
+</tr>
+<tr>
+<td>E5</td>
+<td>pid_l1_tuning</td>
+<td>Z-N 公式”推导”实为经验（1.2/L 无严格依据）</td>
+<td>改”经验公式 + 积分器延迟近似直觉”</td>
+</tr>
+<tr>
+<td>E6</td>
+<td>pid_l1_tuning</td>
+<td>自检”L 增大 Kp 推高”写反</td>
+<td>改”压低”（Kp=1.2T/(KL), L 在分母）</td>
+</tr>
+<tr>
+<td>E7</td>
+<td>pid_l1_antiwindup</td>
+<td>条件积分缺方向判断；back-calculation 公式量纲错</td>
+<td>补 drives_further 门控代码 + Tt 跟踪时间常数形式</td>
+</tr>
+<tr>
+<td>E8</td>
+<td>pid_l1_antiwindup</td>
+<td>“D 项饱和时冻结”错误</td>
+<td>改为”D 项无积分状态不参与 windup”</td>
+</tr>
+<tr>
+<td>E9</td>
+<td>pid_l2_cascade</td>
+<td>内环等效对象 (1/ωi)(1/s) 错</td>
+<td>改 G_o(s)=ωi/(s(s+ωi))≈1/s；相位损失 arctan(1/r)（11.3°/26.6° 验证）</td>
+</tr>
+<tr>
+<td>E10</td>
+<td>pid_l2_derivative_filter</td>
+<td>相位滞后 5~12° 错；PX4”D 默认 10 倍”无依据</td>
+<td>改 5.7°/1.1°（arctan 验证）；删默认规则</td>
+</tr>
+<tr>
+<td>E11</td>
+<td>pid_l2_px4_arch</td>
+<td>PX4 无统一缩放 K（真实代码直接 _gain_p 等）</td>
+<td>重写为实际代码结构 + 版本提示；back-calculation→条件积分</td>
+</tr>
+<tr>
+<td>E12</td>
+<td>pid_l2_stability</td>
+<td>稳定域表 s/z 平面混用；”后向欧拉负极点”错（应属前向）</td>
+<td>拆两表 + 归因修正（z=1/(1+dt/T)&gt;0 恒正）</td>
+</tr>
+<tr>
+<td>E13</td>
+<td>pid_l2_gain_sched</td>
+<td>只调 Kp 不保完整闭环；K0 未定义</td>
+<td>补三增益同比例调度说明 + K0=K(0.5)=1.8</td>
+</tr>
+<tr>
+<td>E14</td>
+<td>pid_l3_autotune</td>
+<td>Pu 对拍基准 4L 与前文精确求根矛盾；Z-N 名称错</td>
+<td>改</td>
+</tr>
+<tr>
+<td>E15</td>
+<td>pid_l3_pipeline</td>
+<td>一阶执行器 1/(τs+1) 错误等价 FOPDT L=τ</td>
+<td>改”L 为工程等效项，代码需显式延迟”；PX4 引用改”教学抽象非复刻”</td>
+</tr>
+</tbody></table>
+<h3 id="PX4-引用收敛（8-处）"><a href="#PX4-引用收敛（8-处）" class="headerlink" title="PX4 引用收敛（8 处）"></a>PX4 引用收敛（8 处）</h3><ul>
+<li><code>MC_ATT_*/MC_RATE_*</code> → 版本化参数说明（MC_ROLLRATE_* 等，标注随版本变化）</li>
+<li><code>actuator_control_status</code> → <code>actuator_controls_status</code>（版本相关）</li>
+<li>串级图补姿态环（位置→速度→姿态→角速率→分配）</li>
+<li>mc_autotune 明确”阶跃辨识+GMVC，非 relay/Z-N”，demo 为思想借鉴</li>
+</ul>
+<h3 id="数值复算验证（本机-python）"><a href="#数值复算验证（本机-python）" class="headerlink" title="数值复算验证（本机 python）"></a>数值复算验证（本机 python）</h3><ul>
+<li>arctan(1/5)=11.3°、arctan(1/2)=26.6° ✅；arctan(1/10)=5.7°、arctan(1/50)=1.1° ✅</li>
+<li>无延迟一阶对象相位最大 −90°，无经典 ultimate frequency（L=τ 须显式延迟）✅</li>
+</ul>
+<hr>
+<h2 id="八、2026-08-22-P2-pid-落地记录（L4-4–L4-10）"><a href="#八、2026-08-22-P2-pid-落地记录（L4-4–L4-10）" class="headerlink" title="八、2026-08-22 P2 pid 落地记录（L4.4–L4.10）"></a>八、2026-08-22 P2 pid 落地记录（L4.4–L4.10）</h2><blockquote>
+<p>落地范围：P2 pid（分数阶 PID / 模糊 PID / IAE-ISE 指标 / MIMO PID），按 L4 命名铁律续 L4.4–L4.10。<br>交付物：10 个 L4 <code>.cpp</code>（L4.4 fopid / L4.5 fuzzy / L4.6 iae_ise / L4.7 mimo / L4.8 fopid_autotune / L4.9 mimo_autotune / L4.10 mimo_itae_autotune）+ 10 篇 <code>.md</code> + 10 个 <code>_diagrams.html</code> + <code>images/fig18_fopid.svg</code>~`fig24_mimo_itae_autotune.svg`（共 20 文件，分三批：L4.4–L4.7 于本日早段、L4.8–L4.9 于本日晚段、L4.10 于深夜段）+ README 集成（17→24 篇）。<br>运行环境：本机无 C++ 编译器，采用「受管 Python 3.13.12 算法镜像 → C++17 逐字转写 → C++ 控制流镜像」闭环（控制流镜像兜底静态类型/控制流 bug）。L4.4–L4.7 验证 <strong>24/24 PASS</strong> + 镜像 <strong>24/24 PASS</strong>；L4.8 验证 <strong>5/5 PASS</strong> + 镜像 <strong>5/5 PASS</strong>；L4.9 验证 <strong>10/10 PASS</strong> + 镜像 <strong>12/12 PASS</strong>；L4.10 验证 <strong>11/11 PASS</strong> + 镜像 <strong>11/11 PASS</strong>。</p>
+</blockquote>
+<h3 id="8-1-验证闭环与核验表（24-项全-PASS）"><a href="#8-1-验证闭环与核验表（24-项全-PASS）" class="headerlink" title="8.1 验证闭环与核验表（24 项全 PASS）"></a>8.1 验证闭环与核验表（24 项全 PASS）</h3><table>
+<thead>
+<tr>
+<th>文件</th>
+<th>检查项</th>
+<th>关键数值</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>pid_l4_fopid</td>
+<td>整数 PID（λ=1,μ=1）</td>
+<td>IAE=1.1231，超调=0.0173</td>
+<td>基准</td>
+</tr>
+<tr>
+<td>pid_l4_fopid</td>
+<td>FOPID（λ=1,μ=1.2）</td>
+<td>IAE=1.1110，超调=0.0000</td>
+<td>超调↓ 更柔</td>
+</tr>
+<tr>
+<td>pid_l4_fopid</td>
+<td>FOPID IAE&lt;整数 / 超调&lt;整数 / 稳态&lt;0.02</td>
+<td>5.8e-5</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>pid_l4_fopid</td>
+<td>GL μ=1 系数 (1,−1,0,0,0)</td>
+<td>残差 0</td>
+<td>✅ 退化自检</td>
+</tr>
+<tr>
+<td>pid_l4_fuzzy</td>
+<td>推理自检 ΔKp(e=3)/ΔKp(e=-3)/ΔKp(0)/ΔKi(e=3)</td>
+<td>−2.00 / +2.00 / 0.00 / +2.00</td>
+<td>✅ 方向正确</td>
+</tr>
+<tr>
+<td>pid_l4_fuzzy</td>
+<td>固定 PID</td>
+<td>IAE=2.8965，超调=0.4218</td>
+<td>基准</td>
+</tr>
+<tr>
+<td>pid_l4_fuzzy</td>
+<td>模糊 PID</td>
+<td>IAE=2.1381，超调=0.3695</td>
+<td>超调↓13% IAE↓26%</td>
+</tr>
+<tr>
+<td>pid_l4_fuzzy</td>
+<td>模糊超调&lt;固定 / IAE&lt;固定 / 稳态&lt;0.02</td>
+<td>1.4e-3</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>pid_l4_iae_ise</td>
+<td>定常 e=0.5 自洽 IAE=0.5·T / ISE=0.25·T</td>
+<td>残差 0</td>
+<td>✅ 闭式</td>
+</tr>
+<tr>
+<td>pid_l4_iae_ise</td>
+<td>激进（Kp=3,Ki=2,Kd=0.2）</td>
+<td>IAE=2.3057，ISE=0.8323，ITAE=9.46，超调=0.4490</td>
+<td>基准</td>
+</tr>
+<tr>
+<td>pid_l4_iae_ise</td>
+<td>优调（Kp=1.4,Ki=0.8,Kd=0.5）</td>
+<td>IAE=1.2586，ISE=0.5823，ITAE=2.75，超调=0.0130</td>
+<td>优调更优</td>
+</tr>
+<tr>
+<td>pid_l4_iae_ise</td>
+<td>优调 IAE&lt;激进 / ISE&lt;激进 / 超调同向 / 稳态&lt;0.02</td>
+<td>1.4e-4</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>pid_l4_mimo</td>
+<td>DC 增益 Kss≈K / D·Kss=I</td>
+<td>残差 1.2e-16 / 0</td>
+<td>✅ 解耦成立</td>
+</tr>
+<tr>
+<td>pid_l4_mimo</td>
+<td>无解耦 r=[1,0]</td>
+<td>y1_ss=0.9872，瞬态 y2 峰值=0.1479</td>
+<td>耦合可见</td>
+</tr>
+<tr>
+<td>pid_l4_mimo</td>
+<td>解耦后 r=[1,0]</td>
+<td>y1_ss=0.9944，瞬态 y2 峰值=0.0000，y2_ss=0.0000</td>
+<td>耦合压到≈0</td>
+</tr>
+<tr>
+<td>pid_l4_fopid_autotune</td>
+<td>整数 PID (1.0,1.0) 基准</td>
+<td>IAE=1.1228</td>
+<td>基准</td>
+</tr>
+<tr>
+<td>pid_l4_fopid_autotune</td>
+<td>手工 FOPID (1.0,1.2)</td>
+<td>IAE=1.1105（−1.1%）</td>
+<td>基准</td>
+</tr>
+<tr>
+<td>pid_l4_fopid_autotune</td>
+<td><strong>自动寻优 (1.1,1.3)</strong></td>
+<td>IAE=1.0645（**−5.2%**）</td>
+<td>自动发现 μ*&gt;1</td>
+</tr>
+<tr>
+<td>pid_l4_mimo_autotune</td>
+<td>固定 NOM 回路1/回路2 IAE</td>
+<td>1.9816 / 2.0013</td>
+<td>基准</td>
+</tr>
+<tr>
+<td>pid_l4_mimo_autotune</td>
+<td><strong>IAE 自动 (2.3,1.5)</strong></td>
+<td>回路1 IAE=0.6666（−66.4%）/ 回路2 IAE=0.8084（−59.6%）</td>
+<td>全系统 IAE 3.9828→1.4750（−63.0%）</td>
+</tr>
+<tr>
+<td>pid_l4_mimo_autotune</td>
+<td>自动整定后阶跃</td>
+<td>y1_ss≈1.0,y2_ss≈0 / y2_ss≈1.0,y1_ss≈0；瞬态耦合峰值 0.0000</td>
+<td>解耦仍压住耦合</td>
+</tr>
+<tr>
+<td>pid_l4_mimo_itae_autotune</td>
+<td>IAE 目标顺序整定</td>
+<td>回路1(2.3,1.5)/回路2(2.3,1.5)，全系统 IAE=1.4750，ITAE=1.5910</td>
+<td>复现 L4.9 基线</td>
+</tr>
+<tr>
+<td>pid_l4_mimo_itae_autotune</td>
+<td><strong>ITAE 目标顺序整定</strong></td>
+<td>回路1(1.4,1.5)/回路2(2.3,1.3)，全系统 IAE=1.5218，ITAE=1.2646</td>
+<td>ITAE↓20.5% 代价 IAE↑3.2%</td>
+</tr>
+<tr>
+<td>pid_l4_mimo_itae_autotune</td>
+<td>指标即偏好：最优移向温和</td>
+<td>回路1 Kp 2.3→1.4、回路2 Ki 1.5→1.3（ITAE 下更温和）</td>
+<td>亲手验明「选指标定最优」</td>
+</tr>
+<tr>
+<td>pid_l4_mimo_itae_autotune</td>
+<td>单回路阶跃交叉耦合</td>
+<td>两目标下峰值均 &lt;0.05（解耦仍压住）</td>
+<td>解耦前提不变</td>
+</tr>
+</tbody></table>
+<h3 id="8-2-真实-bug-记录（转写前在-Python-侧修复，未流入-cpp）"><a href="#8-2-真实-bug-记录（转写前在-Python-侧修复，未流入-cpp）" class="headerlink" title="8.2 真实 bug 记录（转写前在 Python 侧修复，未流入 cpp）"></a>8.2 真实 bug 记录（转写前在 Python 侧修复，未流入 cpp）</h3><table>
+<thead>
+<tr>
+<th>#</th>
+<th>位置</th>
+<th>问题</th>
+<th>修复</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>B1</td>
+<td>FOPID 积分项</td>
+<td>GL 积分符号反：<code>Ki*(1/dt^lam)*sI</code>（应 <code>Ki*dt^lam*sI</code>）→ IAE≈2.4e10、超调 2e9 发散</td>
+<td>改 <code>u=Kp*ek+Ki*dt**lam*sI+Kd*dt**(-mu)*sD</code></td>
+</tr>
+<tr>
+<td>B2</td>
+<td>FOPID 积分截断</td>
+<td>积分权重限 H=400 步截断 → 丢积分器/DC，稳态下垂 FAIL</td>
+<td>积分改用全历史 <code>wI=gl_weights(-lam,N)</code>，微分保留截断 <code>Hd=400</code></td>
+</tr>
+<tr>
+<td>B3</td>
+<td>Fuzzy 作用域</td>
+<td><code>ge/gec/kps/kis/kds</code> 定义在内层却在 LOCK 外层引用 → NameError</td>
+<td>提到外层作用域</td>
+</tr>
+<tr>
+<td>B4</td>
+<td>Fuzzy 自检符号</td>
+<td>误写「e=+3→ΔKp&gt;0」不符规则库（大误差降 Kp）</td>
+<td>改 <code>dkp_big&lt;-1.5</code> / <code>dkp_neg&gt;1.5</code>（反对称）</td>
+</tr>
+<tr>
+<td>B5</td>
+<td>IAE_ISE 返回空</td>
+<td><code>sim_pid_2ss</code> 循环漏 <code>y.append(yk)</code> → <code>max(yA)</code> 空迭代器 ValueError</td>
+<td>补 <code>y.append(yk)</code></td>
+</tr>
+<tr>
+<td>B6</td>
+<td>MIMO 耦合断言</td>
+<td>初版测稳态 <code>y2_ss&gt;0.1</code>（积分器已消稳态耦合→实际 0.0124）FAIL</td>
+<td>改测<strong>瞬态</strong>峰值 `peak_nd=max</td>
+</tr>
+<tr>
+<td>B7</td>
+<td>L4.9 不等式断言方向</td>
+<td>验证脚本误写 <code>chk("增益偏离NOM", abs(Kp_opt−NOM), 1e-9)</code>（语义=「差必须&lt;1e-9」=要求不变），与「要求变了」相反→误 FAIL</td>
+<td>改 <code>chk(..., max(0.0, 0.05−abs(Kp_opt−NOM)), 1e-9)</code>（违反方向才&gt;0）——复现 memory §三「不等式 chk 方向坑」</td>
+</tr>
+<tr>
+<td>B8</td>
+<td>L4.10 整定回路槽位 / 不等式方向 / 测错量</td>
+<td>(a) <code>tune</code> 整定回路2 时变增益误进 <code>g1</code> 槽（评错 <code>E1</code>），导致最优错乱、与 L4.9 基线 1.4750 对不上；(b) <code>chk("ITAE更优")</code> 误写 <code>max(0, ITAE_i−ITAE_t)</code>（应为 <code>ITAE_t−ITAE_i</code>），把「改善量」当误差→误 FAIL；(c) 交叉耦合初版测 <code>r=[1,1]</code> 下 `</td>
+<td>y2−1</td>
+</tr>
+</tbody></table>
+<h3 id="8-3-可复用范式沉淀"><a href="#8-3-可复用范式沉淀" class="headerlink" title="8.3 可复用范式沉淀"></a>8.3 可复用范式沉淀</h3><ul>
+<li><strong>GL 积分必须全历史</strong>：分数阶积分权重衰减极慢，截断即丢积分器；微分可截断（权重速衰）。</li>
+<li><strong>耦合断言要区分稳态/瞬态</strong>：有积分器时稳态交叉耦合被本路积分消除，解耦器价值在<strong>抑制瞬态</strong>耦合——断言对象必须选对。</li>
+<li><strong>无编译器兜底</strong>：C++ 控制流镜像（逐字复刻 cpp 逻辑的 Python 镜像）能在无 g++ 时兜底静态类型/控制流 bug（L4.4–L4.7 确认 24/24、L4.9 确认 12/12、L4.10 确认 11/11 无 B-class 错误）。</li>
+<li><strong>IAE 单目标在稳定对象上无内点最优</strong>：对良态稳定对象，增益越大响应越快、IAE 越小，纯 IAE 网格搜索会把增益顶到搜索窗激进端（L4.9 优调落在 (2.3,1.5) 窗边界）。工程整定须加超调/调节时间/<code>|u|</code> 约束，或换 ITAE（早期误差加权→更中庸最优）。此坑与 memory §三「不等式 chk 方向坑」、L4.8「指标决定最优」同源，属「指标即偏好」家族。</li>
+</ul>
+<h3 id="8-4-临时脚本清理"><a href="#8-4-临时脚本清理" class="headerlink" title="8.4 临时脚本清理"></a>8.4 临时脚本清理</h3><ul>
+<li><code>_validate_p2_pid_tmp.py</code>、<code>_mirror_p2_pid_tmp.py</code>（L4.4–L4.7）、<code>_validate_p2b_fopid_autotune_tmp.py</code>、<code>_mirror_p2b_fopid_autotune_tmp.py</code>（L4.8）、<code>_validate_p2c_mimo_autotune_tmp.py</code>、<code>_mirror_p2c_mimo_autotune_tmp.py</code>（L4.9）、<code>_validate_p2d_mimo_itae_tmp.py</code>、<code>_mirror_p2d_mimo_itae_tmp.py</code>（L4.10）按仓库约定于各批交付后删除（验证已闭环，无遗留依赖）。</li>
+</ul>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/pid_demo/">PID_DEMO</a></li>
+            <li>PID_DEMO_REVIEW</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#ffffff"/>
+
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L3.9 工业机械臂：计算力矩控制与几何雅可比 / 动力学雅可比</text>
+  <text x="20" y="56" font-size="12" fill="#555">2-link 臂：几何雅可比 J(q) 连关节与末端；质量矩阵 M、科氏 C、重力 G 构成动力学；计算力矩做反馈线性化</text>
+
+  <!-- arm -->
+  <g transform="translate(40,90)">
+    <circle cx="40" cy="180" r="8" fill="#1d4ed8"/>
+    <line x1="40" y1="180" x2="150" y2="110" stroke="#2563eb" stroke-width="6"/>
+    <circle cx="150" cy="110" r="7" fill="#1e40af"/>
+    <line x1="150" y1="110" x2="240" y2="160" stroke="#2563eb" stroke-width="6"/>
+    <circle cx="240" cy="160" r="7" fill="#dc2626"/>
+    <text x="180" y="150" font-size="11" fill="#991b1b">末端</text>
+    <text x="60" y="200" font-size="10" fill="#1d4ed8">q₁</text>
+    <text x="175" y="135" font-size="10" fill="#1d4ed8">q₂</text>
+    <!-- task space vector -->
+    <line x1="240" y1="160" x2="240" y2="70" stroke="#d97706" stroke-width="2" marker-end="url(#t20)"/>
+    <text x="244" y="90" font-size="10" fill="#92400e">ẏ = J q̇</text>
+  </g>
+  <defs><marker id="t20" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#d97706"/></marker></defs>
+
+  <!-- formula block -->
+  <g transform="translate(330,90)" font-size="13" fill="#222">
+    <rect x="-10" y="-14" width="360" height="180" rx="8" fill="#f8fafc" stroke="#e5e7eb"/>
+    <text x="0" y="6" font-weight="bold" fill="#1e40af">动力学 (拉格朗日)</text>
+    <text x="0" y="28">M(q) q̈ + C(q,q̇) q̇ + G(q) = τ</text>
+    <text x="0" y="54" font-weight="bold" fill="#059669">几何雅可比</text>
+    <text x="0" y="76">J(q) = ∂FK/∂q ,   ẏ = J q̇</text>
+    <text x="0" y="102" font-weight="bold" fill="#92400e">计算力矩控制</text>
+    <text x="0" y="124">τ = M(q)(q̈_d+Kp·e+Kd·ē)+C q̇+G</text>
+    <text x="0" y="150" fill="#7c3aed">闭环: ë+Kd ė+Kp e=0  → 指数收敛</text>
+    <text x="0" y="170" fill="#7c3aed">DLS: J⁺=Jᵀ(JJᵀ+λ²I)⁻¹  (奇异鲁棒)</text>
+  </g>
+
+  <g transform="translate(40,290)" font-size="12" fill="#444">
+    <text x="0" y="0">① J vs FD（~1e-10）；② M 等于动能 Hessian（~1e-15）；③ G 等于势能梯度（~1e-9）</text>
+    <text x="0" y="22">④ C 满足 Ṁ−2C 反对称（~1e-11）；⑤ 闭环跟踪最终误差 ~8e-5（PASS）</text>
+  </g>
+</svg>

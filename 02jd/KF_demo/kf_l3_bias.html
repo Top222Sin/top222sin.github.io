@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3.2 状态增广：传感器零偏估计与可观测性 一句话：增广进状态 ≠ 估得出来——系统能否观测由 rank(O)&#x3D;n 决定（O&#x3D;[H; HF; HF²; …]）；不可观测的方向上 P 永不收敛，滤波器输出的是”自欺欺人的确定性”。   一、可观测性判据线性时不变系统 (F, H) 完全可观测 ⇔ 可观测性矩阵满秩：  O &#x3D; [H; HF; HF²; …; HFⁿ⁻¹]，rank(O) &#x3D; n">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3.2 状态增广：传感器零偏估计与可观测性">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/KF_demo/kf_l3_bias.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3.2 状态增广：传感器零偏估计与可观测性 一句话：增广进状态 ≠ 估得出来——系统能否观测由 rank(O)&#x3D;n 决定（O&#x3D;[H; HF; HF²; …]）；不可观测的方向上 P 永不收敛，滤波器输出的是”自欺欺人的确定性”。   一、可观测性判据线性时不变系统 (F, H) 完全可观测 ⇔ 可观测性矩阵满秩：  O &#x3D; [H; HF; HF²; …; HFⁿ⁻¹]，rank(O) &#x3D; n">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/KF_demo/images/fig13_bias.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.940Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/KF_demo/images/fig13_bias.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/KF_demo/kf_l3_bias">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/KF_demo/kf_l3_bias.html","path":"02jd/KF_demo/kf_l3_bias.html","title":"L3.2 状态增广：传感器零偏估计与可观测性"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3.2 状态增广：传感器零偏估计与可观测性 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-2-%E7%8A%B6%E6%80%81%E5%A2%9E%E5%B9%BF%EF%BC%9A%E4%BC%A0%E6%84%9F%E5%99%A8%E9%9B%B6%E5%81%8F%E4%BC%B0%E8%AE%A1%E4%B8%8E%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7"><span class="nav-number">1.</span> <span class="nav-text">L3.2 状态增广：传感器零偏估计与可观测性</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%E5%88%A4%E6%8D%AE"><span class="nav-number">1.1.</span> <span class="nav-text">一、可观测性判据</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%E7%9F%A9%E9%98%B5%E7%9A%84%E6%8E%A8%E5%AF%BC%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF-H-HF-HF%C2%B2%E2%80%A6%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">可观测性矩阵的推导（为什么是 H, HF, HF²…）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81demo-%E9%AA%8C%E8%AF%81-%E2%91%A0%EF%BC%9A%E9%9B%B6%E5%81%8F%E5%8F%AF%E8%A7%82%E6%B5%8B"><span class="nav-number">1.2.</span> <span class="nav-text">二、demo 验证 ①：零偏可观测</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E7%AC%AC%E4%B8%89%E8%A1%8C%E6%98%AF-%E2%88%922dt%C2%B2%EF%BC%88%E6%B3%84%E6%BC%8F%E7%9A%84%E7%B4%AF%E7%A7%AF%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">为什么第三行是 −2dt²（泄漏的累积）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81demo-%E9%AA%8C%E8%AF%81-%E2%91%A1%EF%BC%9A%E5%8F%8D%E4%BE%8B"><span class="nav-number">1.3.</span> <span class="nav-text">三、demo 验证 ②：反例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8D%E5%8F%AF%E8%A7%82%E6%B5%8B%E7%9A%84%E5%B7%A5%E7%A8%8B%E8%A1%A8%E7%8E%B0%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8D%B1%E9%99%A9%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">不可观测的工程表现（为什么危险）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E5%B7%A5%E7%A8%8B%E6%B8%85%E5%8D%95"><span class="nav-number">1.4.</span> <span class="nav-text">四、工程清单</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7-vs-%E6%94%B6%E6%95%9B%E9%80%9F%E5%BA%A6%EF%BC%88%E5%B7%A5%E7%A8%8B%E4%B8%A4%E9%97%AE%EF%BC%89"><span class="nav-number">1.4.1.</span> <span class="nav-text">可观测性 vs 收敛速度（工程两问）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88kf-l3-bias-cpp%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、代码走读（kf_l3_bias.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.6.</span> <span class="nav-text">六、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.7.</span> <span class="nav-text">七、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.8.</span> <span class="nav-text">八、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B9%9D%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.9.</span> <span class="nav-text">九、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3.2 状态增广：传感器零偏估计与可观测性
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L3_BIAS</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-2-状态增广：传感器零偏估计与可观测性"><a href="#L3-2-状态增广：传感器零偏估计与可观测性" class="headerlink" title="L3.2 状态增广：传感器零偏估计与可观测性"></a>L3.2 状态增广：传感器零偏估计与可观测性</h1><blockquote>
+<p>一句话：<strong>增广进状态 ≠ 估得出来</strong>——系统能否观测由 rank(O)=n 决定（O=[H; HF; HF²; …]）；不可观测的方向上 P 永不收敛，滤波器输出的是”自欺欺人的确定性”。</p>
+</blockquote>
+<hr>
+<h2 id="一、可观测性判据"><a href="#一、可观测性判据" class="headerlink" title="一、可观测性判据"></a>一、可观测性判据</h2><p>线性时不变系统 (F, H) 完全可观测 ⇔ 可观测性矩阵满秩：</p>
+<blockquote>
+<p>O = [H; HF; HF²; …; HFⁿ⁻¹]，rank(O) = n</p>
+</blockquote>
+<p>直观：H 一次观测只能”看”部分状态；HF 是”一步预测后再看”；乘积 HFᵏ 把动力学的耦合逐步展开——<strong>只要 n 次不同时刻的观测线性无关，状态就唯一确定</strong>。</p>
+<h3 id="可观测性矩阵的推导（为什么是-H-HF-HF²…）"><a href="#可观测性矩阵的推导（为什么是-H-HF-HF²…）" class="headerlink" title="可观测性矩阵的推导（为什么是 H, HF, HF²…）"></a>可观测性矩阵的推导（为什么是 H, HF, HF²…）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">观测: z₀ = Hx₀</span><br><span class="line">一步后: x₁ = Fx₀ → z₁ = HFx₀</span><br><span class="line">两步后: x₂ = F²x₀ → z₂ = HF²x₀</span><br><span class="line">...</span><br><span class="line">把 N 步观测堆起来: [z₀;z₁;...;zₙ₋₁] = O·x₀,  O = [H;HF;...;HFⁿ⁻¹]</span><br><span class="line">x₀ 唯一可解 ⟺ O 列满秩（线性方程组唯一解）⟺ rank(O)=n</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>核心洞察</strong>：可观测性 = “<strong>时间上的观测序列</strong>能否反解初始状态”。单次观测 H 只看到部分维度，但<strong>动力学耦合 F 让观测”随时间泄漏”出其他状态的信息</strong>（L1.4 的”位置观测恢复速度”就是这个泄漏）。这也是为什么”可观测性”是时域概念——需要<strong>多时刻</strong>的观测。</p>
+<h2 id="二、demo-验证-①：零偏可观测"><a href="#二、demo-验证-①：零偏可观测" class="headerlink" title="二、demo 验证 ①：零偏可观测"></a>二、demo 验证 ①：零偏可观测</h2><p>增广 x=[p, v, b]（L3.1 的模型），只测位置 H=[1,0,0]：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">O = [ 1    0     0    ]      rank = 3 ✅ 可观测</span><br><span class="line">    [ 1   dt   −dt²/2 ]</span><br><span class="line">    [ 1  2dt   −2dt² ]</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>零偏 b 通过位置的 dt² 累积效应泄漏进观测</strong>——这就是 L3.1 里 b̂ 能收敛的代数原因。但注意收敛慢（增益小），工程上需要激励（加减速/转向）加速。</p>
+<h3 id="为什么第三行是-−2dt²（泄漏的累积）"><a href="#为什么第三行是-−2dt²（泄漏的累积）" class="headerlink" title="为什么第三行是 −2dt²（泄漏的累积）"></a>为什么第三行是 −2dt²（泄漏的累积）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">第 1 次观测 z₀ = p₀ (只含位置)</span><br><span class="line">第 2 次观测 z₁ = p₀ + dt·v₀ − ½dt²·b₀   (零偏已泄漏 ½dt²)</span><br><span class="line">第 3 次观测 z₂ = p₀ + 2dt·v₀ − 2dt²·b₀  (零偏按 t² 累积)</span><br><span class="line">三行线性无关 → b 可解出 ✓</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>洞察</strong>：**可观测性靠”动力学随时间展开”**——零偏若恒定，位置误差按 t² 增长，多次观测就能拟合出这条抛物线，从而反解 b。这也解释了”可观测但收敛慢”：b 的增益来自 dt² 的小泄漏，需要足够长的观测窗口（L3.1 的几分钟才估准）。</p>
+<h2 id="三、demo-验证-②：反例"><a href="#三、demo-验证-②：反例" class="headerlink" title="三、demo 验证 ②：反例"></a>三、demo 验证 ②：反例</h2><p>4D 状态 [px, py, vx, vy]（标准二维匀速模型 F=[[1,0,dt,0],[0,1,0,dt],[0,0,1,0],[0,0,0,1]]），只测 vx（H=[0,0,1,0]）→ <strong>rank=1 &lt; 4</strong>：</p>
+<ul>
+<li>可观测的只有 vx；<strong>px、py、vy 全部不可观测</strong>（HF^k 恒为 [0,0,1,0]，位置与 vy 从不进入观测）——P 中对应块无法被观测约束</li>
+<li>经典实例：匀速直行时航向不可观测（雷达导引、单目视觉尺度的病根）</li>
+</ul>
+<h3 id="不可观测的工程表现（为什么危险）"><a href="#不可观测的工程表现（为什么危险）" class="headerlink" title="不可观测的工程表现（为什么危险）"></a>不可观测的工程表现（为什么危险）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">不可观测方向的协方差无法被观测约束——若该方向持续受过程噪声驱动, P 通常增长或无法收敛</span><br><span class="line">滤波器自报"越来越不确定" ✓（这还算诚实）</span><br><span class="line">但滤波器的估计值 x̂ 只做惯性外推 —— 它"不知道"自己错了多少</span><br><span class="line">最危险的是"近似不可观测": rank 刚好满但条件数巨大 → 收敛极慢</span><br><span class="line">   → 短期估计不可靠, 需结合激励与更长时间窗</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程铁律</strong>：增广状态前先算 rank(O)（L1.4 教训的推广）；不可观测方向要<strong>删状态、加传感器、或加激励</strong>——让滤波器去估一个不可观测量，是”用复杂掩盖无知”。注意 rank 阈值要<strong>尺度归一化</strong>（SVD 相对阈值 σ_i/σ_max &gt; ε，如 1e-6~1e-8），固定绝对阈值随状态单位漂移。</p>
+<h2 id="四、工程清单"><a href="#四、工程清单" class="headerlink" title="四、工程清单"></a>四、工程清单</h2><ol>
+<li>增广新状态前先算 rank(O)（数值方法：行消元，阈值 1e-8）</li>
+<li>不可观测时：加激励（机动）/加传感器（双天线航向）/删状态（别自欺）</li>
+<li>可观测 ≠ 快收敛：条件数大 → 收敛慢 → 需要丰富激励</li>
+</ol>
+<h3 id="可观测性-vs-收敛速度（工程两问）"><a href="#可观测性-vs-收敛速度（工程两问）" class="headerlink" title="可观测性 vs 收敛速度（工程两问）"></a>可观测性 vs 收敛速度（工程两问）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">rank(O)=n   → 理论上能估（长期一致收敛）</span><br><span class="line">cond(O) 大  → 实际上要很久（或需要强激励）</span><br><span class="line">例: 零偏可观测但收敛慢 → 需要长观测窗口或大幅机动（激励是"信息放大器"）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>决策流程</strong>：① rank 满了吗？不满 → 改传感器/状态。② 满了，条件数多大？太大 → 加激励或接受慢收敛。**”能估”和”估得快”是两个问题**——面试答”可观测性”时主动说这一句，是加分项。</p>
+<h2 id="五、代码走读（kf-l3-bias-cpp）"><a href="#五、代码走读（kf-l3-bias-cpp）" class="headerlink" title="五、代码走读（kf_l3_bias.cpp）"></a>五、代码走读（kf_l3_bias.cpp）</h2><ul>
+<li><code>rank_of()</code>：带主元行消元求数值秩；两个案例打印 O 矩阵与 rank。</li>
+</ul>
+<h2 id="六、你会看到什么"><a href="#六、你会看到什么" class="headerlink" title="六、你会看到什么"></a>六、你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">=== L3.2 状态增广与可观测性 ===</span><br><span class="line">  [demo] 可观测性矩阵 O (H; HF; HF²):</span><br><span class="line">        [   1.0000   0.0000   0.0000 ]</span><br><span class="line">        [   1.0000   0.1000  -0.0050 ]</span><br><span class="line">        ...</span><br><span class="line">  [demo] rank(O) = 3 / 3</span><br><span class="line">  位置观测 ⇒ [p,v,b] 可观测            err=0.0e+00 tol=5e-01  PASS</span><br><span class="line">  [demo] 反例 rank = 1 / 4（只测 vx：py/vy 不可观测）</span><br><span class="line">  反例: 只测vx ⇒ rank&lt;4                err=0.0e+00 tol=5e-01  PASS</span><br><span class="line">=== 2 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img src="/02jd/KF_demo/images/fig13_bias.svg" alt="L3.2 可观测性"></p>
+<h2 id="七、工程落点（真实项目）"><a href="#七、工程落点（真实项目）" class="headerlink" title="七、工程落点（真实项目）"></a>七、工程落点（真实项目）</h2><ul>
+<li><strong>PX4 EKF2 的零偏估计</strong>：陀螺/加计零偏在状态里（L3.1）——可观测性分析决定”什么时候能动 b”（静止时陀螺零偏可观测、加计零偏与重力耦合需特定姿态）。</li>
+<li><strong>单目 VIO 的尺度</strong>：单目视觉观测对”尺度”不可观（深度×尺度歧义）——所以 VIO 需要初始化（IMU 重力对齐）或外部先验。</li>
+<li><strong>雷达导引</strong>：匀速直行目标只有距离观测 → 横向速度不可观 → 必须加机动（这正是”目标跟踪要机动”的原因）。</li>
+<li><strong>MSCKF</strong>（L3.6）：为什么克隆位姿？——为了给特征观测提供”多个视角”（视角多 = 可观测性好）。</li>
+</ul>
+<h2 id="八、自检"><a href="#八、自检" class="headerlink" title="八、自检"></a>八、自检</h2><ul>
+<li>把 H 改成 [0,1,0]（只测速度），rank 变 2——位置可积出来吗？（差一个常数，不可观测！）</li>
+<li>思考：为什么”位置观测 + 常值零偏”可观测，而”位置观测 + 随机游走零偏”只是渐近可观测？</li>
+<li>挑战：把 demo 的 3D 模型（只测 vx 的反例）改成”测 vx + vy”，rank 变多少？（2——位置仍不可观，差平移常数）</li>
+</ul>
+<h2 id="九、下一步"><a href="#九、下一步" class="headerlink" title="九、下一步"></a>九、下一步</h2><p>进入 <a href="/02jd/KF_demo/kf_l3_pf.html">L3.3 粒子滤波</a>——高斯假设撑不住时怎么办 ⭐</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L3_BIAS</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

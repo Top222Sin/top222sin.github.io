@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 470" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="470" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L4 集合卡尔曼 EnKF + 移动 horizon 估计 MHE（四个工业级要点）</text>
+
+  <!-- ① EnKF -->
+  <g>
+    <rect x="20" y="50" width="315" height="180" rx="10" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+    <rect x="20" y="50" width="315" height="30" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="177" y="70" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">① EnKF：随机集合 KF（perturbed-observation）</text>
+    <text x="36" y="108" font-size="12" fill="#1e3a8a">集合 X={xⁱ}, i=1..m（本例 m=200）</text>
+    <text x="36" y="132" font-size="12" fill="#1e3a8a">预测：xⁱ ← F·xⁱ + 过程噪声（动力学传播）</text>
+    <text x="36" y="156" font-size="12" fill="#1e3a8a">分析：加扰动观测 ỹ = z + ε，增益用集合协方差 Pe</text>
+    <text x="36" y="180" font-size="12" fill="#1e3a8a">均值 / 协方差 → 与精确 KF 对拍收敛</text>
+    <text x="36" y="206" font-size="11.5" fill="#555">末窗：均值偏差 0.2735 · 协方差 Frobenius 0.0321</text>
+  </g>
+
+  <!-- ② MHE 目标函数 -->
+  <g>
+    <rect x="345" y="50" width="315" height="180" rx="10" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+    <rect x="345" y="50" width="315" height="30" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="502" y="70" font-size="13" font-weight="bold" fill="#78350f" text-anchor="middle">② MHE：滑动窗批最小二乘代价</text>
+    <text x="361" y="108" font-size="12" fill="#78350f">min Σ‖x_{s+1}−F·x_s‖²_{Q⁻¹}</text>
+    <text x="361" y="132" font-size="12" fill="#78350f">  + Σ‖z_s−H·x_s‖²_{R⁻¹}</text>
+    <text x="361" y="156" font-size="12" fill="#78350f">  + ‖x_0−μ₀‖²_{P0⁻¹}</text>
+    <text x="361" y="180" font-size="12" fill="#78350f">全状态观测 H=I（速度可观测 → 良态）</text>
+    <text x="361" y="206" font-size="11.5" fill="#555">Q⁻¹=50 ≫ R⁻¹=5：信任动力学、量测校正</text>
+  </g>
+
+  <!-- ③ 高斯-牛顿装配 -->
+  <g>
+    <rect x="20" y="250" width="315" height="180" rx="10" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+    <rect x="20" y="250" width="315" height="30" rx="10" fill="#f3e8ff" stroke="#9333ea" stroke-width="1.5"/>
+    <text x="177" y="270" font-size="13" font-weight="bold" fill="#581c87" text-anchor="middle">③ 法方程 Hx=b（高斯-牛顿装配）</text>
+    <text x="36" y="308" font-size="12" fill="#581c87">H = Σ Jᵀ W J ,  g = Σ Jᵀ W z</text>
+    <text x="36" y="332" font-size="12" fill="#581c87">残差 r = x_{s+1}−F·x_s</text>
+    <text x="36" y="356" font-size="12" fill="#581c87">其雅可比 J = [ −F | +I ]</text>
+    <text x="36" y="380" font-size="12" fill="#581c87">x* = H⁻¹ g = 真·最小二乘极小点</text>
+    <text x="36" y="406" font-size="11.5" fill="#555">法方程残差 2.33e-14 （Gauss-Jordan 解）</text>
+  </g>
+
+  <!-- ④ 滑动窗 + 箱约束 -->
+  <g>
+    <rect x="345" y="250" width="315" height="180" rx="10" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+    <rect x="345" y="250" width="315" height="30" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="502" y="270" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">④ 移动 horizon + 箱约束</text>
+    <text x="361" y="308" font-size="12" fill="#14532d">窗 [t−L, t] 滑动，恢复当前态 x_t</text>
+    <text x="361" y="332" font-size="12" fill="#14532d">全程不发散：最大偏差 0.6780 &lt; 3.0</text>
+    <text x="361" y="356" font-size="12" fill="#14532d">箱约束 x_0≥0：投影梯度 + 回溯</text>
+    <text x="361" y="380" font-size="12" fill="#14532d">无约束 x_0=−0.154 → 约束激活 x_0=0.000</text>
+    <text x="361" y="406" font-size="11.5" fill="#555">凸问题 → 收敛到全局最优，绝不发散到 1e9</text>
+  </g>
+</svg>

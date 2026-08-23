@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="review_0820_review — 对 review_0820.md 所列“已落地”实现的复查意见 复查对象：02jd&#x2F;review_0820.md 及其引用的 L4 扩展实现（control &#x2F; pid &#x2F; Jacobian &#x2F; KF &#x2F; cali &#x2F; LS &#x2F; cuda &#x2F; neon 八个 demo）。复查方法：静态检查 review_0820.md 与各 .md &#x2F; .cpp 的对应关">
+<meta property="og:type" content="website">
+<meta property="og:title" content="review_0820_review — 对 &#96;review_0820.md&#96; 所列“已落地”实现的复查意见">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/review_0820_review.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="review_0820_review — 对 review_0820.md 所列“已落地”实现的复查意见 复查对象：02jd&#x2F;review_0820.md 及其引用的 L4 扩展实现（control &#x2F; pid &#x2F; Jacobian &#x2F; KF &#x2F; cali &#x2F; LS &#x2F; cuda &#x2F; neon 八个 demo）。复查方法：静态检查 review_0820.md 与各 .md &#x2F; .cpp 的对应关">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.970Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/review_0820_review">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/review_0820_review.html","path":"02jd/review_0820_review.html","title":"review_0820_review — 对 `review_0820.md` 所列“已落地”实现的复查意见"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>review_0820_review — 对 `review_0820.md` 所列“已落地”实现的复查意见 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#review-0820-review-%E2%80%94-%E5%AF%B9-review-0820-md-%E6%89%80%E5%88%97%E2%80%9C%E5%B7%B2%E8%90%BD%E5%9C%B0%E2%80%9D%E5%AE%9E%E7%8E%B0%E7%9A%84%E5%A4%8D%E6%9F%A5%E6%84%8F%E8%A7%81"><span class="nav-number">1.</span> <span class="nav-text">review_0820_review — 对 review_0820.md 所列“已落地”实现的复查意见</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E6%80%BB%E4%BD%93%E7%BB%93%E8%AE%BA"><span class="nav-number">1.1.</span> <span class="nav-text">一、总体结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%BF%85%E9%A1%BB%E4%BC%98%E5%85%88%E5%A4%84%E7%90%86%E7%9A%84%E9%97%AE%E9%A2%98%EF%BC%88P0%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">二、必须优先处理的问题（P0）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-C-%E6%BA%90%E7%A0%81%E5%8F%AF%E7%BC%96%E8%AF%91%E6%80%A7"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 C++ 源码可编译性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-review-0820-md-%E7%8A%B6%E6%80%81%E4%B8%8E%E6%96%87%E4%BB%B6%E6%B8%85%E5%8D%95%E4%B8%8D%E5%90%8C%E6%AD%A5"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 review_0820.md 状态与文件清单不同步</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%95%B0%E5%80%BC-%E6%96%87%E6%A1%A3%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98%EF%BC%88P1%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、数值&#x2F;文档一致性问题（P1）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E5%85%B3%E4%BA%8E%E2%80%9C%E5%B7%B2%E8%90%BD%E5%9C%B0%E2%80%9D%E7%9A%84%E8%BE%B9%E7%95%8C%E8%AF%B4%E6%98%8E%EF%BC%88P2%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、关于“已落地”的边界说明（P2）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%88%86%E6%A8%A1%E5%9D%97%E6%A0%B8%E5%AF%B9%E6%91%98%E8%A6%81"><span class="nav-number">1.5.</span> <span class="nav-text">五、分模块核对摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E6%94%B9%E8%BF%9B%E5%BB%BA%E8%AE%AE"><span class="nav-number">1.6.</span> <span class="nav-text">六、改进建议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E7%BB%93%E8%AE%BA"><span class="nav-number">1.7.</span> <span class="nav-text">七、结论</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">review_0820_review — 对 `review_0820.md` 所列“已落地”实现的复查意见
+</h1>
+
+<div class="post-meta-container">
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="review-0820-review-—-对-review-0820-md-所列“已落地”实现的复查意见"><a href="#review-0820-review-—-对-review-0820-md-所列“已落地”实现的复查意见" class="headerlink" title="review_0820_review — 对 review_0820.md 所列“已落地”实现的复查意见"></a>review_0820_review — 对 <code>review_0820.md</code> 所列“已落地”实现的复查意见</h1><blockquote>
+<p>复查对象：<code>02jd/review_0820.md</code> 及其引用的 L4 扩展实现（control / pid / Jacobian / KF / cali / LS / cuda / neon 八个 demo）。<br>复查方法：静态检查 <code>review_0820.md</code> 与各 <code>.md</code> / <code>.cpp</code> 的对应关系、可编译性、数值一致性和“已落地”状态。</p>
+</blockquote>
+<hr>
+<h2 id="一、总体结论"><a href="#一、总体结论" class="headerlink" title="一、总体结论"></a>一、总体结论</h2><p><code>review_0820.md</code> 的选题方向和知识结构是合理的：它识别出的 P0/P1/P2 缺口确实是工业界高频知识点，并且大部分新增笔记（<code>.md + .cpp + .html + svg</code> 四件套）在<strong>教学内容和推导结构</strong>上写得扎实、可读性强，跨 demo 互引也很有价值。</p>
+<p>但当前不能直接把 <code>review_0820.md</code> 当作“全部已落地且验证通过”的报告，主要原因是：</p>
+<ol>
+<li><strong>部分 C++ 源码存在明显编译错误</strong>，与文档中“确定性重现 / PASS”的说法矛盾；</li>
+<li><strong><code>review_0820.md</code> 内部状态滞后/不一致</strong>，有些已经落地的文件没有被标记，有些详细章节仍停留在“建议落点”；</li>
+<li><strong>少量数值与实现文档不一致</strong>，需要统一；</li>
+<li><strong>部分“已落地”属于 CPU 语义模型而非真实 CUDA/NEON 硬件实现</strong>，报告应更明确边界，避免读者误以为是真机验证。</li>
+</ol>
+<hr>
+<h2 id="二、必须优先处理的问题（P0）"><a href="#二、必须优先处理的问题（P0）" class="headerlink" title="二、必须优先处理的问题（P0）"></a>二、必须优先处理的问题（P0）</h2><h3 id="2-1-C-源码可编译性"><a href="#2-1-C-源码可编译性" class="headerlink" title="2.1 C++ 源码可编译性"></a>2.1 C++ 源码可编译性</h3><p>以下问题来自源码静态检查，按当前代码看必然导致 <code>g++ -std=c++17</code> / <code>clang++</code> 编译失败：</p>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>位置</th>
+<th>问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>KF_demo/kf_l4_enkf_mhe.cpp</code></td>
+<td>第 53–58、279–280 行</td>
+<td><code>matvecM()</code> 声明返回 <code>Mat</code>，实际 <code>return y;</code> 返回 <code>Vec</code>；随后 <code>matvec()</code> 又返回 <code>matvecM(A,x)</code>（<code>Mat</code> → <code>Vec</code>），<code>f_obj()</code> 里也把 <code>matvecM</code> 当 <code>Vec</code> 用。属于 <code>Mat</code>/<code>Vec</code> 类型混淆，必然编译失败。</td>
+</tr>
+<tr>
+<td><code>control_demo/ctrl_l4_hinf.cpp</code></td>
+<td>第 44–45 行</td>
+<td><code>static double rhoCx2(const Cx A[2][2]){</code> 连续出现两次，函数体前多了一个重复函数头，语法错误。</td>
+</tr>
+<tr>
+<td><code>control_demo/ctrl_l4_fbl.cpp</code></td>
+<td>第 74、85 行</td>
+<td>定义的是 <code>chkBool</code>，第 85 行调用的是 <code>chk_bool</code>，标识符不一致，编译失败。</td>
+</tr>
+</tbody></table>
+<p>建议：修复上述问题后，在能运行 <code>build.py</code> 的 Linux/沙箱环境中对全部 L4 cpp 做一次全量编译，并把编译结果作为“PASS”的前提。</p>
+<h3 id="2-2-review-0820-md-状态与文件清单不同步"><a href="#2-2-review-0820-md-状态与文件清单不同步" class="headerlink" title="2.2 review_0820.md 状态与文件清单不同步"></a>2.2 <code>review_0820.md</code> 状态与文件清单不同步</h3><p>以下情况会误导读者：</p>
+<ul>
+<li><strong>cuda Hopper 已落地但报告未标记</strong>：<code>cuda_demo/cuda_l4_hopper_tensorcore.cpp/.md</code> 已存在，且文档称 17 项检查 PASS；但 <code>review_0820.md</code> 总览表第 46 行仍写“TensorCore 篇止于 sm_80/fp16/tf32”，P1 路线也未标 ✅。</li>
+<li><strong>LS 子空间辨识状态矛盾</strong>：总览表第 47 行仍写“仅 ARX（OE 类）”，但 P1 路线第 181 行已写“子空间辨识 N4SID（✅ L4.7）”。</li>
+<li><strong>pid P2 详细章节未更新</strong>：总览表第 49 行已把 FOPID/模糊 PID/IAE/MIMO 标 ✅，但分 demo 详述 2.2（第 79–80 行）仍写“建议落点”，没有同步。</li>
+<li><strong>cali P2 详细章节未更新</strong>：总览表第 50 行已把自标定/结构光/RGB-D/多相机 rig 标 ✅，但分 demo 详述 2.5（第 111–112 行）仍写“建议落点”。</li>
+<li><strong>“CUDA 统一内存与 Graphs”表述过宽</strong>：<code>review_0820.md</code> 第 23 行写“CUDA 统一内存与 Graphs ✅已落地(<code>cuda_l4_cuda_graphs</code>)”，但实际文件只覆盖 CUDA Graphs，没有统一内存（Unified Memory）内容。</li>
+</ul>
+<hr>
+<h2 id="三、数值-文档一致性问题（P1）"><a href="#三、数值-文档一致性问题（P1）" class="headerlink" title="三、数值/文档一致性问题（P1）"></a>三、数值/文档一致性问题（P1）</h2><table>
+<thead>
+<tr>
+<th>不一致</th>
+<th>位置</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SME2 乱序累加误差</td>
+<td><code>review_0820.md</code> 第 222 行写 <code>err≈4.4e-16</code>；<code>neon_demo/neon_l4_sme2.md</code> 第 81 行写 <code>F3 err≈6.0e-8</code></td>
+<td>二者数量级明显不同，应核对实际运行结果后统一。</td>
+</tr>
+<tr>
+<td>BF16/FP16 精度数值</td>
+<td><code>review_0820.md</code> 第 221 行写 <code>fp16=3.47e-4 / bf16=3.33e-3</code>；<code>neon_demo/neon_l4_bf16.md</code> 第 54 行写 <code>fp16=3.88e-4 / bf16=3.81e-3</code></td>
+<td>若依赖 RNG/随机矩阵，报告中不应固化精确数值；若不依赖，则必须与 md 完全一致。</td>
+</tr>
+</tbody></table>
+<p>另外 <code>review_0820.md</code> 第 145 行 <code>neon_l4_simd_abstract</code> 行尾多了一个多余列，建议顺手修正 Markdown 表格格式。</p>
+<hr>
+<h2 id="四、关于“已落地”的边界说明（P2）"><a href="#四、关于“已落地”的边界说明（P2）" class="headerlink" title="四、关于“已落地”的边界说明（P2）"></a>四、关于“已落地”的边界说明（P2）</h2><ul>
+<li><code>cuda_l4_*</code> 的多数 L4 文件（Graphs、Hopper、cuFFT/cuSPARSE/cuRAND、compute-sanitizer、grouped GEMM）实际是 <strong>host 端 CPU 语义模型 + <code>#ifdef __CUDACC__</code> 真机片段</strong>，不是可运行在真实 GPU 上的 CUDA 实现。</li>
+<li><code>neon_l4_bf16</code> / <code>neon_l4_sme2</code> 也主要是 <strong>指令语义模型 + ARM intrinsic 守卫骨架</strong>，并非在 ARM 真机上跑出的结果。</li>
+<li>这些文件本身在 <code>.md</code> 中有“本沙箱无 GPU / 无 nvcc / 无 ARM”的诚实说明，这是好的；但 <code>review_0820.md</code> 的“✅ 已落地”容易让读者误以为是真机/真实库验证。建议在报告中统一标注为 <strong>“CPU 语义模型 + 真机片段”</strong> 或 <strong>“待真机验证”</strong>。</li>
+</ul>
+<hr>
+<h2 id="五、分模块核对摘要"><a href="#五、分模块核对摘要" class="headerlink" title="五、分模块核对摘要"></a>五、分模块核对摘要</h2><table>
+<thead>
+<tr>
+<th>模块</th>
+<th>关键文件</th>
+<th>判定</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>P0 AD</td>
+<td><code>Jacobian_demo/jac_l4_autodiff.cpp/.md</code></td>
+<td>内容合理，未发现明显编译错误</td>
+</tr>
+<tr>
+<td>P0 MPC</td>
+<td><code>control_demo/ctrl_l4_mpc.cpp/.md</code></td>
+<td>内容合理，压缩 MPC 与 LQR 对拍逻辑清楚</td>
+</tr>
+<tr>
+<td>P0 Lasso</td>
+<td><code>Least_squares_method_demo/ls_l4_lasso.cpp/.md</code></td>
+<td>内容合理，ISTA/FISTA/CD 结构完整</td>
+</tr>
+<tr>
+<td>P0 鱼眼+卷帘</td>
+<td><code>cali_demo/cali_l4_fisheye_rs.cpp/.md</code></td>
+<td>内容合理，投影/反投影/RS 校正逻辑自洽</td>
+</tr>
+<tr>
+<td>P0 LiDAR-IMU</td>
+<td><code>cali_demo/cali_l4_lidar_imu.cpp/.md</code></td>
+<td>内容合理，Umeyama + 1-D 搜索结构完整</td>
+</tr>
+<tr>
+<td>P0 EnKF+MHE</td>
+<td><code>KF_demo/kf_l4_enkf_mhe.cpp/.md</code></td>
+<td><strong>源码类型错误，不能视为可编译验证</strong></td>
+</tr>
+<tr>
+<td>P0 CUDA Graphs</td>
+<td><code>cuda_demo/cuda_l4_cuda_graphs.cpp/.md</code></td>
+<td>教学模型合理，但属于 CPU 模型</td>
+</tr>
+<tr>
+<td>P1 H∞/μ</td>
+<td><code>control_demo/ctrl_l4_hinf.cpp/.md</code></td>
+<td><strong>重复函数头，编译错误</strong></td>
+</tr>
+<tr>
+<td>P1 SMC</td>
+<td><code>control_demo/ctrl_l4_smc.cpp/.md</code></td>
+<td>内容合理</td>
+</tr>
+<tr>
+<td>P1 FBL/反步</td>
+<td><code>control_demo/ctrl_l4_fbl.cpp/.md</code></td>
+<td><strong>调用未定义函数，编译错误</strong></td>
+</tr>
+<tr>
+<td>P1 PID 三件</td>
+<td><code>pid_demo/pid_l4_adrc.cpp / smith.cpp / imc.cpp</code></td>
+<td>内容合理</td>
+</tr>
+<tr>
+<td>P1 KF 三件</td>
+<td><code>KF_demo/kf_l4_factor.cpp / robustkf.cpp / multitarget.cpp</code></td>
+<td>内容合理，未发现明显编译错误</td>
+</tr>
+<tr>
+<td>P1 NEON</td>
+<td><code>neon_demo/neon_l4_bf16.cpp / sme2.cpp</code></td>
+<td>语义模型合理，但 SME2/BF16 数值需与报告统一</td>
+</tr>
+<tr>
+<td>P2 系列</td>
+<td>control/pid/cali/ls/cuda/neon 多个 L4</td>
+<td>文件大多存在且内容有实质实现，但报告状态未同步</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="六、改进建议"><a href="#六、改进建议" class="headerlink" title="六、改进建议"></a>六、改进建议</h2><ol>
+<li><p><strong>先修编译错误，再谈 PASS</strong>：</p>
+<ul>
+<li>修复 <code>kf_l4_enkf_mhe.cpp</code> 的 <code>Mat</code>/<code>Vec</code> 类型；</li>
+<li>删除 <code>ctrl_l4_hinf.cpp</code> 重复函数头；</li>
+<li>将 <code>ctrl_l4_fbl.cpp</code> 的 <code>chk_bool</code> 改为 <code>chkBool</code>（或统一命名）。</li>
+<li>之后运行各 demo <code>build.py</code>，确保 <code>=== N passed, 0 failed ===</code> 是从真实编译运行得到的。</li>
+</ul>
+</li>
+<li><p><strong>同步 <code>review_0820.md</code> 与文件清单</strong>：</p>
+<ul>
+<li>在总览表和 P1 路线中标记 <code>cuda_l4_hopper_tensorcore</code> 已落地；</li>
+<li>统一 LS 子空间辨识的状态；</li>
+<li>更新 2.2 pid 和 2.5 cali 的详细章节，使其与总览表一致；</li>
+<li>修正“CUDA 统一内存与 Graphs”的表述。</li>
+</ul>
+</li>
+<li><p><strong>统一数值口径</strong>：</p>
+<ul>
+<li>对 RNG 相关结果，报告只写结论趋势，不写具体到 4 位小数的数值；</li>
+<li>对固定数值，确保 <code>review_0820.md</code> 与对应 <code>.md</code> 完全一致。</li>
+</ul>
+</li>
+<li><p><strong>明确“教学模型”与“真实硬件实现”的边界</strong>：</p>
+<ul>
+<li>在报告/文档中使用“CPU 语义模型”、“真机片段待验证”等词；</li>
+<li>避免把 <code>cuda_l4_*</code>、<code>neon_l4_*</code> 的 host 模拟结果等同于真实 CUDA/NEON benchmark。</li>
+</ul>
+</li>
+<li><p><strong>增加自动化校验</strong>：</p>
+<ul>
+<li>可在仓库中加入一个简单脚本，扫描 <code>review_0820.md</code> 中所有 <code>✅ 已落地</code> 对应的文件是否存在；</li>
+<li>对纯 C++ 文件执行 <code>g++ -std=c++17 -fsyntax-only</code> 或 <code>build.py</code>，防止类似问题再次混入。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="七、结论"><a href="#七、结论" class="headerlink" title="七、结论"></a>七、结论</h2><p><code>review_0820.md</code> 作为“工业知识点查漏报告”是很有价值的，新增内容的方向、深度和互引设计总体合理；但当前<strong>不能将其视为全部实现已通过验证的最终报告</strong>。至少需要先修复本文列出的三个 C++ 编译错误，并同步报告状态与文件清单、统一数值，然后才能把“已落地 / PASS”作为可信结论。</p>
+
+      </div>
+      
+      
+      
+    </div>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

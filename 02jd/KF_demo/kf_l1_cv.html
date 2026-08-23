@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L1.4 常速模型 CV-KF：矩阵形式完整例子 + Joseph 稳定形式 一句话：状态 x&#x3D;[位置, 速度]，只观测位置——**KF 通过模型把”位置观测”变成”速度信息”**；协方差更新用 Joseph 形式 (I−KH)P(I−KH)ᵀ+KRKᵀ 保证数值上永远对称正定。   一、模型123F &#x3D; [1  dt]      x⁺ &#x3D; F·x + w    （常速 + 白加速度噪声）">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L1.4 常速模型 CV-KF：矩阵形式完整例子 + Joseph 稳定形式">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/KF_demo/kf_l1_cv.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L1.4 常速模型 CV-KF：矩阵形式完整例子 + Joseph 稳定形式 一句话：状态 x&#x3D;[位置, 速度]，只观测位置——**KF 通过模型把”位置观测”变成”速度信息”**；协方差更新用 Joseph 形式 (I−KH)P(I−KH)ᵀ+KRKᵀ 保证数值上永远对称正定。   一、模型123F &#x3D; [1  dt]      x⁺ &#x3D; F·x + w    （常速 + 白加速度噪声）">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/KF_demo/images/fig4_cv.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.940Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/KF_demo/images/fig4_cv.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/KF_demo/kf_l1_cv">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/KF_demo/kf_l1_cv.html","path":"02jd/KF_demo/kf_l1_cv.html","title":"L1.4 常速模型 CV-KF：矩阵形式完整例子 + Joseph 稳定形式"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L1.4 常速模型 CV-KF：矩阵形式完整例子 + Joseph 稳定形式 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L1-4-%E5%B8%B8%E9%80%9F%E6%A8%A1%E5%9E%8B-CV-KF%EF%BC%9A%E7%9F%A9%E9%98%B5%E5%BD%A2%E5%BC%8F%E5%AE%8C%E6%95%B4%E4%BE%8B%E5%AD%90-Joseph-%E7%A8%B3%E5%AE%9A%E5%BD%A2%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">L1.4 常速模型 CV-KF：矩阵形式完整例子 + Joseph 稳定形式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.1.</span> <span class="nav-text">一、模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A4%E7%A7%8D-Q-%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%88%E9%87%8F%E7%BA%B2%E5%8C%B9%E9%85%8D%E5%90%8E%E5%B7%AE%E5%BC%82%E4%B8%BA-3-4%EF%BC%8C%E4%B8%8D%E6%98%AF-13-%E5%80%8D%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">两种 Q 的区别（量纲匹配后差异为 3&#x2F;4，不是 13 倍）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E9%80%9F%E5%BA%A6%E8%A2%AB%E2%80%9D%E6%81%A2%E5%A4%8D%E2%80%9D%E4%BA%86%E5%90%97"><span class="nav-number">1.2.</span> <span class="nav-text">二、速度被”恢复”了吗</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%8D%E7%BD%AE%E8%A7%82%E6%B5%8B%E8%83%BD%E4%BC%B0%E5%87%BA%E9%80%9F%E5%BA%A6%EF%BC%88%E7%9B%B4%E8%A7%89%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">为什么位置观测能估出速度（直觉）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81Joseph-%E5%BD%A2%E5%BC%8F"><span class="nav-number">1.3.</span> <span class="nav-text">三、Joseph 形式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Joseph-%E5%BD%A2%E5%BC%8F%E7%9A%84%E6%8E%A8%E5%AF%BC%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E5%AF%B9%E7%A7%B0%E6%80%A7%E5%A5%BD%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">Joseph 形式的推导（为什么对称性好）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88kf-l1-cv-cpp%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、代码走读（kf_l1_cv.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.5.</span> <span class="nav-text">五、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">六、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.7.</span> <span class="nav-text">七、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.8.</span> <span class="nav-text">八、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L1.4 常速模型 CV-KF：矩阵形式完整例子 + Joseph 稳定形式
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L1_CV</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L1-4-常速模型-CV-KF：矩阵形式完整例子-Joseph-稳定形式"><a href="#L1-4-常速模型-CV-KF：矩阵形式完整例子-Joseph-稳定形式" class="headerlink" title="L1.4 常速模型 CV-KF：矩阵形式完整例子 + Joseph 稳定形式"></a>L1.4 常速模型 CV-KF：矩阵形式完整例子 + Joseph 稳定形式</h1><blockquote>
+<p>一句话：状态 x=[位置, 速度]，只观测位置——**KF 通过模型把”位置观测”变成”速度信息”**；协方差更新用 Joseph 形式 (I−KH)P(I−KH)ᵀ+KRKᵀ 保证数值上永远对称正定。</p>
+</blockquote>
+<hr>
+<h2 id="一、模型"><a href="#一、模型" class="headerlink" title="一、模型"></a>一、模型</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">F = [1  dt]      x⁺ = F·x + w    （常速 + 白加速度噪声）</span><br><span class="line">    [0  1 ]</span><br><span class="line">H = [1  0]       z = 位置 + v</span><br></pre></td></tr></tbody></table></figure>
+
+<p>过程噪声的<strong>精确离散协方差</strong>（每步独立采样加速度 a~N(0,q)，作用于 (½dt²a, dt·a)）：</p>
+<blockquote>
+<p>Q = q·[[dt⁴/4, dt³/2], [dt³/2, dt²]]</p>
+</blockquote>
+<p>⚠️ 常见坑：很多教材写 [[dt³/3, dt²/2],[dt²/2, dt]]，那是”分段常加速度”（Van Loan 连续模型）的 Q；<strong>用哪个取决于你的仿真/真实系统属于哪种</strong>——用错会让滤波器长期过信或欠信（本仓库 L3.4 的 NEES 闸门就是被这个差异触发的，实测 Q_pp 差 13 倍）。</p>
+<h3 id="两种-Q-的区别（量纲匹配后差异为-3-4，不是-13-倍）"><a href="#两种-Q-的区别（量纲匹配后差异为-3-4，不是-13-倍）" class="headerlink" title="两种 Q 的区别（量纲匹配后差异为 3/4，不是 13 倍）"></a>两种 Q 的区别（量纲匹配后差异为 3/4，不是 13 倍）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">模型 A（本 demo）: 每个采样区间独立采样一次加速度 a_k ~ N(0,q_A)，区间内恒定</span><br><span class="line">  → 位置增量 = ½dt²a, 速度增量 = dt·a → Q_pp = q_A·dt⁴/4</span><br><span class="line">  (q_A 单位: 位置²/时间⁴ = 加速度方差)</span><br><span class="line"></span><br><span class="line">模型 B（Van Loan/连续白噪声）: 连续时间白噪声加速度（谱密度 q_c，单位: 位置²/时间³）</span><br><span class="line">  → Q_pp = q_c·dt³/3, Q_pv = q_c·dt²/2, Q_vv = q_c·dt</span><br><span class="line"></span><br><span class="line">⚠️ 直接比较数值前必须量纲对齐! 若按速度方差匹配 q_A·dt² = q_c·dt（即 q_A = q_c/dt）:</span><br><span class="line">  Q_pp_A = q_c·dt³/4 vs Q_pp_B = q_c·dt³/3 → 比值 = 3/4（仅 25% 差异）</span><br><span class="line">  若误把同一数值直接代入（q_A=q_c），则 Q_pp_A/Q_pp_B = (3dt/4)·(1/dt²) 会差 ~1/dt 倍</span><br><span class="line">  —— dt=0.1 时约 7.5 倍（本仓库开发时踩过的量级）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程铁律</strong>：Q 必须与你<strong>仿真里怎么生成真值</strong>一致（模型 A：仿真也是”每拍采样一次加速度”）——滤波器与真值发生器用同一模型，NEES 才会 ≈1（L2.4 的验收依赖此）。若仿真用连续随机微分方程（SDE，白噪声加速度），Q 用模型 B（Van Loan 离散化）。<strong>注意：连续白噪声不是普通可微输入，不能直接用确定性 RK4 积分——需 SDE 数值方法或精确离散化。</strong></p>
+<h2 id="二、速度被”恢复”了吗"><a href="#二、速度被”恢复”了吗" class="headerlink" title="二、速度被”恢复”了吗"></a>二、速度被”恢复”了吗</h2><p>观测只有位置，但 F 的耦合使位置残差里<strong>携带速度信息</strong>：观测连续偏左 → 速度估计下修。demo 中速度 RMSE≈0.13，与理论稳态 √P_vv 吻合——位置观测确实恢复了速度（可观测性证明见 L3.2）。</p>
+<h3 id="为什么位置观测能估出速度（直觉）"><a href="#为什么位置观测能估出速度（直觉）" class="headerlink" title="为什么位置观测能估出速度（直觉）"></a>为什么位置观测能估出速度（直觉）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">一步预测: x⁻_{k+1} = x_k + dt·v_k   → 位置残差 z − x⁻ 里包含 "dt·v 的误差"</span><br><span class="line">速度修正: v ← v + K_v·(z − x⁻)      → 残差经 K_v 传导给速度</span><br><span class="line">观测连续偏大 → 速度持续上调 → 速度被"追踪"出来</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>本质</strong>：可观测性（L3.2）保证”位置+常速模型”能唯一确定速度——<strong>模型的动力学耦合就是信息的桥梁</strong>。这也是”只用位置传感器却能估计速度”（GPS 测速、单目视觉估计速度）的理论依据。</p>
+<h2 id="三、Joseph-形式"><a href="#三、Joseph-形式" class="headerlink" title="三、Joseph 形式"></a>三、Joseph 形式</h2><p>标准更新 P=(I−KH)P⁻ 在有限精度下可能逐渐失去对称性/正定性；Joseph 形式</p>
+<blockquote>
+<p>P = (I−KH)P⁻(I−KH)ᵀ + K·R·Kᵀ</p>
+</blockquote>
+<p>在 <code>P⁻⪰0</code>、<code>R⪰0</code> 且先验误差与测量噪声不相关时，对任意 K 都保持<strong>半正定</strong>（严格正定还需额外条件，如 R≻0 与 P⁻≻0）——比 (I−KH)P⁻ 的数值性质好得多，是<strong>工程标配</strong>。demo 验证 400 步后 P 仍严格对称（差 ~1e-17）且行列式 &gt; 0。有限精度下仍建议周期性 <code>P ← (P+Pᵀ)/2</code> 对称化（长跑保险）。</p>
+<p>⚠️ 注意别把 Joseph 写成只有前半项——少 +KRKᵀ 会把 P 缩小 20 倍（本仓库开发时就踩过，靠与信息滤波器交叉对拍抓出，见 L2.2）。</p>
+<h3 id="Joseph-形式的推导（为什么对称性好）"><a href="#Joseph-形式的推导（为什么对称性好）" class="headerlink" title="Joseph 形式的推导（为什么对称性好）"></a>Joseph 形式的推导（为什么对称性好）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">真实更新: P = E[(x−x̂)(x−x̂)ᵀ],  x̂ = x̂⁻ + K(z−Hx̂⁻),  z = Hx + v</span><br><span class="line">代入误差: x−x̂ = (I−KH)(x−x̂⁻) − Kv</span><br><span class="line">P = E[(I−KH)e⁻e⁻ᵀ(I−KH)ᵀ] + E[KvvᵀKᵀ]   （交叉项: e⁻ 与 v 不相关 → 0）</span><br><span class="line">  = (I−KH)P⁻(I−KH)ᵀ + KRKᵀ    ✓ Joseph 形式</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>洞察</strong>：Joseph 是<strong>误差代数展开的精确结果</strong>（不是近似），而 (I−KH)P⁻ 是它的”简化版”（假设 K 最优时两式数学等价，但有限精度/非最优 K 下 Joseph 更稳）。工程上默认用 Joseph——多一次矩阵乘换数值安全，稳赚。</p>
+<h2 id="四、代码走读（kf-l1-cv-cpp）"><a href="#四、代码走读（kf-l1-cv-cpp）" class="headerlink" title="四、代码走读（kf_l1_cv.cpp）"></a>四、代码走读（kf_l1_cv.cpp）</h2><ul>
+<li>矩阵工具（2×2 手写优化）+ <code>KF 预测/更新</code> 主循环 + RMSE 与对称性检查。</li>
+</ul>
+<h2 id="五、你会看到什么"><a href="#五、你会看到什么" class="headerlink" title="五、你会看到什么"></a>五、你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">=== L1.4 常速模型 CV-KF（含 Joseph 形式）===</span><br><span class="line">  [demo] rmse_pos=0.222 rmse_vel=0.133 rmse_meas=0.695</span><br><span class="line">  位置滤波RMSE &lt; 观测RMSE             err=0.0e+00 tol=5e-01  PASS</span><br><span class="line">  速度RMSE ≈ √P_vv (&lt;0.3)            err=1.3e-01 tol=3e-01  PASS</span><br><span class="line">  Joseph P 对称                       err=2.1e-17 tol=1e-12  PASS</span><br><span class="line">  Joseph P 正定                       err=0.0e+00 tol=5e-01  PASS</span><br><span class="line">=== 4 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img src="/02jd/KF_demo/images/fig4_cv.svg" alt="L1.4 CV-KF 与 Joseph 形式"></p>
+<h2 id="六、工程落点（真实项目）"><a href="#六、工程落点（真实项目）" class="headerlink" title="六、工程落点（真实项目）"></a>六、工程落点（真实项目）</h2><ul>
+<li><strong>目标跟踪（雷达/视觉）</strong>：CV 模型是跟踪器最基础的运动模型——<code>F=[[1,dt],[0,1]]</code> 是几乎所有跟踪库的起点（OpenCV 跟踪、自动驾驶目标融合）。</li>
+<li><strong>PX4 EKF2 的 IMU 传播</strong>：IMU 位置/速度预测就是 CV 模型的 3D 版（加速度作为输入，F 是 6×6 块结构）。</li>
+<li><strong>GPS 测速原理</strong>：GPS 多普勒测速本质是”位置差分观测恢复速度”——与 CV-KF 的”位置观测恢复速度”同构。</li>
+<li><strong>OpenCV <code>cv::KalmanFilter</code> 的经典例子</strong>：鼠标轨迹跟踪用的正是 CV 模型。</li>
+</ul>
+<h2 id="七、自检"><a href="#七、自检" class="headerlink" title="七、自检"></a>七、自检</h2><ul>
+<li>把初速度估计从 0.5 改成 0（更偏），看速度需要多少步收敛（大约 3σ/√P_vv 量级）。</li>
+<li>把 Joseph 换成 (I−KH)P⁻ 跑 10 万步，对比 P 的对称性漂移。</li>
+<li>挑战：把 Q 从”模型 A”换成”模型 B”（Van Loan），NEES 会怎样？（L2.4 的闸门会报警——Q 错 = 滤波器不诚实）</li>
+</ul>
+<h2 id="八、下一步"><a href="#八、下一步" class="headerlink" title="八、下一步"></a>八、下一步</h2><p>进入 <a href="/02jd/KF_demo/kf_l1_qr.html">L1.5 Q/R 调参</a>——模型固定后，工程师每天在调的两个数。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L1_CV</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

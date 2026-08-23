@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3.3　cooperative groups + dynamic parallelism + PTX&#x2F;SASS 反汇编调优 配套代码：cuda_l3_cg_dp_ptx.cpp（纯 C++ 可跑）　图示：images&#x2F;fig14_l3_cg_dp_ptx.svg &#x2F; cuda_l3_cg_dp_ptx_diagrams.html编译运行：g++ -O3 -std&#x3D;c++17 cuda_l3_cg">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3.3　cooperative groups + dynamic parallelism + PTX&#x2F;SASS 反汇编调优">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_cg_dp_ptx.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3.3　cooperative groups + dynamic parallelism + PTX&#x2F;SASS 反汇编调优 配套代码：cuda_l3_cg_dp_ptx.cpp（纯 C++ 可跑）　图示：images&#x2F;fig14_l3_cg_dp_ptx.svg &#x2F; cuda_l3_cg_dp_ptx_diagrams.html编译运行：g++ -O3 -std&#x3D;c++17 cuda_l3_cg">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_cg_dp_ptx">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_cg_dp_ptx.html","path":"02jd/cuda_demo/cuda_l3_cg_dp_ptx.html","title":"L3.3　cooperative groups + dynamic parallelism + PTX/SASS 反汇编调优"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3.3　cooperative groups + dynamic parallelism + PTX/SASS 反汇编调优 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-3-cooperative-groups-dynamic-parallelism-PTX-SASS-%E5%8F%8D%E6%B1%87%E7%BC%96%E8%B0%83%E4%BC%98"><span class="nav-number">1.</span> <span class="nav-text">L3.3　cooperative groups + dynamic parallelism + PTX&#x2F;SASS 反汇编调优</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A70-%E6%89%BF%E4%B8%8A%E5%90%AF%E4%B8%8B%EF%BC%9AL3-%E7%9A%84%E4%B8%89%E7%AB%99%E6%80%8E%E4%B9%88%E4%B8%B2"><span class="nav-number">1.1.</span> <span class="nav-text">§0　承上启下：L3 的三站怎么串</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A71-cooperative-groups%EF%BC%9A%E4%BB%8E-syncthreads-%E5%88%B0-grid-sync"><span class="nav-number">1.2.</span> <span class="nav-text">§1　cooperative groups：从 __syncthreads() 到 grid.sync()</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%EF%BC%9Agrid-sync-%E6%8A%8A%E3%80%8C%E4%B8%A4%E8%B6%9F-kernel%E3%80%8D%E5%8E%8B%E6%88%90%E3%80%8C%E4%B8%80%E8%B6%9F-%E4%B8%80%E6%AC%A1%E6%A0%85%E6%A0%8F%E3%80%8D"><span class="nav-number">1.2.1.</span> <span class="nav-text">关键：grid.sync() 把「两趟 kernel」压成「一趟 + 一次栅栏」</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A72-dynamic-parallelism%EF%BC%9Akernel-%E5%86%85-launch-kernel"><span class="nav-number">1.3.</span> <span class="nav-text">§2　dynamic parallelism：kernel 内 launch kernel</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%9A%A0%EF%B8%8F-CDP2%EF%BC%88CUDA-12%EF%BC%89%E7%9A%84%E9%87%8D%E5%A4%A7%E5%8F%98%E5%8C%96"><span class="nav-number">1.3.1.</span> <span class="nav-text">⚠️ CDP2（CUDA 12）的重大变化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A73-PTX-vs-SASS%EF%BC%9A%E4%B8%A4%E5%B1%82-ISA"><span class="nav-number">1.4.</span> <span class="nav-text">§3　PTX vs SASS：两层 ISA</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A74-%E5%8F%8D%E6%B1%87%E7%BC%96%E5%B7%A5%E5%85%B7%E9%93%BE%EF%BC%88%E6%80%8E%E4%B9%88%E6%8B%BF%E5%88%B0-SASS%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">§4　反汇编工具链（怎么拿到 SASS）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A75-SASS-%E5%88%86%E8%AF%8A%EF%BC%9A%E4%BB%8E%E6%8C%87%E4%BB%A4%E8%AF%BB%E6%80%A7%E8%83%BD%E4%BF%A1%E5%8F%B7%EF%BC%88%E4%BB%A3%E7%A0%81-analyze-sass-%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">§5　SASS 分诊：从指令读性能信号（代码 analyze_sass()）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A76-%E7%9C%9F%E5%AE%9E%E6%BA%90%E7%A0%81-%E6%96%87%E6%A1%A3%E9%94%9A%E7%82%B9"><span class="nav-number">1.7.</span> <span class="nav-text">§6　真实源码 &#x2F; 文档锚点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A77-%E6%95%B0%E5%80%BC%E8%87%AA%E6%A3%80%EF%BC%88%E4%BB%A3%E7%A0%81%E5%AE%9E%E6%B5%8B%EF%BC%8C%E5%B7%B2%E7%94%A8-Python-%E9%95%9C%E5%83%8F%E5%A4%8D%E6%A0%B8%EF%BC%89"><span class="nav-number">1.8.</span> <span class="nav-text">§7　数值自检（代码实测，已用 Python 镜像复核）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A78-%E7%BC%96%E8%AF%91%E4%B8%8E%E8%BF%90%E8%A1%8C"><span class="nav-number">1.9.</span> <span class="nav-text">§8　编译与运行</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3.3　cooperative groups + dynamic parallelism + PTX/SASS 反汇编调优
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L3_CG_DP_PTX</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-3-cooperative-groups-dynamic-parallelism-PTX-SASS-反汇编调优"><a href="#L3-3-cooperative-groups-dynamic-parallelism-PTX-SASS-反汇编调优" class="headerlink" title="L3.3　cooperative groups + dynamic parallelism + PTX/SASS 反汇编调优"></a>L3.3　cooperative groups + dynamic parallelism + PTX/SASS 反汇编调优</h1><blockquote>
+<p>配套代码：<code>cuda_l3_cg_dp_ptx.cpp</code>（纯 C++ 可跑）　图示：<code>images/fig14_l3_cg_dp_ptx.svg</code> / <code>cuda_l3_cg_dp_ptx_diagrams.html</code><br>编译运行：<code>g++ -O3 -std=c++17 cuda_l3_cg_dp_ptx.cpp -o cg &amp;&amp; ./cg</code> → 预期 <code>[verify_on_cpu] PASS</code><br>真机：<code>nvcc -O3 -std=c++17 -arch=sm_80 -rdc=true cuda_l3_cg_dp_ptx.cpp -lcudadevrt -o cg_gpu</code></p>
+</blockquote>
+<p>这三个主题看似分散，其实是同一件事的三个层面：<strong>把并行结构表达得更贴近硬件，让 SM 少空转</strong>。</p>
+<ul>
+<li>cooperative groups：把「跨 block 协作」变成一等公民（一次栅栏替代一次 kernel launch）；</li>
+<li>dynamic parallelism：把「工作量随数据自适应」的决策留在设备端（不回 host）；</li>
+<li>PTX/SASS 反汇编：打开黑盒，看编译器到底发了什么指令，验证前面所有优化是否真的落地。</li>
+</ul>
+<hr>
+<h2 id="§0-承上启下：L3-的三站怎么串"><a href="#§0-承上启下：L3-的三站怎么串" class="headerlink" title="§0　承上启下：L3 的三站怎么串"></a>§0　承上启下：L3 的三站怎么串</h2><table>
+<thead>
+<tr>
+<th>站</th>
+<th>关注点</th>
+<th>一句话</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>L3.1</td>
+<td>fusion + cp.async + pipeline</td>
+<td>减少「搬多少」与「搬时干等」</td>
+</tr>
+<tr>
+<td>L3.2</td>
+<td>Tensor Core + 混合精度</td>
+<td>让「算」这一步更密更快</td>
+</tr>
+<tr>
+<td><strong>L3.3（本站）</strong></td>
+<td>CG / DP / 反汇编</td>
+<td><strong>调度结构</strong>（跨 block 协作、自适应并行）+ <strong>验收手段</strong>（看 SASS）</td>
+</tr>
+</tbody></table>
+<p>前两站教你「写出高性能 kernel」，本站教你「组织多 kernel/多 block 的协作」并「用反汇编验收」——是把整条链闭合的最后一环。</p>
+<hr>
+<h2 id="§1-cooperative-groups：从-syncthreads-到-grid-sync"><a href="#§1-cooperative-groups：从-syncthreads-到-grid-sync" class="headerlink" title="§1　cooperative groups：从 __syncthreads() 到 grid.sync()"></a>§1　cooperative groups：从 <code>__syncthreads()</code> 到 <code>grid.sync()</code></h2><p><strong>痛点</strong>：CUDA 9 之前，同步只能到 <strong>block 内</strong>（<code>__syncthreads()</code>）。跨 block 想同步，唯一办法是<strong>结束当前 kernel、host 再 launch 下一个</strong> —— 每次都付出 launch 开销 + 全局状态失效。</p>
+<p><strong>cooperative groups</strong> 把「一组协作线程」抽象成可同步的 group，粒度从 sub-warp 一直到整个 grid、甚至多 GPU：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> cg = cooperative_groups;</span><br><span class="line">cg::thread_block block = cg::<span class="built_in">this_thread_block</span>();        <span class="comment">// 一个 block</span></span><br><span class="line"><span class="keyword">auto</span> tile32 = cg::<span class="built_in">tiled_partition</span>&lt;<span class="number">32</span>&gt;(block);            <span class="comment">// warp 大小的 tile（编译期已知=快）</span></span><br><span class="line">cg::grid_group grid  = cg::<span class="built_in">this_grid</span>();                  <span class="comment">// 整个 grid（需协作启动）</span></span><br><span class="line"><span class="comment">// auto mg = cg::this_multi_grid();                      // 跨 GPU</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>通用接口：<code>g.sync()</code> / <code>g.size()</code> / <code>g.thread_rank()</code>；tile 还有 <code>.shfl_down()</code> / <code>.ballot()</code> / <code>.any()</code>（编译期尺寸→快）。</p>
+<h3 id="关键：grid-sync-把「两趟-kernel」压成「一趟-一次栅栏」"><a href="#关键：grid-sync-把「两趟-kernel」压成「一趟-一次栅栏」" class="headerlink" title="关键：grid.sync() 把「两趟 kernel」压成「一趟 + 一次栅栏」"></a>关键：<code>grid.sync()</code> 把「两趟 kernel」压成「一趟 + 一次栅栏」</h3><p>经典两-kernel 归约：kernel A 出 <code>partial[]</code> → 结束 → host launch kernel B 归约 <code>partial[]</code>。<br>cooperative 版：<strong>一个 persistent kernel</strong> 内 <code>phase1 → grid.sync() → phase2</code>。</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">__global__ <span class="type">void</span> <span class="title">reduce_grid_sync</span><span class="params">(<span class="type">const</span> <span class="type">float</span>* x, <span class="type">double</span>* partial, <span class="type">double</span>* out, <span class="type">int</span> N)</span></span>{</span><br><span class="line">  cg::grid_group grid = cg::<span class="built_in">this_grid</span>();</span><br><span class="line">  <span class="comment">/* phase1: 每 block 局部归约 -&gt; partial[blockIdx.x] */</span></span><br><span class="line">  grid.<span class="built_in">sync</span>();                       <span class="comment">// &lt;&lt;&lt; 整网栅栏，替代 kernel A/B 边界</span></span><br><span class="line">  <span class="keyword">if</span>(blockIdx.x==<span class="number">0</span>){ <span class="comment">/* phase2: 归约 partial -&gt; out */</span> }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>启动方式必须换</strong>（不能用 <code>&lt;&lt;&lt;&gt;&gt;&gt;</code>）：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> blocksPerSM=<span class="number">0</span>;</span><br><span class="line"><span class="built_in">cudaOccupancyMaxActiveBlocksPerMultiprocessor</span>(&amp;blocksPerSM, reduce_grid_sync, threads, <span class="number">0</span>);</span><br><span class="line"><span class="function">dim3 <span class="title">grid</span><span class="params">(blocksPerSM * numSM)</span>, <span class="title">block</span><span class="params">(threads)</span></span>;</span><br><span class="line"><span class="type">void</span>* args[]={&amp;d_x,&amp;d_partial,&amp;d_out,&amp;N};</span><br><span class="line"><span class="built_in">cudaLaunchCooperativeKernel</span>((<span class="type">void</span>*)reduce_grid_sync, grid, block, args);  <span class="comment">// 协作启动</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>⚠️ <strong>硬约束</strong>：<code>grid.sync()</code> 要求<strong>所有 block 同时驻留</strong>（否则死锁）。所以 grid 大小不能随便填，要用 occupancy API 估「一个 SM 能放几个 block」再乘 SM 数。设备需支持 <code>cooperativeLaunch</code> 属性。</p>
+<p><strong>收益（代码 <code>demo_cooperative_groups()</code> 量化）</strong>：省 1 次 kernel launch、省 1 组 <code>partial[]</code> 全局往返。对<strong>迭代型算法</strong>（Jacobi、共轭梯度、persistent RNN）收益放大——本来每次迭代一趟 kernel，现在整个迭代循环装进<strong>一个 kernel</strong>，每轮一次 <code>grid.sync()</code>。</p>
+<blockquote>
+<p>与 <strong>L2.4</strong> 闭环：block 内 shared 归约是「近」协作，<code>grid.sync()</code> 是它的「跨 block」放大版——同一套树形归约思想，作用域从 block 抬到 grid。</p>
+</blockquote>
+<p><strong>权威依据</strong>：CUDA C++ Programming Guide《Device-Callable APIs》——<code>grid_group grid = this_grid(); grid.sync();</code> 与 <code>cudaLaunchCooperativeKernel(...)</code>、<code>cudaOccupancyMaxActiveBlocksPerMultiprocessor(...)</code> 的协作启动范式（docs.nvidia.com/cuda/…/05-appendices/device-callable-apis.html）。</p>
+<hr>
+<h2 id="§2-dynamic-parallelism：kernel-内-launch-kernel"><a href="#§2-dynamic-parallelism：kernel-内-launch-kernel" class="headerlink" title="§2　dynamic parallelism：kernel 内 launch kernel"></a>§2　dynamic parallelism：kernel 内 launch kernel</h2><p><strong>动机</strong>：有些算法的<strong>工作量随数据变化</strong>——自适应网格细分（AMR）、树遍历、递归排序、图搜索。传统写法要「kernel 跑一趟 → 回 host 看结果 → 决定下一步 launch 多少」，来回往返。<strong>dynamic parallelism（DP）</strong> 让<strong>父 kernel 在设备端直接 launch 子 kernel</strong>，决策不回 host。</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">__global__ <span class="type">void</span> <span class="title">dp_reduce</span><span class="params">(<span class="type">const</span> <span class="type">float</span>* x, <span class="type">int</span> lo, <span class="type">int</span> hi, <span class="type">int</span> cutoff, <span class="type">double</span>* acc)</span></span>{</span><br><span class="line">  <span class="type">int</span> n=hi-lo;</span><br><span class="line">  <span class="keyword">if</span>(n&lt;=cutoff){ <span class="comment">/* 叶子：直接线性求和 + atomicAdd */</span> <span class="keyword">return</span>; }</span><br><span class="line">  <span class="keyword">if</span>(threadIdx.x==<span class="number">0</span> &amp;&amp; blockIdx.x==<span class="number">0</span>){</span><br><span class="line">    <span class="type">int</span> mid=lo+n/<span class="number">2</span>;</span><br><span class="line">    dp_reduce&lt;&lt;&lt;<span class="number">1</span>,<span class="number">1</span>,<span class="number">0</span>,cudaStreamFireAndForget&gt;&gt;&gt;(x, lo, mid, cutoff, acc);  <span class="comment">// child 1</span></span><br><span class="line">    dp_reduce&lt;&lt;&lt;<span class="number">1</span>,<span class="number">1</span>,<span class="number">0</span>,cudaStreamFireAndForget&gt;&gt;&gt;(x, mid, hi, cutoff, acc);  <span class="comment">// child 2</span></span><br><span class="line">  }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>编译</strong>：需 relocatable device code + 链接设备运行库：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvcc -arch=sm_80 -rdc=true kernel.cu -lcudadevrt -o a.out</span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="⚠️-CDP2（CUDA-12）的重大变化"><a href="#⚠️-CDP2（CUDA-12）的重大变化" class="headerlink" title="⚠️ CDP2（CUDA 12）的重大变化"></a>⚠️ CDP2（CUDA 12）的重大变化</h3><ul>
+<li><strong>设备端 <code>cudaDeviceSynchronize()</code> 已被移除</strong>（CUDA 11.6 起弃用、12 移除）。父 kernel <strong>不能</strong>在中途等子 kernel 完成。</li>
+<li>依赖关系改用<strong>流语义</strong>表达：<ul>
+<li><code>cudaStreamFireAndForget</code>：并发派发，父不等（本例用它，靠 <code>atomicAdd</code> 汇总）；</li>
+<li><code>cudaStreamTailLaunch</code>：<strong>父 kernel 全部结束后</strong>再跑子 kernel（表达「先父后子」的顺序依赖）。</li>
+</ul>
+</li>
+</ul>
+<p><strong>收益（代码 <code>demo_dynamic_parallelism()</code> 量化）</strong>：N=65536、cutoff=1024 → 二叉自适应树 <strong>child launch=126 次、最大深度=6</strong>，结果与朴素求和一致（<code>PASS</code>）。真实价值不在「求和」（那用 CG 更好），而在<strong>工作量高度不均</strong>的场景：均匀区域早停、复杂区域递归细分，省去大量「回 host 决策」的往返。</p>
+<p><strong>代价</strong>：设备端 launch 也有开销（每次 launch 要建 grid），太细的递归会被 launch 开销吃掉收益 → <code>cutoff</code> 要调大到「叶子工作量 ≫ launch 开销」。</p>
+<hr>
+<h2 id="§3-PTX-vs-SASS：两层-ISA"><a href="#§3-PTX-vs-SASS：两层-ISA" class="headerlink" title="§3　PTX vs SASS：两层 ISA"></a>§3　PTX vs SASS：两层 ISA</h2><table>
+<thead>
+<tr>
+<th></th>
+<th>PTX</th>
+<th>SASS</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定位</td>
+<td><strong>虚拟 ISA</strong>（跨架构、稳定，类比 GPU 的 LLVM IR）</td>
+<td><strong>原生 ISA</strong>（每架构一套，SM 真正执行的）</td>
+</tr>
+<tr>
+<td>谁生成</td>
+<td>nvcc 前端</td>
+<td>ptxas / 驱动 JIT</td>
+</tr>
+<tr>
+<td>看到它</td>
+<td><code>nvcc -ptx</code></td>
+<td><code>nvdisasm</code> / <code>cuobjdump --dump-sass</code></td>
+</tr>
+<tr>
+<td>助记符</td>
+<td><code>ld.global</code> <code>st.shared</code> <code>fma.rn.f32</code> <code>cp.async</code> <code>mma.sync</code> <code>shfl.sync</code> <code>cvt</code></td>
+<td><code>LDG</code> <code>STS</code> <code>FFMA</code> <code>LDGSTS</code> <code>HMMA</code> <code>SHFL</code> <code>F2F</code></td>
+</tr>
+<tr>
+<td>宽度</td>
+<td>无固定宽度</td>
+<td>Volta+ 固定 <strong>16 字节/指令</strong></td>
+</tr>
+</tbody></table>
+<p><strong>一条 PTX → 一/多条 SASS</strong>（不保证一一对应，ptxas 会调度/优化）。经验法则：<strong>用 PTX 理解语义（可移植），用 SASS 判断真实代价（贴硬件）</strong>。</p>
+<p>从 C → PTX → SASS 的映射（以 <code>y = a*x + y</code> 为例）：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CUDA:  y[i] = a*x[i] + y[i];</span><br><span class="line">PTX :  ld.global.f32 ×2  →  fma.rn.f32  →  st.global.f32</span><br><span class="line">SASS:  LDG.E.32 ×2       →  FFMA        →  STG.E.32</span><br></pre></td></tr></tbody></table></figure>
+<p>抓主干即可：访存是 <code>LD*/ST*</code>，算术是 <code>F*</code>（浮点）/<code>I*</code>（整数），控制流是 <code>BRA/BSSY/BSYNC</code>。</p>
+<p><strong>权威依据</strong>：CUDA Binary Utilities（docs.nvidia.com/cuda/…/cuda-binary-utilities）给出 <code>nvdisasm -cfg</code> 控制流图与<strong>寄存器 liveness</strong> 输出示例，及 <code>FFMA.FTZ</code> / <code>STG.E.SYS</code> / <code>@!P0 BRA</code> 等真实 SASS 片段；SASS 指令代际表（Volta 引入 <code>HMMA</code>、Ampere 引入 <code>LDGSTS</code>/<code>LDGDEPBAR</code>）见社区整理的 Instruction Set 历史。</p>
+<hr>
+<h2 id="§4-反汇编工具链（怎么拿到-SASS）"><a href="#§4-反汇编工具链（怎么拿到-SASS）" class="headerlink" title="§4　反汇编工具链（怎么拿到 SASS）"></a>§4　反汇编工具链（怎么拿到 SASS）</h2><figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1) 编出与架构绑定的 cubin，再反汇编（-g 带行号映射到源码）</span></span><br><span class="line">nvcc -cubin -<span class="built_in">arch</span>=sm_80 kernel.cu -o k.cubin</span><br><span class="line">nvdisasm -g   k.cubin | less</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2) 控制流图（导入 Graphviz 看分支结构）</span></span><br><span class="line">nvdisasm -cfg k.cubin | dot -ocfg.png -Tpng</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3) 从成品可执行/库里抽 SASS</span></span><br><span class="line">cuobjdump --dump-sass a.out</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4) 编译期就看寄存器 / 共享内存 / 溢出用量（最快的体检）</span></span><br><span class="line">nvcc -Xptxas -v -<span class="built_in">arch</span>=sm_80 kernel.cu</span><br><span class="line"><span class="comment">#   典型输出：ptxas info: Used 40 registers, 8192 bytes smem, 16 bytes cmem[0]</span></span><br><span class="line"><span class="comment">#            若出现 "N bytes stack frame / spill stores / spill loads" = 有寄存器溢出</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p><code>nvdisasm</code> 还能显示<strong>寄存器 liveness</strong>（每条指令上每个寄存器是「赋值/访问/存活/重分配」），定位寄存器压力来源。</p>
+<hr>
+<h2 id="§5-SASS-分诊：从指令读性能信号（代码-analyze-sass-）"><a href="#§5-SASS-分诊：从指令读性能信号（代码-analyze-sass-）" class="headerlink" title="§5　SASS 分诊：从指令读性能信号（代码 analyze_sass()）"></a>§5　SASS 分诊：从指令读性能信号（代码 <code>analyze_sass()</code>）</h2><p><code>demo_sass_triage()</code> 内嵌一段示意 SASS 并解析，给出体检报告。核心信号：</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>含义</th>
+<th>判读</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>LDL</code> / <code>STL</code></strong></td>
+<td>local memory 读/写</td>
+<td><strong>寄存器溢出</strong>（坏）→ 降 occupancy；减寄存器 / 加 <code>__launch_bounds__</code> / 拆 kernel</td>
+</tr>
+<tr>
+<td><strong><code>LDGSTS</code></strong></td>
+<td>Ampere <code>cp.async</code>（global→shared 直搬）</td>
+<td>✅ <strong>L3.1 异步拷贝已生效</strong></td>
+</tr>
+<tr>
+<td><strong><code>HMMA</code> / <code>IMMA</code></strong></td>
+<td>Tensor Core 矩阵乘（fp16/int8）</td>
+<td>✅ <strong>L3.2 TC 路径已走</strong></td>
+</tr>
+<tr>
+<td><strong><code>FFMA</code></strong></td>
+<td>融合乘加</td>
+<td>好；若见成对 <strong><code>FMUL</code>+<code>FADD</code></strong> = 未融合，检查 <code>--fmad=true</code>/精度标志</td>
+</tr>
+<tr>
+<td><strong><code>LDG.E.128</code></strong></td>
+<td>128-bit 向量化全局 load</td>
+<td>✅ 合并访问良好（coalescing）</td>
+</tr>
+<tr>
+<td><strong><code>@P</code> / <code>@!P</code></strong></td>
+<td>谓词化执行</td>
+<td>发散被<strong>压平</strong>（好）——两条路径都执行但按 predicate 写回</td>
+</tr>
+<tr>
+<td><strong><code>BRA</code></strong></td>
+<td>真分支跳转</td>
+<td>潜在 <strong>warp 发散</strong>（回看 <strong>L2.2</strong>）；分支两侧工作量差异大时代价高</td>
+</tr>
+</tbody></table>
+<p>本站示例 SASS 的分诊结论（代码实测）：<code>LDGSTS×1</code>（cp.async 命中）、<code>HMMA×1</code>（TC 命中）、<code>LDG.E.128×1</code>（向量访存）、<code>FFMA×1</code> 但有 1 组 <code>FMUL+FADD</code> 未融合、<code>STL×1 LDL×1</code>（<strong>有溢出，先修</strong>）、<code>BRA×1</code>（真分支，潜在发散）+ 谓词化 <code>@P×2</code>。</p>
+<p><strong>优先级</strong>：<strong>寄存器溢出（LDL/STL）</strong> 和 <strong>真分支（BRA）</strong> 是最先要消灭的两类；<code>LDGSTS/HMMA/LDG.128</code> 出现则说明高级特性已启用。</p>
+<blockquote>
+<p>与 <strong>L2.2</strong> 闭环：<code>@P</code> 谓词化就是编译器把「短小 if」压平成两路都算、按掩码写回——正是 warp 分支发散的硬件级应对；SASS 里 <code>BRA</code> 多而 <code>@P</code> 少，说明发散没被压平，回去用 <code>__ballot_sync</code>/重排数据消除。</p>
+</blockquote>
+<hr>
+<h2 id="§6-真实源码-文档锚点"><a href="#§6-真实源码-文档锚点" class="headerlink" title="§6　真实源码 / 文档锚点"></a>§6　真实源码 / 文档锚点</h2><ul>
+<li><strong>cooperative groups</strong>：CUDA C++ Programming Guide《Device-Callable APIs and Intrinsics》—— <code>this_grid()</code>/<code>grid.sync()</code>、<code>cudaLaunchCooperativeKernel</code>、<code>cudaOccupancyMaxActiveBlocksPerMultiprocessor</code> 协作启动约束（“all thread blocks are simultaneously resident”）。</li>
+<li><strong>dynamic parallelism</strong>：CUDA C++ Programming Guide《CUDA Dynamic Parallelism》—— <code>-rdc=true -lcudadevrt</code>、CDP2 移除设备端 <code>cudaDeviceSynchronize()</code>、<code>cudaStreamTailLaunch</code>/<code>cudaStreamFireAndForget</code> 流语义。</li>
+<li><strong>PTX/SASS</strong>：CUDA Binary Utilities —— <code>nvdisasm -g/-cfg</code>、寄存器 liveness、<code>FFMA.FTZ</code>/<code>STG.E.SYS</code>/<code>@!P0 BRA</code> 片段；SASS 代际（Volta <code>HMMA</code>、Ampere <code>LDGSTS</code>/<code>LDGDEPBAR</code>、Turing <code>LDSM</code>）。</li>
+<li><strong>交叉引用（已备份 <code>_cutlass_src/</code>）</strong>：<code>mma_multistage.h:311/349</code>（<code>cp.async</code> → SASS <code>LDGSTS</code>）、<code>warp_mma_tensor_op.h:167</code>（<code>MmaTensorOp</code> → SASS <code>HMMA</code>）——把本站 SASS 信号与 L3.1/L3.2 的真实工业代码对上号。</li>
+</ul>
+<hr>
+<h2 id="§7-数值自检（代码实测，已用-Python-镜像复核）"><a href="#§7-数值自检（代码实测，已用-Python-镜像复核）" class="headerlink" title="§7　数值自检（代码实测，已用 Python 镜像复核）"></a>§7　数值自检（代码实测，已用 Python 镜像复核）</h2><table>
+<thead>
+<tr>
+<th>检查</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>花括号平衡</td>
+<td><code>0</code>（配对正确）</td>
+</tr>
+<tr>
+<td>grid.sync 归约 vs 两-kernel vs 参考</td>
+<td>三者一致 <code>9082.185693</code>，<code>PASS</code></td>
+</tr>
+<tr>
+<td>cooperative 版省下</td>
+<td>1 次 launch + 1 组 partial 全局往返</td>
+</tr>
+<tr>
+<td>DP 自适应归约 vs 参考</td>
+<td>一致 <code>32762.7840</code>，<code>PASS</code></td>
+</tr>
+<tr>
+<td>DP child launch / 深度</td>
+<td><code>launches=126</code>、<code>max_depth=6</code>（N=65536, cutoff=1024）</td>
+</tr>
+<tr>
+<td>SASS 分诊</td>
+<td>正确识别 LDGSTS/HMMA/LDG.128/FFMA/FMUL+FADD/STL+LDL/BRA/@P</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="§8-编译与运行"><a href="#§8-编译与运行" class="headerlink" title="§8　编译与运行"></a>§8　编译与运行</h2><figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 纯 C++ 教学镜像（无 GPU 也行）</span></span><br><span class="line">g++ -O3 -std=c++17 cuda_l3_cg_dp_ptx.cpp -o cg &amp;&amp; ./cg</span><br><span class="line"><span class="comment">#   预期尾行：[verify_on_cpu] PASS</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 真机（需 GPU + nvcc）：dynamic parallelism 需 -rdc=true -lcudadevrt</span></span><br><span class="line">nvcc -O3 -std=c++17 -<span class="built_in">arch</span>=sm_80 -rdc=<span class="literal">true</span> cuda_l3_cg_dp_ptx.cpp -lcudadevrt -o cg_gpu</span><br><span class="line"></span><br><span class="line"><span class="comment"># 看这份 kernel 的 SASS：</span></span><br><span class="line">nvcc -cubin -<span class="built_in">arch</span>=sm_80 -rdc=<span class="literal">true</span> cuda_l3_cg_dp_ptx.cpp -o k.cubin</span><br><span class="line">nvdisasm -g k.cubin | less</span><br><span class="line"><span class="comment">#   在里面找：LDGSTS / HMMA / LDL,STL(溢出) / BRA vs @P</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>一句话收束</strong>：<code>grid.sync()</code> 让<strong>跨 block 协作</strong>不再靠 kernel 边界；dynamic parallelism 让<strong>自适应工作量</strong>不再回 host 决策；PTX/SASS 反汇编让前两站与本站的所有优化<strong>可验收</strong>——溢出、发散、cp.async、Tensor Core，全在指令里现形。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L3_CG_DP_PTX</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

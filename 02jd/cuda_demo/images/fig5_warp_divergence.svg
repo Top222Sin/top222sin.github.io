@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 760" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  <rect x="0" y="0" width="720" height="760" fill="#ffffff"/>
+  <text x="20" y="28" font-size="16" font-weight="700" fill="#0f172a">CUDA warp 概念 / 分支发散 / occupancy / 寄存器压力</text>
+
+  <!-- ===== Panel 1: warp 概念 ===== -->
+  <rect x="20" y="44" width="680" height="170" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="34" y="66" font-size="13" font-weight="700" fill="#1d4ed8">① warp 概念：调度最小单位 = warp(32 线程锁步)</text>
+  <!-- block -->
+  <rect x="34" y="82" width="210" height="30" rx="4" fill="#1e3a8a"/>
+  <text x="44" y="102" font-size="11" fill="#fff">block（256 线程）</text>
+  <!-- 8 warp chips: 2 行 x 4 -->
+  <g font-size="8" fill="#0f172a">
+    <rect x="34" y="124" width="64" height="20" rx="3" fill="#3b82f6"/><text x="40" y="138" fill="#fff">W0 (32)</text>
+    <rect x="104" y="124" width="64" height="20" rx="3" fill="#3b82f6"/><text x="110" y="138" fill="#fff">W1 (32)</text>
+    <rect x="174" y="124" width="64" height="20" rx="3" fill="#3b82f6"/><text x="180" y="138" fill="#fff">W2 (32)</text>
+    <rect x="244" y="124" width="64" height="20" rx="3" fill="#3b82f6"/><text x="250" y="138" fill="#fff">W3 (32)</text>
+    <rect x="34" y="150" width="64" height="20" rx="3" fill="#60a5fa"/><text x="40" y="164" fill="#fff">W4 (32)</text>
+    <rect x="104" y="150" width="64" height="20" rx="3" fill="#60a5fa"/><text x="110" y="164" fill="#fff">W5 (32)</text>
+    <rect x="174" y="150" width="64" height="20" rx="3" fill="#60a5fa"/><text x="180" y="164" fill="#fff">W6 (32)</text>
+    <rect x="244" y="150" width="64" height="20" rx="3" fill="#60a5fa"/><text x="250" y="164" fill="#fff">W7 (32)</text>
+  </g>
+  <!-- 共享 PC 标注 -->
+  <line x1="312" y1="140" x2="330" y2="140" stroke="#0f172a" stroke-width="1"/>
+  <text x="336" y="124" font-size="9.5" fill="#334155">↑ 共享 PC：32 线程锁步执行</text>
+  <text x="336" y="138" font-size="9.5" fill="#334155">同一条指令（SIMT）</text>
+  <!-- 右侧说明 -->
+  <g font-size="10" fill="#334155">
+    <text x="336" y="162" font-weight="700" fill="#0f172a">SM 每次发射一个 warp</text>
+    <text x="336" y="180">warp 数 = ceil(blockDim / 32)</text>
+    <text x="336" y="196">block=256 → 8 warp；block=64 → 2 warp</text>
+    <text x="336" y="212">lane_id = threadIdx.x % 32（0..31）</text>
+  </g>
+
+  <!-- ===== Panel 2: 分支发散 ===== -->
+  <rect x="20" y="222" width="680" height="170" rx="8" fill="#fff7ed" stroke="#f97316" stroke-width="1.2"/>
+  <text x="34" y="244" font-size="13" font-weight="700" fill="#c2410c">② 分支发散：同 warp 内 if/else → 两条路径串行（耗时取"和"非"max"）</text>
+  <!-- 32 dots: 16 绿 / 16 橙 -->
+  <g>
+    <rect x="40" y="270" width="4" height="4" fill="#10b981"/><rect x="49" y="270" width="4" height="4" fill="#10b981"/><rect x="58" y="270" width="4" height="4" fill="#10b981"/><rect x="67" y="270" width="4" height="4" fill="#10b981"/><rect x="76" y="270" width="4" height="4" fill="#10b981"/><rect x="85" y="270" width="4" height="4" fill="#10b981"/><rect x="94" y="270" width="4" height="4" fill="#10b981"/><rect x="103" y="270" width="4" height="4" fill="#10b981"/><rect x="112" y="270" width="4" height="4" fill="#10b981"/><rect x="121" y="270" width="4" height="4" fill="#10b981"/><rect x="130" y="270" width="4" height="4" fill="#10b981"/><rect x="139" y="270" width="4" height="4" fill="#10b981"/><rect x="148" y="270" width="4" height="4" fill="#10b981"/><rect x="157" y="270" width="4" height="4" fill="#10b981"/><rect x="166" y="270" width="4" height="4" fill="#10b981"/>
+    <rect x="175" y="270" width="4" height="4" fill="#f97316"/><rect x="184" y="270" width="4" height="4" fill="#f97316"/><rect x="193" y="270" width="4" height="4" fill="#f97316"/><rect x="202" y="270" width="4" height="4" fill="#f97316"/><rect x="211" y="270" width="4" height="4" fill="#f97316"/><rect x="220" y="270" width="4" height="4" fill="#f97316"/><rect x="229" y="270" width="4" height="4" fill="#f97316"/><rect x="238" y="270" width="4" height="4" fill="#f97316"/><rect x="247" y="270" width="4" height="4" fill="#f97316"/><rect x="256" y="270" width="4" height="4" fill="#f97316"/><rect x="265" y="270" width="4" height="4" fill="#f97316"/><rect x="274" y="270" width="4" height="4" fill="#f97316"/><rect x="283" y="270" width="4" height="4" fill="#f97316"/><rect x="292" y="270" width="4" height="4" fill="#f97316"/><rect x="301" y="270" width="4" height="4" fill="#f97316"/>
+  </g>
+  <text x="40" y="288" font-size="9" fill="#7c2d12">warp：16 真(绿) / 16 假(橙)</text>
+  <!-- 串行两路径 -->
+  <g>
+    <rect x="330" y="262" width="150" height="24" rx="4" fill="#fecaca"/><text x="338" y="278" font-size="10" fill="#7f1d1d">true 分支（16 lane 活跃）</text>
+    <rect x="330" y="294" width="150" height="24" rx="4" fill="#fecaca"/><text x="338" y="310" font-size="10" fill="#7f1d1d">false 分支（16 lane 活跃）</text>
+    <line x1="405" y1="286" x2="405" y2="294" stroke="#b91c1c" stroke-width="1.5"/>
+    <text x="340" y="332" font-size="9.5" fill="#b91c1c">↓ 串行执行 → 耗时 = 两段之和</text>
+  </g>
+  <!-- 右说明 -->
+  <g font-size="9.5">
+    <text x="500" y="262" font-weight="700" fill="#b91c1c">❌ diverge_by_lane</text>
+    <text x="500" y="278" fill="#7c2d12">p = threadIdx.x % 2</text>
+    <text x="500" y="292" fill="#7c2d12">→ 半真半假 → 必发散</text>
+    <text x="500" y="306" fill="#7c2d12">popc(__ballot) = 16</text>
+    <text x="500" y="332" font-weight="700" fill="#047857">✅ coherent_by_warp</text>
+    <text x="500" y="348" fill="#065f46">p = g &lt; n/2（对齐 warp）</text>
+    <text x="500" y="362" fill="#065f46">→ popc = 32 或 0</text>
+    <text x="500" y="376" fill="#065f46">→ 整 warp 一致，不发散</text>
+  </g>
+
+  <!-- ===== Panel 3: occupancy ===== -->
+  <rect x="20" y="400" width="680" height="170" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.2"/>
+  <text x="34" y="422" font-size="13" font-weight="700" fill="#047857">③ occupancy = 活跃 warp / 最大 warp（三道天花板取最紧者）</text>
+  <!-- 三道天花板 -->
+  <g font-size="9" fill="#334155">
+    <rect x="34" y="436" width="220" height="22" rx="3" fill="#d1fae5"/><text x="42" y="451">① 寄存器：R × 线程 × block ≤ 文件</text>
+    <rect x="34" y="464" width="220" height="22" rx="3" fill="#d1fae5"/><text x="42" y="479">② shared：每 block × block ≤ 容量</text>
+    <rect x="34" y="492" width="220" height="22" rx="3" fill="#d1fae5"/><text x="42" y="507">③ 线程/block：上限 × block ≤ max</text>
+    <text x="34" y="528" font-size="9" fill="#047857">低 occupancy → 延迟时无 warp 可切 → SM 空转</text>
+    <text x="34" y="544" font-size="9" fill="#047857">量化：cudaOccupancyMaxActiveBlocksPerMultiprocessor</text>
+  </g>
+  <!-- 占用率条 -->
+  <g font-size="9.5">
+    <text x="290" y="440" fill="#065f46" font-weight="700">occupancy</text>
+    <rect x="290" y="446" width="300" height="18" rx="3" fill="#e2e8f0"/><rect x="290" y="446" width="150" height="18" rx="3" fill="#f87171"/><text x="300" y="459" fill="#7f1d1d">occ_free = 0.50</text>
+    <rect x="290" y="472" width="300" height="18" rx="3" fill="#e2e8f0"/><rect x="290" y="472" width="300" height="18" rx="3" fill="#22c55e"/><text x="300" y="485" fill="#14532d">occ_bounded(256,4) = 1.00</text>
+    <text x="290" y="510" fill="#334155">__launch_bounds__(256, 4)：逼编译器压寄存器 → 每 SM 塞下更多 block → occupancy↑</text>
+  </g>
+
+  <!-- ===== Panel 4: 寄存器压力 ===== -->
+  <rect x="20" y="578" width="680" height="170" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="34" y="600" font-size="13" font-weight="700" fill="#1d4ed8">④ 寄存器压力：不够用就 spill 到 local memory（= global 显存，慢！）</text>
+  <!-- 寄存器文件 -->
+  <rect x="34" y="614" width="150" height="44" rx="4" fill="#1e3a8a"/>
+  <text x="44" y="634" font-size="10" fill="#fff">寄存器文件</text>
+  <text x="44" y="650" font-size="10" fill="#fff">65536 / SM</text>
+  <!-- 场景 A -->
+  <rect x="200" y="610" width="220" height="46" rx="4" fill="#dcfce7"/>
+  <text x="210" y="626" font-size="9.5" fill="#14532d">每线程 48 regs</text>
+  <text x="210" y="640" font-size="9.5" fill="#14532d">48 × 256 × 4 = 49152 ≤ 65536</text>
+  <text x="210" y="654" font-size="9.5" fill="#14532d">→ 能 4 block，无 spill ✓</text>
+  <!-- 场景 B -->
+  <rect x="200" y="662" width="220" height="46" rx="4" fill="#fee2e2"/>
+  <text x="210" y="678" font-size="9.5" fill="#7f1d1d">每线程 80 regs</text>
+  <text x="210" y="692" font-size="9.5" fill="#7f1d1d">80 × 256 × 4 = 81920 &gt; 65536</text>
+  <text x="210" y="706" font-size="9.5" fill="#7f1d1d">→ 只能 3 block + spill ✗</text>
+  <!-- spill 箭头到 global -->
+  <line x1="420" y1="685" x2="468" y2="672" stroke="#b91c1c" stroke-width="1.5"/>
+  <rect x="470" y="650" width="180" height="40" rx="4" fill="#fca5a5"/>
+  <text x="480" y="668" font-size="10" fill="#7f1d1d">local memory</text>
+  <text x="480" y="682" font-size="10" fill="#7f1d1d">= global 显存（慢~400周期）</text>
+  <text x="470" y="708" font-size="9" fill="#1d4ed8">spill 让 1 周期寄存器访问变显存往返；编译加 --ptxas-options=-v 看 registers / spilled</text>
+</svg>

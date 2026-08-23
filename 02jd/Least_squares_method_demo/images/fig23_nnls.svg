@@ -1,0 +1,53 @@
+<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+  <rect x="0" y="0" width="680" height="300" fill="#fbfdff"/>
+  <text x="340" y="26" font-size="16" font-weight="bold" fill="#0c447c" text-anchor="middle">L4.8 非负最小二乘 NNLS：把 LS 投影到 x≥0 锥</text>
+
+  <!-- 左：几何投影 -->
+  <rect x="20" y="48" width="320" height="230" fill="#ffffff" stroke="#cfe0f2" rx="6"/>
+  <text x="180" y="68" font-size="12" font-weight="bold" fill="#185FA5" text-anchor="middle">几何：可行域 = 第一象限</text>
+  <!-- 可行域阴影（x1>=0, x2>=0） -->
+  <polygon points="180,250 320,250 320,90 180,90" fill="#e8f1fb"/>
+  <line x1="180" y1="90" x2="180" y2="250" stroke="#185FA5" stroke-width="1.5"/>
+  <line x1="180" y1="250" x2="320" y2="250" stroke="#185FA5" stroke-width="1.5"/>
+  <text x="250" y="265" font-size="10" fill="#185FA5">x1</text>
+  <text x="160" y="100" font-size="10" fill="#185FA5">x2</text>
+  <!-- 无约束 LS 解（红色，落在禁区） -->
+  <circle cx="120" cy="180" r="5" fill="#A32D2D"/>
+  <text x="92" y="198" font-size="10" fill="#A32D2D">x_ls（有负分量）</text>
+  <!-- 投影箭头到边界 -->
+  <line x1="120" y1="180" x2="180" y2="140" stroke="#A32D2D" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <!-- NNLS 解（绿色，在边界上） -->
+  <circle cx="180" cy="140" r="5" fill="#3B6D11"/>
+  <text x="188" y="135" font-size="10" fill="#3B6D11">x_nnls（可行）</text>
+  <!-- 梯度方向（示意） -->
+  <line x1="120" y1="180" x2="150" y2="165" stroke="#7a7a7a" stroke-width="1"/>
+  <text x="120" y="170" font-size="9" fill="#7a7a7a">∇f</text>
+
+  <!-- 右：柱状对比 -->
+  <rect x="360" y="48" width="300" height="230" fill="#ffffff" stroke="#cfe0f2" rx="6"/>
+  <text x="510" y="68" font-size="12" font-weight="bold" fill="#185FA5" text-anchor="middle">分量对比（示意）</text>
+  <!-- x_ls 柱（含负） -->
+  <text x="400" y="90" font-size="10" fill="#A32D2D">无约束 LS x_ls</text>
+  <rect x="400" y="120" width="14" height="40" fill="#A32D2D"/>
+  <rect x="420" y="100" width="14" height="60" fill="#A32D2D"/>
+  <rect x="440" y="140" width="14" height="20" fill="#A32D2D"/>
+  <rect x="460" y="150" width="14" height="10" fill="#A32D2D"/>
+  <rect x="480" y="110" width="14" height="50" fill="#A32D2D"/>
+  <rect x="500" y="160" width="14" height="0" fill="#A32D2D"/>
+  <rect x="520" y="155" width="14" height="5" fill="#A32D2D"/>
+  <!-- 0 基准线 -->
+  <line x1="395" y1="160" x2="630" y2="160" stroke="#7a7a7a" stroke-width="1"/>
+  <text x="600" y="174" font-size="9" fill="#7a7a7a">0</text>
+  <!-- x_nnls 柱（全非负，绿） -->
+  <text x="400" y="190" font-size="10" fill="#3B6D11">NNLS x_nnls</text>
+  <rect x="400" y="215" width="14" height="40" fill="#3B6D11"/>
+  <rect x="420" y="200" width="14" height="55" fill="#3B6D11"/>
+  <rect x="440" y="160" width="14" height="0" fill="#3B6D11"/>
+  <rect x="460" y="160" width="14" height="0" fill="#3B6D11"/>
+  <rect x="480" y="210" width="14" height="45" fill="#3B6D11"/>
+  <rect x="500" y="160" width="14" height="0" fill="#3B6D11"/>
+  <rect x="520" y="160" width="14" height="0" fill="#3B6D11"/>
+  <line x1="395" y1="160" x2="630" y2="160" stroke="#7a7a7a" stroke-width="1"/>
+
+  <text x="20" y="294" font-size="9" fill="#5a6b7b">PGD：x ← max(0, x − α·2Aᵀ(Ax−b))，α=1/(2·λ_max(AᵀA))；收敛点天然满足 KKT 互补松弛</text>
+</svg>

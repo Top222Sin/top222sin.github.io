@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#ffffff"/>
+
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L3.8 工业用例：EKF 机器人定位（运动模型 F,G + 观测模型 H）</text>
+  <text x="20" y="56" font-size="12" fill="#555">unicycle 运动方程给出 F=∂f/∂x、G=∂f/∂u；GPS 与地标测距/方位给出观测雅可比 H；预测-更新交替收敛位姿</text>
+
+  <!-- predict / update cycle -->
+  <g transform="translate(30,90)">
+    <!-- motion -->
+    <rect x="0" y="20" width="120" height="60" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="16" y="44" font-size="11" fill="#1e40af">运动预测</text>
+    <text x="10" y="62" font-size="10" fill="#1e40af">x̂ = f(x,u)</text>
+    <text x="6" y="78" font-size="10" fill="#92400e">P = F P Fᵀ + G Q Gᵀ</text>
+    <!-- obs gps -->
+    <rect x="170" y="0" width="120" height="50" rx="6" fill="#dcfce7" stroke="#059669"/>
+    <text x="182" y="22" font-size="11" fill="#065f46">GPS 更新</text>
+    <text x="180" y="40" font-size="10" fill="#065f46">H=[1 0 0;0 1 0]</text>
+    <!-- obs landmark -->
+    <rect x="170" y="70" width="130" height="56" rx="6" fill="#dcfce7" stroke="#059669"/>
+    <text x="182" y="92" font-size="11" fill="#065f46">地标更新</text>
+    <text x="180" y="110" font-size="10" fill="#065f46">r=√(Δx²+Δy²)</text>
+    <text x="180" y="124" font-size="10" fill="#065f46">b=atan2(Δy,Δx)</text>
+
+    <line x1="120" y1="50" x2="170" y2="24" stroke="#475569" marker-end="url(#e19)"/>
+    <line x1="120" y1="50" x2="170" y2="100" stroke="#475569" marker-end="url(#e19)"/>
+    <line x1="300" y1="24" x2="300" y2="200" stroke="#94a3b8" stroke-dasharray="4 3"/>
+    <line x1="300" y1="200" x2="120" y2="80" stroke="#475569" marker-end="url(#e19)"/>
+    <text x="310" y="120" font-size="10" fill="#64748b">K=P Hᵀ(H P Hᵀ+R)⁻¹</text>
+    <text x="310" y="138" font-size="10" fill="#64748b">x̂ ← x̂ + K(z−h(x̂))</text>
+    <text x="310" y="156" font-size="10" fill="#64748b">P ← (I−KH)P</text>
+  </g>
+  <defs><marker id="e19" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#475569"/></marker></defs>
+
+  <!-- scene: robot + landmark -->
+  <g transform="translate(440,110)">
+    <circle cx="40" cy="90" r="10" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="34" y="94" font-size="11" fill="#1e40af">机器人</text>
+    <line x1="40" y1="90" x2="100" y2="40" stroke="#92400e" stroke-width="2" marker-end="url(#l19)"/>
+    <text x="64" y="60" font-size="10" fill="#92400e">θ</text>
+    <circle cx="160" cy="30" r="9" fill="#dcfce7" stroke="#059669"/>
+    <text x="150" y="20" font-size="10" fill="#065f46">地标</text>
+    <text x="6" y="130" font-size="10" fill="#64748b">GPS: z=[x,y]  地标: z=[r,b]</text>
+  </g>
+  <defs><marker id="l19" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#92400e"/></marker></defs>
+
+  <!-- formula band -->
+  <g transform="translate(30,250)" font-size="12" fill="#444">
+    <text x="0" y="0">① F, G：对 unicycle 运动 f(x,u,dt) 解析求导，与有限差分核对（F~3e-8, G~8e-11）</text>
+    <text x="0" y="22">② H_gps 恒为 [I₂ 0]；H_landmark 含 1/r、−1/r² 等项（与 FD 误差 ~1e-7）</text>
+    <text x="0" y="44">③ 40 步仿真：位姿误差 0.58 → 0.007，P 的迹单调收敛（PASS）</text>
+  </g>
+</svg>

@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 380" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  <rect x="0" y="0" width="680" height="380" fill="#ffffff"/>
+  <text x="20" y="26" font-size="15" font-weight="700" fill="#0f172a">Grid → Block → Thread，以及 Warp（SIMT 的执行单元）</text>
+
+  <!-- Grid -->
+  <rect x="20" y="40" width="640" height="120" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+  <text x="34" y="60" font-size="12" font-weight="700" fill="#1d4ed8">Grid（一次 kernel 启动 = 全部并行工作）</text>
+
+  <!-- 4 Blocks -->
+  <g>
+    <rect x="40" y="74" width="140" height="72" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+    <text x="50" y="94" font-size="11" font-weight="700" fill="#047857">Block 0</text>
+    <text x="50" y="110" font-size="9" fill="#065f46">blockIdx.x=0</text>
+    <text x="50" y="124" font-size="9" fill="#065f46">含 256 threads</text>
+
+    <rect x="196" y="74" width="140" height="72" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+    <text x="206" y="94" font-size="11" font-weight="700" fill="#047857">Block 1</text>
+    <text x="206" y="110" font-size="9" fill="#065f46">blockIdx.x=1</text>
+    <text x="206" y="124" font-size="9" fill="#065f46">含 256 threads</text>
+
+    <rect x="352" y="74" width="140" height="72" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+    <text x="362" y="94" font-size="11" font-weight="700" fill="#047857">Block 2</text>
+    <text x="362" y="110" font-size="9" fill="#065f46">blockIdx.x=2</text>
+
+    <rect x="508" y="74" width="140" height="72" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+    <text x="518" y="94" font-size="11" font-weight="700" fill="#047857">Block 3</text>
+    <text x="518" y="110" font-size="9" fill="#065f46">blockIdx.x=3</text>
+  </g>
+
+  <!-- Threads inside block 0 -->
+  <text x="20" y="190" font-size="12" font-weight="700" fill="#0f172a">Block 0 内部（放大看 thread 与 warp）</text>
+  <g>
+    <!-- 32 small thread cells, warp0 highlighted -->
+    <rect x="20" y="200" width="300" height="44" rx="6" fill="#fef9c3" stroke="#eab308" stroke-width="2"/>
+    <text x="26" y="216" font-size="10" font-weight="700" fill="#854d0e">Warp 0（32 threads 锁步）</text>
+    <text x="26" y="232" font-size="8" fill="#713f12">threadIdx.x = 0 … 31，同一条指令同时执行</text>
+    <!-- individual cells -->
+    <g fill="#fde68a" stroke="#d97706" stroke-width="0.6">
+      <rect x="24" y="238" width="14" height="12"/><rect x="40" y="238" width="14" height="12"/>
+      <rect x="56" y="238" width="14" height="12"/><rect x="72" y="238" width="14" height="12"/>
+      <rect x="88" y="238" width="14" height="12"/><rect x="104" y="238" width="14" height="12"/>
+      <rect x="120" y="238" width="14" height="12"/><rect x="136" y="238" width="14" height="12"/>
+      <rect x="152" y="238" width="14" height="12"/><rect x="168" y="238" width="14" height="12"/>
+      <rect x="184" y="238" width="14" height="12"/><rect x="200" y="238" width="14" height="12"/>
+      <rect x="216" y="238" width="14" height="12"/><rect x="232" y="238" width="14" height="12"/>
+      <rect x="248" y="238" width="14" height="12"/><rect x="264" y="238" width="14" height="12"/>
+      <rect x="280" y="238" width="14" height="12"/><rect x="296" y="238" width="14" height="12"/>
+    </g>
+    <text x="330" y="226" font-size="9" fill="#713f12">warp = 32 threads</text>
+
+    <!-- warp 1 -->
+    <rect x="20" y="258" width="300" height="20" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+    <text x="26" y="272" font-size="9" fill="#475569">Warp 1（threadIdx.x = 32 … 63）… 一个 block 可含多个 warp</text>
+  </g>
+
+  <!-- right: SIMT vs SIMD + formula -->
+  <rect x="350" y="200" width="310" height="92" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <text x="362" y="220" font-size="11" font-weight="700" fill="#0f172a">全局索引（必背）</text>
+  <text x="362" y="240" font-size="11" fill="#0f172a">i = blockIdx.x</text>
+  <text x="408" y="240" font-size="11" fill="#0f172a">* blockDim.x + threadIdx.x</text>
+  <text x="362" y="262" font-size="9" fill="#334155">grid = ceil(n / blockDim.x) 个 block</text>
+  <text x="362" y="280" font-size="9" fill="#334155">总线程 = gridDim.x * blockDim.x</text>
+
+  <rect x="350" y="300" width="310" height="64" rx="8" fill="#fff7ed" stroke="#f97316" stroke-width="1.5"/>
+  <text x="362" y="320" font-size="11" font-weight="700" fill="#9a3412">SIMT ≠ SIMD</text>
+  <text x="362" y="338" font-size="9" fill="#7c2d12">SIMD：程序员显式管向量通道(lane)</text>
+  <text x="362" y="352" font-size="9" fill="#7c2d12">SIMT：写标量线程代码，硬件把32线</text>
+  <text x="362" y="364" font-size="9" fill="#7c2d12">程编成 warp 锁步（线程级并行）</text>
+</svg>

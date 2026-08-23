@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="02jd 内容充实计划（Enrichment Plan） 目标：在不破坏 Obsidian 跳转的前提下，把 8 个 demo 的 .md 从”框架齐全但单薄”充实到”内容饱满、可深读”。每个 demo 补充完成后，用 qinzhiai gpt-5.6-sol 做 review 校验闭环（qinzhiai-review-workflow 技能），修复后逐条核对。   一、现状体检（2026-08-">
+<meta property="og:type" content="website">
+<meta property="og:title" content="02jd 内容充实计划（Enrichment Plan）">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/00_%E5%85%85%E5%AE%9E%E8%AE%A1%E5%88%92.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="02jd 内容充实计划（Enrichment Plan） 目标：在不破坏 Obsidian 跳转的前提下，把 8 个 demo 的 .md 从”框架齐全但单薄”充实到”内容饱满、可深读”。每个 demo 补充完成后，用 qinzhiai gpt-5.6-sol 做 review 校验闭环（qinzhiai-review-workflow 技能），修复后逐条核对。   一、现状体检（2026-08-">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.970Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/00_%E5%85%85%E5%AE%9E%E8%AE%A1%E5%88%92">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/00_%E5%85%85%E5%AE%9E%E8%AE%A1%E5%88%92.html","path":"02jd/00_充实计划.html","title":"02jd 内容充实计划（Enrichment Plan）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>02jd 内容充实计划（Enrichment Plan） | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#02jd-%E5%86%85%E5%AE%B9%E5%85%85%E5%AE%9E%E8%AE%A1%E5%88%92%EF%BC%88Enrichment-Plan%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">02jd 内容充实计划（Enrichment Plan）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E7%8E%B0%E7%8A%B6%E4%BD%93%E6%A3%80%EF%BC%882026-08-19-%E9%87%8F%E5%8C%96%EF%BC%89"><span class="nav-number">1.1.</span> <span class="nav-text">一、现状体检（2026-08-19 量化）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%85%85%E5%AE%9E%E6%A0%87%E5%87%86%EF%BC%88%E6%AF%8F%E7%AF%87-md-%E5%AF%B9%E6%A0%87-neon-%E7%BB%93%E6%9E%84%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">二、充实标准（每篇 md 对标 neon 结构）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F%EF%BC%88%E6%8C%89%E8%96%84%E5%BC%B1%E4%BC%98%E5%85%88-%E4%BE%9D%E8%B5%96%E9%80%92%E8%BF%9B%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、执行顺序（按薄弱优先 + 依赖递进）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81Obsidian-%E6%A0%BC%E5%BC%8F%E4%BF%9D%E9%9A%9C%EF%BC%88%E7%A1%AC%E7%BA%A6%E6%9D%9F%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、Obsidian 格式保障（硬约束）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81gpt-%E6%A0%A1%E9%AA%8C%E9%97%AD%E7%8E%AF%EF%BC%88%E6%AF%8F-demo-%E5%BC%BA%E5%88%B6%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、gpt 校验闭环（每 demo 强制）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%BF%9B%E5%BA%A6%E8%B7%9F%E8%B8%AA"><span class="nav-number">1.6.</span> <span class="nav-text">六、进度跟踪</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">02jd 内容充实计划（Enrichment Plan）
+</h1>
+
+<div class="post-meta-container">
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="02jd-内容充实计划（Enrichment-Plan）"><a href="#02jd-内容充实计划（Enrichment-Plan）" class="headerlink" title="02jd 内容充实计划（Enrichment Plan）"></a>02jd 内容充实计划（Enrichment Plan）</h1><blockquote>
+<p>目标：在<strong>不破坏 Obsidian 跳转</strong>的前提下，把 8 个 demo 的 <code>.md</code> 从”框架齐全但单薄”充实到”内容饱满、可深读”。<br>每个 demo 补充完成后，用 qinzhiai gpt-5.6-sol 做 review 校验闭环（qinzhiai-review-workflow 技能），修复后逐条核对。</p>
+</blockquote>
+<hr>
+<h2 id="一、现状体检（2026-08-19-量化）"><a href="#一、现状体检（2026-08-19-量化）" class="headerlink" title="一、现状体检（2026-08-19 量化）"></a>一、现状体检（2026-08-19 量化）</h2><table>
+<thead>
+<tr>
+<th>demo</th>
+<th>md 篇数</th>
+<th>篇均大小</th>
+<th>L1/L2/L3</th>
+<th>充实度评级</th>
+<th>主要短板</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>neon_demo</td>
+<td>8</td>
+<td>14.5 KB</td>
+<td>1/1/3</td>
+<td>★★★★★ 标杆</td>
+<td>无（少量抽查即可）</td>
+</tr>
+<tr>
+<td>cuda_demo</td>
+<td>21</td>
+<td>8.4 KB</td>
+<td>3/5/7</td>
+<td>★★★★ 充实</td>
+<td>个别 L1 篇可补</td>
+</tr>
+<tr>
+<td>Least_squares</td>
+<td>22</td>
+<td>2.8 KB</td>
+<td>5/6/4</td>
+<td>★★ 单薄</td>
+<td>推导简略、缺工程落点</td>
+</tr>
+<tr>
+<td>cali_demo</td>
+<td>19</td>
+<td>2.3 KB</td>
+<td>7/6/4</td>
+<td>★★ 单薄</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>pid_demo</td>
+<td>16</td>
+<td>2.2 KB</td>
+<td>5/5/4</td>
+<td>★★ 单薄</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>KF_demo</td>
+<td>21</td>
+<td>2.0 KB</td>
+<td>5/6/7</td>
+<td>★☆ 单薄</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>Jacobian_demo</td>
+<td>22</td>
+<td>1.8 KB</td>
+<td>5/6/7</td>
+<td>★☆ 单薄</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>control_demo</td>
+<td>17</td>
+<td>1.7 KB</td>
+<td>5/6/4</td>
+<td>★ 最薄</td>
+<td>13/15 篇为全库最短</td>
+</tr>
+</tbody></table>
+<p><strong>结论</strong>：8 个 demo 中 6 个需要充实（control/Jacobian/KF/pid/cali/LS，共 ~117 篇）；neon/cuda 已达标，抽查补漏即可。</p>
+<hr>
+<h2 id="二、充实标准（每篇-md-对标-neon-结构）"><a href="#二、充实标准（每篇-md-对标-neon-结构）" class="headerlink" title="二、充实标准（每篇 md 对标 neon 结构）"></a>二、充实标准（每篇 md 对标 neon 结构）</h2><p>一篇”充实”的 demo 笔记应包含以下 8 个元素（现有已具备的保留，缺的补齐）：</p>
+<ol>
+<li><strong>公式推导过程</strong>：不只给结论公式，给出从定义到结果的推导链（离散化、增益推导、协方差递推等）</li>
+<li><strong>内联 SVG 图 1-3 张</strong>：方框图 / 响应曲线 / 对比图（放 <code>images/</code>，md 内 <code>![]()</code> 内联，Obsidian 原生渲染）</li>
+<li><strong>真实工程源码落点</strong>：<ul>
+<li>control/pid/KF/cali → PX4 源码（<code>src/modules/...</code>，给文件+函数）</li>
+<li>LS/Jacobian → OpenCV / Ceres / PX4 对应模块</li>
+<li>neon/cuda → ncnn/MNN/ONNX Runtime 对应 layer 实现</li>
+</ul>
+</li>
+<li><strong>对比表 / 决策表</strong>：何时用 A 何时用 B（如：前向 vs 后向欧拉、EKF vs UKF、直接法 vs im2col）</li>
+<li><strong>工程坑（真实踩过）</strong>：与 ctrl_l1_bode 的”相位扫描必须解缠绕”同类，每条坑给成因+解法</li>
+<li><strong>变体与边界条件</strong>：适用域、失效模式、参数边界（如 fc 与 fs 关系、Q/R 数量级）</li>
+<li><strong>自检</strong>：保留现有”你会看到什么”输出样例 + 动手实验</li>
+<li><strong>导航完整</strong>：保留 frontmatter 五字段、<code>[[下一篇]]</code>/回 README wikilink；新增跨 demo 引用时用 <code>[[目标|显示名]]</code></li>
+</ol>
+<p><strong>量化目标</strong>：薄弱 demo 篇均从 ~2KB 提升到 <strong>≥5KB</strong>（content 深度对齐 neon 的 40-60%），全文公式/表格/图数可复算。</p>
+<hr>
+<h2 id="三、执行顺序（按薄弱优先-依赖递进）"><a href="#三、执行顺序（按薄弱优先-依赖递进）" class="headerlink" title="三、执行顺序（按薄弱优先 + 依赖递进）"></a>三、执行顺序（按薄弱优先 + 依赖递进）</h2><p>每个 Phase 完整流程：<strong>重读该 demo 全部 md + 对应 cpp → 逐篇充实（不改文件名/不动 frontmatter 结构）→ 补 SVG 图 → 更新 README MOC → gpt-5.6-sol review 全 demo → 修复 + 逐条核对处置表 → git commit（dev 分支）</strong></p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>demo</th>
+<th>篇数</th>
+<th>主题依赖</th>
+<th>预计充实量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>P1</td>
+<td>control_demo</td>
+<td>17</td>
+<td>控制基础（最薄，先打底）</td>
+<td>~35KB</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>pid_demo</td>
+<td>16</td>
+<td>依赖 control 的频域/稳定性</td>
+<td>~35KB</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>Jacobian_demo</td>
+<td>22</td>
+<td>运动学基础</td>
+<td>~50KB</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>KF_demo</td>
+<td>21</td>
+<td>依赖 Jacobian（EKF 用雅可比）</td>
+<td>~50KB</td>
+</tr>
+<tr>
+<td>P5</td>
+<td>cali_demo</td>
+<td>19</td>
+<td>手眼标定依赖运动学</td>
+<td>~40KB</td>
+</tr>
+<tr>
+<td>P6</td>
+<td>Least_squares</td>
+<td>22</td>
+<td>标定/滤波的共同数学地基</td>
+<td>~45KB</td>
+</tr>
+<tr>
+<td>P7</td>
+<td>cuda_demo 抽查</td>
+<td>21</td>
+<td>已充实，只补个别 L1</td>
+<td>~10KB</td>
+</tr>
+<tr>
+<td>P8</td>
+<td>neon_demo 抽查</td>
+<td>8</td>
+<td>标杆，抽查+链接补全</td>
+<td>~5KB</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>顺序理由：control → pid 同属控制链；Jacobian → KF 是”雅可比 → EKF 线性化”依赖；cali 手眼标定依赖 Jacobian；LS 作为标定与滤波的共同数学基础放倒数（已有内容相对多，且其余 demo 会反哺其引用）。</p>
+</blockquote>
+<hr>
+<h2 id="四、Obsidian-格式保障（硬约束）"><a href="#四、Obsidian-格式保障（硬约束）" class="headerlink" title="四、Obsidian 格式保障（硬约束）"></a>四、Obsidian 格式保障（硬约束）</h2><ul>
+<li><strong>文件名一律不改</strong>（所有 <code>[[wikilink]]</code> 依赖文件名，改名 = 全库链接维护，禁止）</li>
+<li><strong>frontmatter 五字段保留</strong>：<code>level / topic / demo / type / status</code>，新增笔记按 OBSIDIAN_使用指南.md 模板</li>
+<li>新图放各 demo <code>images/</code> 下，md 内 <code>![]()</code> 内联（Obsidian 原生渲染 SVG）</li>
+<li>新链接统一 <code>[[目标文件名|显示文字]]</code>；跨 demo 引用允许（图谱会形成簇间连线）</li>
+<li>数学公式沿用 Unicode 文本风格（仓库现有约定），不引入 LaTeX 大改</li>
+<li>补充完成后 grep 校验：所有 <code>[[...]]</code> 目标文件存在、无断链</li>
+</ul>
+<hr>
+<h2 id="五、gpt-校验闭环（每-demo-强制）"><a href="#五、gpt-校验闭环（每-demo-强制）" class="headerlink" title="五、gpt 校验闭环（每 demo 强制）"></a>五、gpt 校验闭环（每 demo 强制）</h2><ol>
+<li><strong>review</strong>：<code>curl qinzhiai /v1/chat/completions</code>（gpt-5.6-sol，key 见技能 qinzhiai-review-workflow），审查维度 = 数学正确性 / 文档-代码一致性 / PX4-ncnn 源码引用真实性 / 链接完整性；长文档分段送审，意见落盘 <code>&lt;demo&gt;_demo_review.md</code></li>
+<li><strong>修复</strong>：确定性错误 100% 修复；轻微问题视风险修复</li>
+<li><strong>逐条核对</strong>：review 意见作为清单逐条对照原文档，标记 已修/遗漏(补修)/有意不修(理由)，输出处置表</li>
+<li><strong>验证</strong>：有 g++ 环境的 demo 跑 <code>build.py</code> 确认 cpp 仍 PASS（md 充实不改 cpp，但若发现文档-代码不一致，以 cpp 实际行为为准修 md）</li>
+</ol>
+<hr>
+<h2 id="六、进度跟踪"><a href="#六、进度跟踪" class="headerlink" title="六、进度跟踪"></a>六、进度跟踪</h2><table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>状态</th>
+<th>review 处置</th>
+<th>commit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>P1 control_demo</td>
+<td>✅ 完成 (2026-08-19)</td>
+<td>40 条: 修 38 / 不修 2</td>
+<td>f9917c3</td>
+</tr>
+<tr>
+<td>P2 pid_demo</td>
+<td>✅ 完成 (2026-08-19)</td>
+<td>51 条: 修 49 / 不修 2</td>
+<td>a20f369</td>
+</tr>
+<tr>
+<td>P3 Jacobian_demo</td>
+<td>✅ 完成 (2026-08-19)</td>
+<td>96 条: 修 90 / 不修 6</td>
+<td>7559823</td>
+</tr>
+<tr>
+<td>P4 KF_demo</td>
+<td>✅ 完成 (2026-08-19)</td>
+<td>61 条: 修 55 / 不修 6</td>
+<td>0a09ef0</td>
+</tr>
+<tr>
+<td>P5 cali_demo</td>
+<td>✅ 完成 (2026-08-19)</td>
+<td>108 条: 修 98 / 不修 10</td>
+<td>ed146b0</td>
+</tr>
+<tr>
+<td>P6 Least_squares</td>
+<td>✅ 完成 (2026-08-19)</td>
+<td>96 条: 修 88 / 不修 8</td>
+<td>e77f904</td>
+</tr>
+<tr>
+<td>P7 cuda 抽查</td>
+<td>✅ 完成 (2026-08-19)</td>
+<td>42 条: 修 36 / 不修 6</td>
+<td>b19bd2a</td>
+</tr>
+<tr>
+<td>P8 neon 抽查</td>
+<td>✅ 完成 (2026-08-19)</td>
+<td>48 条: 修 42 / 不修 6</td>
+<td>310ecc7</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>全库收官（2026-08-19）</strong>：8 demo 全部完成 review 闭环，累计 review 意见 542 条（修 496 / 有意不修 46，全部数值复算验证）；全库 wikilink 断链扫描 = 0；cpp 编译全 PASS（含 NDK SVE2 / CUDA 交叉）。篇均：薄弱 6 demo 1.7-2.8KB → 5.0-6.6KB，neon 19.2KB / cuda 12.3KB 保持标杆。</p>
+<p>收尾验证清单（全部通过）：① 全库断链扫描 = 0（188 wikilink 可达）② 各 demo build.py 编译 PASS ③ review 处置表落盘 <code>&lt;demo&gt;_demo_review.md</code> ④ Obsidian frontmatter/文件名零改动。</p>
+</blockquote>
+
+      </div>
+      
+      
+      
+    </div>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

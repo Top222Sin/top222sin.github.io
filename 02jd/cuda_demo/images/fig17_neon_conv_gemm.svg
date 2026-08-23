@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="600" viewBox="0 0 680 600" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="600" fill="#f6f8fa"/>
+  <text x="340" y="26" font-size="18" font-weight="bold" text-anchor="middle" fill="#1f2328">ncnn ARM NEON：手写卷积 / 矩阵乘</text>
+  <text x="340" y="46" font-size="11" text-anchor="middle" fill="#57606a">统一原语 fmla / vfmaq_laneq_f32（权重 lane 广播 × 4 路输入累加）+ 寄存器分块</text>
+
+  <!-- ① dispatcher strategy tree -->
+  <rect x="10" y="58" width="320" height="252" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="20" y="78" font-size="13" font-weight="bold" fill="#1f2328">① 调度器选路径 (convolution_arm.cpp)</text>
+  <rect x="40" y="90" width="160" height="22" rx="4" fill="#ddf4ff" stroke="#54aeff"/>
+  <text x="48" y="105" font-size="9.5" fill="#05395c">forward() 按 k/通道/opt 选 kernel</text>
+  <rect x="60" y="124" width="150" height="20" rx="4" fill="#dafbe1" stroke="#2da44e"/>
+  <text x="68" y="138" font-size="9" fill="#1a7f37">3x3,s1,dil1,in/out≥8</text>
+  <rect x="60" y="150" width="150" height="20" rx="4" fill="#dafbe1" stroke="#2da44e"/>
+  <text x="68" y="164" font-size="9" fill="#1a7f37">1x1 或 prefer_sgemm</text>
+  <rect x="60" y="176" width="150" height="20" rx="4" fill="#dafbe1" stroke="#2da44e"/>
+  <text x="68" y="190" font-size="9" fill="#1a7f37">通用 3x3/5x5 pack4</text>
+  <rect x="240" y="124" width="80" height="20" rx="4" fill="#fff1e6" stroke="#f0a35e"/>
+  <text x="248" y="138" font-size="9" fill="#a3520a">Winograd</text>
+  <rect x="240" y="150" width="80" height="20" rx="4" fill="#fff1e6" stroke="#f0a35e"/>
+  <text x="248" y="164" font-size="9" fill="#a3520a">im2col+GEMM</text>
+  <rect x="240" y="176" width="80" height="20" rx="4" fill="#fff1e6" stroke="#f0a35e"/>
+  <text x="248" y="190" font-size="9" fill="#a3520a">直接 NEON</text>
+  <line x1="200" y1="112" x2="200" y2="124" stroke="#d0d7de"/>
+  <line x1="135" y1="112" x2="135" y2="124" stroke="#d0d7de"/>
+  <line x1="135" y1="144" x2="240" y2="134" stroke="#d0d7de"/>
+  <line x1="135" y1="170" x2="240" y2="160" stroke="#d0d7de"/>
+  <line x1="135" y1="196" x2="240" y2="186" stroke="#d0d7de"/>
+  <text x="20" y="222" font-size="9" fill="#57606a">prefer_sgemm = inch*outch*k*k*dil*str*2 &gt; L2</text>
+  <text x="20" y="236" font-size="9" fill="#57606a">  || (inch&gt;16 || outch&gt;16)</text>
+  <text x="20" y="254" font-size="9" fill="#57606a">→ 大卷积反而走 GEMM 更 cache 友好</text>
+  <text x="20" y="274" font-size="9" fill="#57606a">引用: arm.cpp:204 / :223 / :259 / :489-499 / :562 / :579</text>
+  <text x="20" y="294" font-size="9" fill="#57606a">      :597</text>
+
+  <!-- ② direct 3x3 NEON -->
+  <rect x="350" y="58" width="320" height="252" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="360" y="78" font-size="13" font-weight="bold" fill="#1f2328">② 直接 3x3 NEON (conv3x3s1_neon)</text>
+  <text x="360" y="94" font-size="9.5" fill="#57606a">convolution_3x3.h:4 · 一次算 4 个输出像素</text>
+  <rect x="366" y="104" width="150" height="20" rx="4" fill="#e6ffed" stroke="#7ee2a8"/>
+  <text x="374" y="118" font-size="9" fill="#1a7f37">r0,r1,r2 = vld1q 三行输入</text>
+  <rect x="366" y="130" width="150" height="20" rx="4" fill="#fff8e6" stroke="#f0c674"/>
+  <text x="374" y="144" font-size="9" fill="#8a6d1a">核打包 _k00/_k03/_k06</text>
+  <rect x="366" y="156" width="288" height="20" rx="4" fill="#ddf4ff" stroke="#54aeff"/>
+  <text x="374" y="170" font-size="9" fill="#05395c">6×FMA: vmlaq_f32(_sum, r, k)  :369-381</text>
+  <rect x="366" y="182" width="288" height="20" rx="4" fill="#ddf4ff" stroke="#54aeff"/>
+  <text x="374" y="196" font-size="9" fill="#05395c">vaddvq_f32(_sum) → 4 路水平求和 :388</text>
+  <line x1="441" y1="124" x2="441" y2="130" stroke="#d0d7de"/>
+  <line x1="441" y1="150" x2="441" y2="156" stroke="#d0d7de"/>
+  <line x1="441" y1="176" x2="441" y2="182" stroke="#d0d7de"/>
+  <text x="360" y="220" font-size="9" fill="#57606a">块: 2 输出通道 × 2 输出行 × 4 列 = 16 点</text>
+  <text x="360" y="236" font-size="9" fill="#57606a">错位核向量把 9 次乘累加 → 压成 6 次 FMA</text>
+  <text x="360" y="256" font-size="9" fill="#1a7f37">镜像 neon_style_conv3x3</text>
+  <text x="360" y="274" font-size="9" fill="#1a7f37">对拍 maxdiff = 0.00e+00 PASS</text>
+  <text x="360" y="294" font-size="9" fill="#57606a">引用: 3x3.h:4 / :51-57 / :364-381 / :388</text>
+
+  <!-- ③ 1x1 = GEMM -->
+  <rect x="10" y="322" width="320" height="252" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="20" y="342" font-size="13" font-weight="bold" fill="#1f2328">③ 1x1 卷积 = GEMM (conv1x1s1_neon)</text>
+  <text x="20" y="358" font-size="9.5" fill="#57606a">convolution_1x1.h:4 · 8 输出通道 × 8 输入通道分块</text>
+  <rect x="26" y="368" width="150" height="20" rx="4" fill="#e6ffed" stroke="#7ee2a8"/>
+  <text x="34" y="382" font-size="9" fill="#1a7f37">outch&gt;&gt;3 (8 outch) :20</text>
+  <rect x="26" y="392" width="150" height="20" rx="4" fill="#e6ffed" stroke="#7ee2a8"/>
+  <text x="34" y="406" font-size="9" fill="#1a7f37">q+=8 (8 inch) :57</text>
+  <rect x="26" y="416" width="288" height="20" rx="4" fill="#ddf4ff" stroke="#54aeff"/>
+  <text x="34" y="430" font-size="9" fill="#05395c">fmla v18.4s, v17.4s, %Z.s[0]  :134</text>
+  <rect x="26" y="440" width="288" height="20" rx="4" fill="#ddf4ff" stroke="#54aeff"/>
+  <text x="34" y="454" font-size="9" fill="#05395c">1 输入向量 → 广播进 8 个输出累加器</text>
+  <line x1="101" y1="388" x2="101" y2="392" stroke="#d0d7de"/>
+  <line x1="101" y1="412" x2="101" y2="416" stroke="#d0d7de"/>
+  <text x="20" y="482" font-size="9" fill="#57606a">out[H·W][outch] = in[H·W][inch] × W[outch][inch]</text>
+  <text x="20" y="498" font-size="9" fill="#57606a">size &amp; 3 余量 :98 处理尾部空间点</text>
+  <text x="20" y="518" font-size="9" fill="#1a7f37">镜像 neon_style_conv1x1 对拍 1.3e-15 PASS</text>
+  <text x="20" y="538" font-size="9" fill="#57606a">引用: 1x1.h:4 / :20-21 / :57 / :98 / :134-165</text>
+
+  <!-- ④ SGEMM 8x12 micro-kernel -->
+  <rect x="350" y="322" width="320" height="252" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="360" y="342" font-size="13" font-weight="bold" fill="#1f2328">④ im2col+SGEMM 8×12 微核</text>
+  <text x="360" y="358" font-size="9.5" fill="#57606a">convolution_gemm_transB_packed_tile :178</text>
+  <rect x="366" y="368" width="150" height="20" rx="4" fill="#e6ffed" stroke="#7ee2a8"/>
+  <text x="374" y="382" font-size="9" fill="#1a7f37">ii+=8 行  jj+=12 列 :194/206</text>
+  <rect x="366" y="392" width="288" height="20" rx="4" fill="#ddf4ff" stroke="#54aeff"/>
+  <text x="374" y="406" font-size="9" fill="#05395c">_pA=vld1q(pA)  _pB=vld1q(pB)  :1562</text>
+  <rect x="366" y="416" width="288" height="20" rx="4" fill="#ddf4ff" stroke="#54aeff"/>
+  <text x="374" y="430" font-size="9" fill="#05395c">vfmaq_laneq_f32(_sum, _pA, _pB, lane) :1569</text>
+  <rect x="366" y="440" width="288" height="20" rx="4" fill="#fff8e6" stroke="#f0c674"/>
+  <text x="374" y="454" font-size="9" fill="#8a6d1a">24×float32x4 = 96 输出全驻寄存器</text>
+  <text x="374" y="470" font-size="9" fill="#8a6d1a">aarch64 内联汇编 v8–v31 :266</text>
+  <text x="360" y="490" font-size="9" fill="#57606a">K 主循环复用已 load 的 A/B，访存摊到极低</text>
+  <text x="360" y="510" font-size="9" fill="#1a7f37">镜像 neon_style_sgemm_8x12 对拍 1.3e-15</text>
+  <text x="360" y="530" font-size="9" fill="#57606a">im2col 打包: pack_A_tile :4 + transpose8x8_ps</text>
+  <text x="360" y="546" font-size="9" fill="#57606a">(arm_usability.h:596)</text>
+</svg>

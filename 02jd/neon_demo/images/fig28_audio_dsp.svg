@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 300" font-family="'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif">
+  <rect x="0" y="0" width="680" height="300" fill="#ffffff"/>
+  <rect x="0" y="0" width="680" height="34" fill="#0c447c"/>
+  <text x="16" y="22" font-size="15" fill="#ffffff" font-weight="bold">音频 DSP 核（L4.5）· RBJ / 压缩器 / overlap-add / 重采样 — 仅 x86 标量对照</text>
+
+  <!-- 左上：信号链 -->
+  <text x="16" y="56" font-size="12.5" fill="#185FA5" font-weight="bold">① 音频处理信号链（每条均为 SIMD 友好热点）</text>
+  <rect x="16" y="66" width="150" height="40" rx="4" fill="#eef4fb" stroke="#185FA5"/>
+  <text x="26" y="84" font-size="11.5" fill="#0c447c" font-weight="bold">输入 x[n]</text>
+  <text x="26" y="100" fill="#555" font-size="10">采样/缓冲</text>
+  <line x1="166" y1="86" x2="186" y2="86" stroke="#A32D2D" stroke-width="2" marker-end="url(#ah)"/>
+
+  <rect x="188" y="66" width="150" height="40" rx="4" fill="#eef4fb" stroke="#185FA5"/>
+  <text x="198" y="84" font-size="11.5" fill="#0c447c" font-weight="bold">RBJ 双二阶滤波</text>
+  <text x="198" y="100" fill="#555" font-size="10">EQ/HP/LP 逐级</text>
+  <line x1="338" y1="86" x2="358" y2="86" stroke="#A32D2D" stroke-width="2" marker-end="url(#ah)"/>
+
+  <rect x="360" y="66" width="150" height="40" rx="4" fill="#eef4fb" stroke="#185FA5"/>
+  <text x="370" y="84" font-size="11.5" fill="#0c447c" font-weight="bold">前馈压缩器</text>
+  <text x="370" y="100" fill="#555" font-size="10">包络+增益平滑</text>
+  <line x1="510" y1="86" x2="530" y2="86" stroke="#A32D2D" stroke-width="2" marker-end="url(#ah)"/>
+
+  <rect x="532" y="66" width="132" height="40" rx="4" fill="#eef4fb" stroke="#185FA5"/>
+  <text x="542" y="84" font-size="11.5" fill="#0c447c" font-weight="bold">混响 + 重采样</text>
+  <text x="542" y="100" fill="#555" font-size="10">overlap-add / interp</text>
+
+  <!-- 左下：overlap-add 示意 -->
+  <text x="16" y="128" font-size="12.5" fill="#3B6D11" font-weight="bold">② overlap-add 卷积混响</text>
+  <g stroke="#185FA5" stroke-width="1">
+    <rect x="16" y="136" width="44" height="150" fill="#eef4fb"/>
+    <rect x="86" y="136" width="44" height="150" fill="#eef4fb"/>
+    <rect x="156" y="136" width="44" height="150" fill="#eef4fb"/>
+  </g>
+  <text x="22" y="216" font-size="9.5" fill="#0c447c">block0</text>
+  <text x="92" y="216" font-size="9.5" fill="#0c447c">block1</text>
+  <text x="162" y="216" font-size="9.5" fill="#0c447c">block2</text>
+  <line x1="200" y1="210" x2="236" y2="210" stroke="#A32D2D" stroke-width="2" marker-end="url(#ah)"/>
+  <text x="240" y="160" font-size="10" fill="#A32D2D" font-weight="bold">+尾部重叠相加</text>
+  <rect x="240" y="170" width="200" height="80" rx="4" fill="#eef7e8" stroke="#3B6D11"/>
+  <text x="250" y="196" font-size="10" fill="#333">outbuf = Σᵢ blockᵢ ∗ h</text>
+  <text x="250" y="214" font="italic" font-size="9.5" fill="#555">每块长 N，尾部 (L-1) 与</text>
+  <text x="250" y="228" font-size="9.5" fill="#555">下一块前缀重叠累加</text>
+  <text x="250" y="244" font-size="9.5" fill="#3B6D11" font-weight="bold">== 直接全卷积</text>
+
+  <!-- 右上面板：压缩器 -->
+  <text x="460" y="128" font-size="12.5" fill="#A32D2D" font-weight="bold">③ 前馈压缩器</text>
+  <rect x="460" y="136" width="204" height="92" rx="4" fill="#fbfcfe" stroke="#185FA5"/>
+  <text x="470" y="156" font-size="10" fill="#333">env = peak-follow(|x|)</text>
+  <text x="470" y="172" font-size="10" fill="#333">if env&gt;thr: gain = (thr+(env-thr)/R)/env</text>
+  <text x="470" y="188" font-size="10" fill="#333">gain = smooth(gain)</text>
+  <text x="470" y="204" font-size="10" fill="#333">y = x·gain</text>
+  <text x="470" y="222" font-size="9.5" fill="#A32D2D" font-weight="bold">稳态：y≈0.475（thr=0.3,R=4,lv=1）</text>
+
+  <!-- 右下面板：验证 + 自检 -->
+  <text x="460" y="242" font-size="12.5" fill="#0c447c" font-weight="bold">④ 验证 5/5 PASS</text>
+  <g font-size="10" fill="#333">
+    <text x="460" y="262">✓ RBJ peaking DC=1, 中心=10^(dB/20)</text>
+    <text x="460" y="277">✓ 压缩器稳态幅度 = thr+(lv-thr)/R</text>
+    <text x="460" y="292">✓ overlap-add==全卷积 / 重采样斜坡精确 / LP·HP 边界</text>
+  </g>
+
+  <!-- 底部自检坑 -->
+  <rect x="16" y="290" width="430" height="10" fill="#f3e9c9"/>
+  <text x="20" y="298" font-size="9.5" fill="#A32D2D" font-weight="bold">⚠ 真实 bug：RBJ a2 应为 1-alpha/A（误写 1-alpha·A → DC≠1）</text>
+
+  <defs>
+    <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#A32D2D"/>
+    </marker>
+  </defs>
+</svg>

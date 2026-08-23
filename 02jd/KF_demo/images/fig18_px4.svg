@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L3.7 PX4 EKF2：误差状态 + 每传感器 NIS 闸门</text>
+  <defs>
+    <marker id="arrI" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#555"/>
+    </marker>
+  </defs>
+  <!-- 架构 -->
+  <g transform="translate(40,55)">
+    <rect x="0" y="10" width="120" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="60" y="34" font-size="12.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">IMU 200Hz+</text>
+    <text x="60" y="54" font-size="11" fill="#1e3a8a" text-anchor="middle">标称积分（预测）</text>
+    <rect x="150" y="0" width="180" height="80" rx="8" fill="#f3e8ff" stroke="#9333ea" stroke-width="1.8"/>
+    <text x="240" y="26" font-size="12.5" font-weight="bold" fill="#581c87" text-anchor="middle">误差状态 KF</text>
+    <text x="240" y="46" font-size="11" fill="#581c87" text-anchor="middle">PX4: 24 维（δq,δp,δv,δbg,δba…）</text>
+    <text x="240" y="66" font-size="11" fill="#581c87" text-anchor="middle">demo: 6 维 [δp,δv,δb]</text>
+    <line x1="120" y1="38" x2="150" y2="40" stroke="#555" stroke-width="2" marker-end="url(#arrI)"/>
+    <!-- 传感器分支 -->
+    <g font-size="11">
+      <rect x="370" y="0" width="120" height="24" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+      <text x="430" y="16" fill="#14532d" text-anchor="middle">GPS（位置+速度）</text>
+      <rect x="370" y="30" width="120" height="24" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+      <text x="430" y="46" fill="#14532d" text-anchor="middle">磁力计（航向）</text>
+      <rect x="370" y="60" width="120" height="24" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+      <text x="430" y="76" fill="#14532d" text-anchor="middle">气压计/光流/测距…</text>
+    </g>
+    <path d="M330,40 L370,12 M330,40 L370,42 M330,40 L370,72" stroke="#555" stroke-width="1.6" fill="none"/>
+    <rect x="500" y="18" width="130" height="44" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.8"/>
+    <text x="565" y="38" font-size="12" font-weight="bold" fill="#7f1d1d" text-anchor="middle">NIS 闸门 5σ</text>
+    <text x="565" y="55" font-size="10.5" fill="#7f1d1d" text-anchor="middle">超限 → 拒收+计数</text>
+    <line x1="500" y1="40" x2="330" y2="40" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="5,3"/>
+  </g>
+  <!-- 对比 -->
+  <g transform="translate(80,185)">
+    <line x1="0" y1="120" x2="540" y2="120" stroke="#999"/>
+    <text x="0" y="-4" font-size="12" fill="#555">位置误差（GPS 野值 +25m ×2 注入）</text>
+    <path d="M0,70 C60,55 120,50 180,52 C240,55 300,20 360,55 C420,60 480,58 540,56" fill="none" stroke="#16a34a" stroke-width="2.5"/>
+    <path d="M0,70 C60,60 120,55 180,56 C240,58 260,5 270,110 C300,60 380,35 460,10 470,112 480,70 540,55" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="5,3"/>
+    <text x="120" y="40" font-size="11.5" fill="#14532d">有闸门：RMSE 0.80，野值全拦</text>
+    <text x="350" y="95" font-size="11.5" fill="#dc2626">无闸门：RMSE 2.15，被野值打飞</text>
+  </g>
+  <rect x="500" y="318" width="150" height="34" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="575" y="340" font-size="11" fill="#78350f" text-anchor="middle">闸门宽度本身也是调参</text>
+</svg>

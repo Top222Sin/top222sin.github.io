@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3.7 扩展：EKF 在 PX4 中的应用（误差状态 + NIS 闸门）⭐ 一句话：PX4 的 EKF2 是生产级误差状态 KF：IMU 高频积分标称轨迹、24 维误差状态低频修正、每个传感器一条独立 fuse 分支、更新前先过 NIS 闸门（创新马氏距离超限直接拒收）——本篇用 2D mini 版复刻这套架构，并演示野值拒收的威力。   一、PX4 EKF2 架构速览12345678真实系统（">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3.7 扩展：EKF 在 PX4 中的应用（误差状态 + NIS 闸门）⭐">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/KF_demo/kf_l3_px4.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3.7 扩展：EKF 在 PX4 中的应用（误差状态 + NIS 闸门）⭐ 一句话：PX4 的 EKF2 是生产级误差状态 KF：IMU 高频积分标称轨迹、24 维误差状态低频修正、每个传感器一条独立 fuse 分支、更新前先过 NIS 闸门（创新马氏距离超限直接拒收）——本篇用 2D mini 版复刻这套架构，并演示野值拒收的威力。   一、PX4 EKF2 架构速览12345678真实系统（">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/KF_demo/images/fig18_px4.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.940Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/KF_demo/images/fig18_px4.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/KF_demo/kf_l3_px4">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/KF_demo/kf_l3_px4.html","path":"02jd/KF_demo/kf_l3_px4.html","title":"L3.7 扩展：EKF 在 PX4 中的应用（误差状态 + NIS 闸门）⭐"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3.7 扩展：EKF 在 PX4 中的应用（误差状态 + NIS 闸门）⭐ | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-7-%E6%89%A9%E5%B1%95%EF%BC%9AEKF-%E5%9C%A8-PX4-%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8%EF%BC%88%E8%AF%AF%E5%B7%AE%E7%8A%B6%E6%80%81-NIS-%E9%97%B8%E9%97%A8%EF%BC%89%E2%AD%90"><span class="nav-number">1.</span> <span class="nav-text">L3.7 扩展：EKF 在 PX4 中的应用（误差状态 + NIS 闸门）⭐</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81PX4-EKF2-%E6%9E%B6%E6%9E%84%E9%80%9F%E8%A7%88"><span class="nav-number">1.1.</span> <span class="nav-text">一、PX4 EKF2 架构速览</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#EKF2-%E7%9A%84%E2%80%9D%E8%AF%AF%E5%B7%AE%E7%8A%B6%E6%80%81%E2%80%9D%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF-24-%E7%BB%B4%EF%BC%88%E7%BB%93%E6%9E%84%E8%AE%B0%E5%BF%86%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">EKF2 的”误差状态”为什么是 24 维（结构记忆）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81NIS-%E9%97%B8%E9%97%A8%EF%BC%88L2-4-%E7%9A%84%E5%AE%9E%E6%88%98%E5%8C%96%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">二、NIS 闸门（L2.4 的实战化）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%B8%E9%97%A8%E5%AE%BD%E5%BA%A6%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF%E8%B0%83%E5%8F%82%E5%AF%B9%E8%B1%A1%EF%BC%885%CF%83-vs-9-21%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">闸门宽度为什么是调参对象（5σ vs 9.21）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81demo-%E9%AA%8C%E8%AF%81%EF%BC%88gated-vs-ungated-%E5%90%8C%E5%99%AA%E5%A3%B0%E5%AF%B9%E6%8B%8D%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、demo 验证（gated vs ungated 同噪声对拍）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8E%E5%80%BC%E8%83%BD%E2%80%9D%E6%89%93%E9%A3%9E%E2%80%9D%E6%BB%A4%E6%B3%A2%E5%99%A8%EF%BC%88%E6%9C%BA%E5%88%B6%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">为什么野值能”打飞”滤波器（机制）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81PX4-%E7%9A%84%E5%85%B6%E4%BB%96%E5%B7%A5%E7%A8%8B%E7%BB%86%E8%8A%82%EF%BC%88md-%E5%BB%B6%E4%BC%B8%E9%98%85%E8%AF%BB%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、PX4 的其他工程细节（md 延伸阅读）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BB%B6%E8%BF%9F%E8%9E%8D%E5%90%88%E7%9A%84%E6%97%B6%E9%97%B4%E5%AF%B9%E9%BD%90%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8D%E8%A6%81%EF%BC%89"><span class="nav-number">1.4.1.</span> <span class="nav-text">延迟融合的时间对齐（为什么重要）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88kf-l3-px4-cpp%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、代码走读（kf_l3_px4.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.6.</span> <span class="nav-text">六、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.7.</span> <span class="nav-text">七、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.8.</span> <span class="nav-text">八、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B9%9D%E3%80%81%E6%AF%95%E4%B8%9A"><span class="nav-number">1.9.</span> <span class="nav-text">九、毕业</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3.7 扩展：EKF 在 PX4 中的应用（误差状态 + NIS 闸门）⭐
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L3_PX4</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-7-扩展：EKF-在-PX4-中的应用（误差状态-NIS-闸门）⭐"><a href="#L3-7-扩展：EKF-在-PX4-中的应用（误差状态-NIS-闸门）⭐" class="headerlink" title="L3.7 扩展：EKF 在 PX4 中的应用（误差状态 + NIS 闸门）⭐"></a>L3.7 扩展：EKF 在 PX4 中的应用（误差状态 + NIS 闸门）⭐</h1><blockquote>
+<p>一句话：PX4 的 EKF2 是<strong>生产级误差状态 KF</strong>：IMU 高频积分标称轨迹、24 维误差状态低频修正、每个传感器一条独立 fuse 分支、更新前先过 <strong>NIS 闸门</strong>（创新马氏距离超限直接拒收）——本篇用 2D mini 版复刻这套架构，并演示野值拒收的威力。</p>
+</blockquote>
+<hr>
+<h2 id="一、PX4-EKF2-架构速览"><a href="#一、PX4-EKF2-架构速览" class="headerlink" title="一、PX4 EKF2 架构速览"></a>一、PX4 EKF2 架构速览</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">真实系统（src/modules/ekf2，24 维误差状态，版本相关）：</span><br><span class="line">  姿态误差(四元数扰动 3) + 位置(3) + 速度(3) + 陀螺零偏(3) + 加计零偏(3)</span><br><span class="line">  + 地磁场(3) + 机体系磁场(3) + 风(2) + 地形高度(1)</span><br><span class="line">  （注: 状态组成随 PX4 版本/配置变化, 此处为常见 24 维划分; 时延等不作为通用状态）</span><br><span class="line">传感器分支（各自独立 fuse，互不阻塞）：</span><br><span class="line">  IMU 200Hz~1kHz（预测） · GPS 位置+速度 · 磁力计航向 · 气压计高度</span><br><span class="line">  · 光流 · 测距仪 · 视觉定位 · 外部 vision 辅助</span><br><span class="line">每个分支：数据到 → 创新闸门检验 → 通过才做 KF 更新；连续拒收 → 故障降级</span><br></pre></td></tr></tbody></table></figure>
+
+<p>本 demo 的 2D 平面化：δx=[δp(2), δv(2), δb_acc(2)]（6 维），IMU 100Hz + GPS 5Hz。</p>
+<h3 id="EKF2-的”误差状态”为什么是-24-维（结构记忆）"><a href="#EKF2-的”误差状态”为什么是-24-维（结构记忆）" class="headerlink" title="EKF2 的”误差状态”为什么是 24 维（结构记忆）"></a>EKF2 的”误差状态”为什么是 24 维（结构记忆）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">三类核心状态: 姿态误差(3) + 位置速度(6) = 9</span><br><span class="line">两类 IMU 误差: 陀螺零偏(3) + 加计零偏(3) = 6  → 累计 15</span><br><span class="line">环境/外源: 地磁场(3) + 机体系磁场(3) + 风(2) + 地形(1) ≈ 24</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>洞察</strong>：维数来自”要估什么”——飞控要估的不只是位姿，还有<strong>所有会污染 IMU 的误差源</strong>（零偏、磁偏、风）——每加一类误差源 = 加一组状态（L3.2 的增广思想）。这也是”状态设计”的工程艺术：<strong>够用即可，多了收敛慢，少了不诚实</strong>。磁场相关量（地磁场+机体系磁场）是独立的磁场状态，不是简单的”磁力计零偏三组”。</p>
+<h2 id="二、NIS-闸门（L2-4-的实战化）"><a href="#二、NIS-闸门（L2-4-的实战化）" class="headerlink" title="二、NIS 闸门（L2.4 的实战化）"></a>二、NIS 闸门（L2.4 的实战化）</h2><blockquote>
+<p>NIS = νᵀS⁻¹ν ~ χ²(m)。NIS &gt; gate ⇒ 该观测与滤波器当前信念<strong>严重不符</strong>——要么传感器坏了，要么模型失配 → 拒收本次更新。</p>
+</blockquote>
+<p>PX4 的 GPS 闸门默认 <strong>5σ</strong>（χ²(2) 下 ≈ 25，比教科书 99% 卡方闸门 9.21 宽容——宁可多放行也不轻易断 GPS）。开发轶事：本 demo 先用 9.21，误伤 3 个正常观测；改 25 后恰好只拦野值——<strong>闸门宽度本身就是调参对象</strong>。</p>
+<blockquote>
+<p>精确性说明：PX4 参数以”若干倍标准差”表达（test ratio 与创新方差开方比较），与”χ²(2) 卡方上分位”是<strong>两种不同的数学对象</strong>——25 是”5σ 平方”量级的工程经验值，不是 χ²(2) 的精确 5σ 分位（χ²(2) 无此概念）。本文用 25 作闸门是教学简化，真实 PX4 各观测类型/分量的 gate 逻辑更细（按版本源码核对）。</p>
+</blockquote>
+<h3 id="闸门宽度为什么是调参对象（5σ-vs-9-21）"><a href="#闸门宽度为什么是调参对象（5σ-vs-9-21）" class="headerlink" title="闸门宽度为什么是调参对象（5σ vs 9.21）"></a>闸门宽度为什么是调参对象（5σ vs 9.21）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">9.21 = χ²(2) 的 99% 分位 → 正常观测 1% 概率被拒（误伤率 1%）</span><br><span class="line">25.0 ≈ χ²(2) 的 5σ 等效 → 正常观测 0.00006% 被拒（几乎零误伤）</span><br><span class="line">代价: 25 也放行了更多"中度野值"（NIS 12~24 的坏观测混入）</span><br><span class="line">飞控的权衡: GPS 拒收一次 = 定位降级 → 宁可吃小野值也不断数据</span><br><span class="line">           （小野值靠 R 调大/鲁棒核处理, 大野值靠闸门）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程结论</strong>：闸门是”误伤率 vs 漏网率”的旋钮——传感器可靠性低（GPS 易中断）→ 放宽；传感器稳定（视觉）→ 收紧。<strong>每条传感器分支可以有自己的闸门宽度</strong>（PX4 正是这样）。</p>
+<h2 id="三、demo-验证（gated-vs-ungated-同噪声对拍）"><a href="#三、demo-验证（gated-vs-ungated-同噪声对拍）" class="headerlink" title="三、demo 验证（gated vs ungated 同噪声对拍）"></a>三、demo 验证（gated vs ungated 同噪声对拍）</h2><p>注入 2 个 GPS 野值（+25 m, −20 m）：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>有闸门</th>
+<th>无闸门</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RMSE</td>
+<td><strong>0.80 m</strong></td>
+<td>2.15 m</td>
+</tr>
+<tr>
+<td>野值拦截</td>
+<td>2/2 ✅</td>
+<td>0（直接打飞）</td>
+</tr>
+<tr>
+<td>正常观测误伤</td>
+<td>0</td>
+<td>—</td>
+</tr>
+<tr>
+<td>接受观测平均 NIS</td>
+<td>2.90 ≈ 自由度 2 ✅</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p>无闸门版本被野值拉偏后需要几十步才缓过来——实际飞控里一次打飞可能就是炸机。</p>
+<h3 id="为什么野值能”打飞”滤波器（机制）"><a href="#为什么野值能”打飞”滤波器（机制）" class="headerlink" title="为什么野值能”打飞”滤波器（机制）"></a>为什么野值能”打飞”滤波器（机制）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">无闸门: z=+25m 进入更新 → ν=25 巨大 → x̂ 被拉偏 25·K</span><br><span class="line">      → P 也被更新压小（滤波器"以为"自己修正了）→ 过信 → 后续更难纠偏</span><br><span class="line">      → 需要几十步新观测才慢慢拉回（期间估计全错）</span><br><span class="line">有闸门: NIS = νᵀS⁻¹ν 巨大(≫25) → 拒收 → 状态/协方差完全不受污染</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>关键</strong>：野值的危害不只是”当时偏一下”——它<strong>同时压小了 P</strong>（过信），让后续修正变慢（L1.5/L2.4 的机制叠加）。所以”拒绝野值”的收益是长期性的，不只是一拍的事。</p>
+<h2 id="四、PX4-的其他工程细节（md-延伸阅读）"><a href="#四、PX4-的其他工程细节（md-延伸阅读）" class="headerlink" title="四、PX4 的其他工程细节（md 延伸阅读）"></a>四、PX4 的其他工程细节（md 延伸阅读）</h2><ul>
+<li><strong>时间戳与延迟融合</strong>：各传感器到数据带时间戳，EKF2 回滚/延迟补偿到 IMU 时刻</li>
+<li><strong>双 EKF 冗余</strong>：跑两个实例互相监控（创新一致性），一个跑飞切另一个</li>
+<li><strong>协方差有限化</strong>：长时间无更新时对 P 设上限，防止数值发散</li>
+<li><strong>fault recovery</strong>：连续拒收 + 创新超限 → 声光告警 + 降级模式（如仅姿态）</li>
+</ul>
+<h3 id="延迟融合的时间对齐（为什么重要）"><a href="#延迟融合的时间对齐（为什么重要）" class="headerlink" title="延迟融合的时间对齐（为什么重要）"></a>延迟融合的时间对齐（为什么重要）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IMU 在 t₀ 积分, GPS 观测实际对应 t₀−τ（传输/处理延迟 τ）</span><br><span class="line">若直接用"当前状态"算创新 → 状态已经走远了 → 创新包含运动偏差 → 误拒收/误修正</span><br><span class="line">EKF2 做法: 状态回滚到 t₀−τ → 在该时刻做更新 → 再前滚回当前</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程级细节</strong>：延迟补偿是”生产级 KF 与教科书 KF”的分水岭之一——demo 的”数据到即更新”在真实系统里会因为时序错位引入系统性偏差（这也是 NEES 在真机常超标的隐藏原因之一）。</p>
+<h2 id="五、代码走读（kf-l3-px4-cpp）"><a href="#五、代码走读（kf-l3-px4-cpp）" class="headerlink" title="五、代码走读（kf_l3_px4.cpp）"></a>五、代码走读（kf_l3_px4.cpp）</h2><ul>
+<li><code>run(gated)</code>：完整闭环（标称积分 → 误差预测 → 闸门 → 更新/拒收统计）；两组对拍。</li>
+</ul>
+<h2 id="六、你会看到什么"><a href="#六、你会看到什么" class="headerlink" title="六、你会看到什么"></a>六、你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">=== L3.7 PX4 EKF2 mini：误差状态 + NIS 闸门 ===</span><br><span class="line">  [demo] 有闸门:   RMSE=0.7991  拒收=2(其中野值 2)  接受NIS均值=2.90</span><br><span class="line">  [demo] 无闸门:   RMSE=2.1548  （野值直接打飞滤波器）</span><br><span class="line">  闸门 RMSE ≪ 无闸门                  err=0.0e+00 tol=5e-01  PASS</span><br><span class="line">  野值全部被拦截(=2)                  err=0.0e+00 tol=5e-01  PASS</span><br><span class="line">  误伤率低(总拒收≤3)                  err=2.0e+00 tol=3e+00  PASS</span><br><span class="line">  接受观测的 NIS≈2                    err=9.0e-01 tol=1e+00  PASS</span><br><span class="line">=== 4 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img src="/02jd/KF_demo/images/fig18_px4.svg" alt="L3.7 PX4 EKF2"></p>
+<h2 id="七、工程落点（真实项目）"><a href="#七、工程落点（真实项目）" class="headerlink" title="七、工程落点（真实项目）"></a>七、工程落点（真实项目）</h2><ul>
+<li><strong>PX4 EKF2</strong>（<code>src/modules/ekf2</code>）：上面架构速览的完整实现——本 demo 是它的 2D 切片，但 NIS 闸门/误差状态/多分支 fuse 全部同构。</li>
+<li><strong>robot_localization</strong>：<code>diagnostics</code> 的创新监控、传感器权重调节 = 简化版闸门。</li>
+<li><strong>自动驾驶组合导航</strong>：GNSS 异常（多径、欺骗）用创新检验 + 鲁棒核——与 NIS 闸门同一思想。</li>
+<li><strong>8 08robot/飞控调试</strong>：EKF2 的 <code>EKF2_GPS_CHECK</code>、<code>EKF2_REQ_*</code> 参数就是闸门阈值的工程化（出厂前按”误伤 vs 漏网”标定）。</li>
+</ul>
+<h2 id="八、自检"><a href="#八、自检" class="headerlink" title="八、自检"></a>八、自检</h2><ul>
+<li>把闸门改成 9.21：正常观测开始被误伤（总拒收 &gt;2）——体会闸门宽度的权衡。</li>
+<li>把野值幅度从 25 降到 8：闸门拦不住它（NIS &lt; 25）→ 小野值需要 R 调大或鲁棒核。</li>
+<li>挑战：把 NIS 闸门换成”鲁棒核”（Huber：NIS 超阈值后按 √(NIS)/NIS 降权而非全拒）——比较两者在”中度野值”下的表现差异。</li>
+</ul>
+<h2 id="九、毕业"><a href="#九、毕业" class="headerlink" title="九、毕业"></a>九、毕业</h2><p>扩展三篇（L3.5 SLAM / L3.6 MSCKF / L3.7 PX4）与正篇 15 篇构成完整谱系：<br><strong>理论（L1/L2）→ 非线性（L2.5/L2.6）→ 工业（L3.1/L3.7）→ 建图（L3.5）→ 视觉惯性（L3.6）</strong>。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L3_PX4</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

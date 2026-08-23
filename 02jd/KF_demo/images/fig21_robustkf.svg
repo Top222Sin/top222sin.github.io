@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 470" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="470" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L2.7 鲁棒 / 自适应卡尔曼（M-估计 + Sage-Husa）· 四个要点</text>
+
+  <!-- ① 鲁棒代价 IRLS -->
+  <g>
+    <rect x="20" y="50" width="315" height="180" rx="10" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+    <rect x="20" y="50" width="315" height="30" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="177" y="70" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">① 鲁棒代价 IRLS 重加权</text>
+    <text x="36" y="108" font-size="12" fill="#1e3a8a">标准 KF 更新 = 最小化高斯 NLL</text>
+    <text x="36" y="132" font-size="12" fill="#1e3a8a">换 Huber / Student-t 代价 ρ(r)</text>
+    <text x="36" y="156" font-size="12" fill="#1e3a8a">每步权重 w(r)=ψ(r)/r，增益 K → w·K</text>
+    <text x="36" y="180" font-size="12" fill="#1e3a8a">野值（|r| 巨大）被大幅降权</text>
+    <text x="36" y="206" font-size="11.5" fill="#555">野值步 Huber 权重 0.0858 &lt; 0.5（已降权）</text>
+  </g>
+
+  <!-- ② 野值下对比 -->
+  <g>
+    <rect x="345" y="50" width="315" height="180" rx="10" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+    <rect x="345" y="50" width="315" height="30" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="502" y="70" font-size="13" font-weight="bold" fill="#78350f" text-anchor="middle">② 野值下：鲁棒 KF 显著更优</text>
+    <text x="361" y="108" font-size="12" fill="#78350f">注入 ±18 尖峰（σ=1 的量测）</text>
+    <text x="361" y="132" font-size="12" fill="#78350f">标准 KF 整链 RMSE = 1.9598</text>
+    <text x="361" y="156" font-size="12" fill="#78350f">Huber RMSE = 0.5985（&lt; 0.6×）</text>
+    <text x="361" y="180" font-size="12" fill="#78350f">Student-t RMSE = 0.5643（&lt; 0.6×）</text>
+    <text x="361" y="206" font-size="11.5" fill="#555">两者改进幅度相近（鲁棒核等价口径）</text>
+  </g>
+
+  <!-- ③ Sage-Husa 自适应 R -->
+  <g>
+    <rect x="20" y="250" width="315" height="180" rx="10" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+    <rect x="20" y="250" width="315" height="30" rx="10" fill="#f3e8ff" stroke="#9333ea" stroke-width="1.5"/>
+    <text x="177" y="270" font-size="13" font-weight="bold" fill="#581c87" text-anchor="middle">③ Sage-Husa 自适应 R 估计</text>
+    <text x="36" y="308" font-size="12" fill="#581c87">R_hat ← (1−b)R_hat + b·(y² − Pp)</text>
+    <text x="36" y="332" font-size="12" fill="#581c87">修正量期望恰为真实 R（在线估计）</text>
+    <text x="36" y="356" font-size="12" fill="#581c87">Q 主导 Pp 时收敛稳定（不塌缩）</text>
+    <text x="36" y="380" font-size="12" fill="#581c87">跟踪时变噪声：第1段 2.0 → 第2段 6.0</text>
+    <text x="36" y="406" font-size="11.5" fill="#555">R_hat 末段 2.33 → 5.25（已适应突变）</text>
+  </g>
+
+  <!-- ④ NIS 一致性 + 承接 -->
+  <g>
+    <rect x="345" y="250" width="315" height="180" rx="10" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+    <rect x="345" y="250" width="315" height="30" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="502" y="270" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">④ NIS 一致 + 承接 L3.4</text>
+    <text x="361" y="308" font-size="12" fill="#14532d">自适应后 NIS = y²/(Pp+R_hat) ≈ 1</text>
+    <text x="361" y="332" font-size="12" fill="#14532d">本例 NIS 均值 1.0291（新息尺度一致）</text>
+    <text x="361" y="356" font-size="12" fill="#14532d">承接 L3.4 NEES/NIS 闸门：</text>
+    <text x="361" y="380" font-size="12" fill="#14532d">那里只 gate 不重加权 / 不估计 R</text>
+    <text x="361" y="406" font-size="11.5" fill="#555">把"野值处理"在 KF 内口径一致</text>
+  </g>
+</svg>

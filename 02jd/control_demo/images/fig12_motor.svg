@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 340" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="340" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L3.1 直流电机速度伺服（PI 抗扰）</text>
+  <defs><marker id="a3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#555"/></marker></defs>
+  <rect x="40" y="55" width="300" height="130" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="190.0" y="81" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">二阶机电模型</text>
+  <text x="190.0" y="103" font-size="12.5" font-weight="normal" fill="#1e3a8a" text-anchor="middle">ω' = −(b/J)ω + (Kt/J)i − Tl/J</text>
+  <text x="190.0" y="125" font-size="12.5" font-weight="normal" fill="#1e3a8a" text-anchor="middle">i' = (V − Ri − Keω)/L</text>
+  <text x="190.0" y="147" font-size="12.5" font-weight="normal" fill="#1e3a8a" text-anchor="middle">V = Kp·e + Ki·∫e (±24V 饱和)</text>
+  <rect x="360" y="55" width="300" height="130" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="510.0" y="81" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">demo 结果</text>
+  <text x="510.0" y="103" font-size="12.5" font-weight="normal" fill="#14532d" text-anchor="middle">稳态误差 &lt;0.01% ✅</text>
+  <text x="510.0" y="125" font-size="12.5" font-weight="normal" fill="#14532d" text-anchor="middle">负载 +0.02N·m: 跌落 1.1 后积分顶回 ✅</text>
+  <text x="510.0" y="147" font-size="12.5" font-weight="normal" fill="#14532d" text-anchor="middle">PD 对照: 留 0.38 偏差（积分价值）</text>
+  <rect x="40" y="215" width="610" height="95" rx="9" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="345.0" y="241" font-size="13" font-weight="bold" fill="#78350f" text-anchor="middle">工业要点：带宽套娃 电流(百Hz~kHz) > 速度 > 位置</text>
+  <text x="345.0" y="263" font-size="12.5" font-weight="normal" fill="#78350f" text-anchor="middle">饱和时防积分暴涨 → pid_demo L1.5 抗饱和专题</text>
+</svg>

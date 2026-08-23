@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3.3 工业用例③：无人机姿态 LQR + 积分增强 ⭐ 一句话：无人机滚转环是天然的(≈)线性对象 θ̈&#x3D;(l&#x2F;Jx)u，LQR 三行代码出增益；常值风扰靠 ∫θ 增广顶掉——PX4 姿态环的生产级同款思想。  模型与设计12θ̈ &#x3D; (l&#x2F;Jx)·u + d          （电机差动→滚转力矩, d&#x3D;常值扰动）u &#x3D; −K_θ·θ − K_ω·ω − Ki·∫θ  （LQR 增益 + 积">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3.3 工业用例③：无人机姿态 LQR + 积分增强 ⭐">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/control_demo/ctrl_l3_uav.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3.3 工业用例③：无人机姿态 LQR + 积分增强 ⭐ 一句话：无人机滚转环是天然的(≈)线性对象 θ̈&#x3D;(l&#x2F;Jx)u，LQR 三行代码出增益；常值风扰靠 ∫θ 增广顶掉——PX4 姿态环的生产级同款思想。  模型与设计12θ̈ &#x3D; (l&#x2F;Jx)·u + d          （电机差动→滚转力矩, d&#x3D;常值扰动）u &#x3D; −K_θ·θ − K_ω·ω − Ki·∫θ  （LQR 增益 + 积">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/control_demo/images/fig14_uav.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.920Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/control_demo/images/fig14_uav.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/control_demo/ctrl_l3_uav">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/control_demo/ctrl_l3_uav.html","path":"02jd/control_demo/ctrl_l3_uav.html","title":"L3.3 工业用例③：无人机姿态 LQR + 积分增强 ⭐"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3.3 工业用例③：无人机姿态 LQR + 积分增强 ⭐ | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-3-%E5%B7%A5%E4%B8%9A%E7%94%A8%E4%BE%8B%E2%91%A2%EF%BC%9A%E6%97%A0%E4%BA%BA%E6%9C%BA%E5%A7%BF%E6%80%81-LQR-%E7%A7%AF%E5%88%86%E5%A2%9E%E5%BC%BA-%E2%AD%90"><span class="nav-number">1.</span> <span class="nav-text">L3.3 工业用例③：无人机姿态 LQR + 积分增强 ⭐</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E4%B8%8E%E8%AE%BE%E8%AE%A1"><span class="nav-number">1.1.</span> <span class="nav-text">模型与设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%BB%9A%E8%BD%AC%E7%8E%AF%E6%98%AF%E2%80%9D%E5%A4%A9%E7%84%B6%E7%BA%BF%E6%80%A7%E2%80%9D%E7%9A%84%EF%BC%88%E6%A8%A1%E5%9E%8B%E6%8E%A8%E5%AF%BC%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">为什么滚转环是”天然线性”的（模型推导）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#demo-%E9%AA%8C%E8%AF%81"><span class="nav-number">1.3.</span> <span class="nav-text">demo 验证</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A7%AF%E5%88%86%E5%A2%9E%E5%BC%BA%E7%9A%84%E6%95%B0%E5%AD%A6%EF%BC%9A%E7%8A%B6%E6%80%81%E5%A2%9E%E5%B9%BF"><span class="nav-number">1.4.</span> <span class="nav-text">积分增强的数学：状态增广</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E7%A7%AF%E5%88%86%E5%A2%9E%E5%BC%BA%E6%98%AF%E6%A0%87%E9%85%8D"><span class="nav-number">1.5.</span> <span class="nav-text">为什么积分增强是标配</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8E-PX4-%E7%9A%84%E5%AF%B9%E7%85%A7%EF%BC%88%E7%9C%9F%E5%AE%9E%E6%BA%90%E7%A0%81%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">与 PX4 的对照（真实源码）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.7.</span> <span class="nav-text">你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E6%A3%80"><span class="nav-number">1.8.</span> <span class="nav-text">自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.9.</span> <span class="nav-text">下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3.3 工业用例③：无人机姿态 LQR + 积分增强 ⭐
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/control_demo/">CONTROL_DEMO</a></li>
+            <li>CTRL_L3_UAV</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-3-工业用例③：无人机姿态-LQR-积分增强-⭐"><a href="#L3-3-工业用例③：无人机姿态-LQR-积分增强-⭐" class="headerlink" title="L3.3 工业用例③：无人机姿态 LQR + 积分增强 ⭐"></a>L3.3 工业用例③：无人机姿态 LQR + 积分增强 ⭐</h1><blockquote>
+<p>一句话：<strong>无人机滚转环是天然的(≈)线性对象 θ̈=(l/Jx)u，LQR 三行代码出增益；常值风扰靠 ∫θ 增广顶掉</strong>——PX4 姿态环的生产级同款思想。</p>
+</blockquote>
+<h2 id="模型与设计"><a href="#模型与设计" class="headerlink" title="模型与设计"></a>模型与设计</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">θ̈ = (l/Jx)·u + d          （电机差动→滚转力矩, d=常值扰动）</span><br><span class="line">u = −K_θ·θ − K_ω·ω − Ki·∫θ  （LQR 增益 + 积分增强）</span><br></pre></td></tr></tbody></table></figure>
+
+<p>demo：l=0.25, Jx=0.02（输入映射 12.5），Q=diag(20,1), R=0.1 →<br><strong>K=[14.14, 3.50], Ki=2.0</strong>（Kleinman，同 L2.5）。</p>
+<h2 id="为什么滚转环是”天然线性”的（模型推导）"><a href="#为什么滚转环是”天然线性”的（模型推导）" class="headerlink" title="为什么滚转环是”天然线性”的（模型推导）"></a>为什么滚转环是”天然线性”的（模型推导）</h2><p>小角度下刚体欧拉方程退化为解耦的三个单轴方程：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Jx·θ̈ = τ_roll = l·(T1−T2)     （差动力矩 = 力臂 × 推力差）</span><br><span class="line">θ̈ = (l/Jx)·u,  u = T1−T2       ← 线性! (小角度近似下)</span><br><span class="line"></span><br><span class="line">非线性来源都在"外圈": 大角度(&gt;30°)时 cos/sin 耦合、</span><br><span class="line">气动阻尼、陀螺效应——但滚转小角速度控制环内这些都可忽略</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>这就是为什么飞控内环（角速率环）用线性 PID/LQR 就够了</strong>——非线性交给外环（姿态→角速率映射用四元数，见 Jacobian_demo/quaternion 系）和增益调度处理。**控制架构的本质是”把非线性推到带宽低的外环”**。</p>
+<h2 id="demo-验证"><a href="#demo-验证" class="headerlink" title="demo 验证"></a>demo 验证</h2><ul>
+<li>初值 θ=0.3 rad + 常值扰动 0.5 rad/s²：8s 后 |θ|&lt;0.003、|ω|&lt;4e-4 ✅</li>
+<li>无积分时同样的扰动会留稳态角偏差（L2.6 阶跃扰动的对偶场景）</li>
+</ul>
+<h2 id="积分增强的数学：状态增广"><a href="#积分增强的数学：状态增广" class="headerlink" title="积分增强的数学：状态增广"></a>积分增强的数学：状态增广</h2><p>把 ∫θ 当作额外状态，增广状态空间：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">状态:  [θ, ω, ∫θ]ᵀ</span><br><span class="line">模型:  d/dt[θ]   = ω</span><br><span class="line">       d/dt[ω]   = (l/Jx)·u + d</span><br><span class="line">       d/dt[∫θ]  = θ</span><br><span class="line"></span><br><span class="line">增广系统线性化:  ẋ_aug = A_aug·x_aug + B_aug·u</span><br><span class="line">对增广模型重新解 LQR (需给出 Q_aug = diag(qθ, qω, qI), R) → 得三维增益 [Kθ, Kω, Ki]</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>本文 demo 的实际做法</strong>：二阶 LQR 求 [Kθ=14.14, Kω=3.50]（Q=diag(20,1), R=0.1），再<strong>手工叠加 Ki=2.0</strong>（按扰动大小与允许稳态偏差经验选取）。严格的三阶增广 LQR 会因 Q_aug 的选取给出不同增益，两者是不同设计——本 demo 采用”LQR 主体 + 手工积分增强”的工程常用组合（PX4 亦然：姿态 P 外环 + 角速率 PID 的 I 是独立整定的）。</p>
+<p><strong>为什么增广后能消稳态误差</strong>：常值扰动 d 下，若稳态 θ≠0，则 ∫θ 会不断增长（状态方程 d/dt[∫θ]=θ≠0）——但若控制保证状态收敛到 0（无饱和时），唯一稳态是 θ=0。<strong>积分增强 = 把”消除稳态误差”变成”系统状态必须归零”的约束</strong>（注意：饱和时积分可能 windup，需抗饱和处理，不自动保证）。</p>
+<h2 id="为什么积分增强是标配"><a href="#为什么积分增强是标配" class="headerlink" title="为什么积分增强是标配"></a>为什么积分增强是标配</h2><p>LQR 假设模型精确；真实世界有：重心偏移（等效常值力矩）、电机推力标定误差、<br>阵风平均值。<strong>∫θ 一项顶掉全部常值来源</strong>——代价是相位滞后，Ki 不能贪大。</p>
+<h2 id="与-PX4-的对照（真实源码）"><a href="#与-PX4-的对照（真实源码）" class="headerlink" title="与 PX4 的对照（真实源码）"></a>与 PX4 的对照（真实源码）</h2><p>PX4 <code>mc_att_control</code> 姿态环 = <strong>LQR/PD 结构 + 二阶参考模型 + 前馈 + 增益压缩</strong>：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">src/modules/mc_att_control/AttitudeControl/AttitudeControl.hpp:</span><br><span class="line">  setProportionalGain(proportional_gain, yaw_weight)   L65  ← 姿态 P 增益 (=K_θ)</span><br><span class="line">  setRefModelFrequency(omega_n)                        L68  ← 参考模型 ωn (=LQR 带宽设计)</span><br><span class="line">  setFeedForwardGain(gain)                             L71  ← 前馈 (=指令速度补偿)</span><br><span class="line">  setRateLimit(rate_limit)                             L80  ← 角速率限幅</span><br><span class="line">  update(q) / propagateReferenceModel(qd, yawspeed, dt) L102/L116 ← 参考模型传播</span><br><span class="line"></span><br><span class="line">src/lib/rate_control/rate_control.hpp:</span><br><span class="line">  update(rate, rate_sp, ...)                          L96  ← 角速率 PID (=L3.1 速度环)</span><br><span class="line">  updateIntegral(rate_error, dt)                      L124 ← 积分项 (=Ki 增强)</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>对照要点</strong>：PX4 的姿态 P + 角速率 PID 串级 ≈ 本文 LQR 的 [K_θ, K_ω] 拆分实现；<code>MC_ATT_P</code> 对应 K_θ、<code>MC_ROLLRATE_P/I/D</code> 对应角速率环。生产实现用”参考模型 + 增益压缩”（<code>src/lib/rate_control/gain_compression.cpp</code>）替代”精确 LQR 增益”——因为大机动时线性假设破裂，需要按工况压缩增益保 ζ。</p>
+<h2 id="你会看到什么"><a href="#你会看到什么" class="headerlink" title="你会看到什么"></a>你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">=== L3.3 无人机姿态 LQR + 积分增强 ===</span><br><span class="line">  [demo] K_lqr=[14.142, 3.502] + Ki=2.0（输入映射 l/Jx=12.5）</span><br><span class="line">  [demo] 8s 后 θ=-0.00270, ω=0.00040, u_max=3.00</span><br><span class="line">  姿态收敛 |θ| &lt; 0.01             err=2.7e-03 tol=1e-02  PASS</span><br><span class="line">=== 2 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img src="/02jd/control_demo/images/fig14_uav.svg" alt="L3.3 无人机 LQR"></p>
+<h2 id="自检"><a href="#自检" class="headerlink" title="自检"></a>自检</h2><ul>
+<li>Ki=0 重跑：稳态角偏差 = d/(K_θ·l/Jx) ≈ 0.5/177 ≈ 0.0028 rad——LQR 硬扛的部分</li>
+<li>推力映射 l/Jx 标错 20%：LQR 仍稳（60° PM 的鲁棒性红利）。</li>
+<li>思考：增广 ∫θ 后 LQR 的 Q 该怎么给？（∫θ 的 Q 对应”稳态误差的容忍度”，给太小 = 没积分效果，给太大 = 相位滞后严重振荡）</li>
+</ul>
+<h2 id="下一步"><a href="#下一步" class="headerlink" title="下一步"></a>下一步</h2><p><a href="/02jd/control_demo/ctrl_l3_capstone.html">L3.4 capstone</a>——设计全流程毕业 ⭐⭐</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/control_demo/">CONTROL_DEMO</a></li>
+            <li>CTRL_L3_UAV</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

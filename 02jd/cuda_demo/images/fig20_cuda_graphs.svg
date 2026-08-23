@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 580" font-family="Segoe UI, Arial, sans-serif">
+  <!-- ===================== 背景 ===================== -->
+  <rect x="0" y="0" width="680" height="580" fill="#fafbfc"/>
+  <text x="340" y="24" font-size="15" font-weight="bold" fill="#1f2d3d" text-anchor="middle">L4  CUDA Graphs：把 kernel 链固化成可重放图 （四联图）</text>
+
+  <!-- ============ Panel 1: naive stream ============ -->
+  <g>
+    <rect x="10" y="38" width="320" height="232" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+    <text x="22" y="60" font-size="13" font-weight="bold" fill="#1f2d3d">① 朴素 stream：N·K 次逐 kernel launch</text>
+    <!-- 3 reps, each 4 launch ticks -->
+    <text x="22" y="86" font-size="10" fill="#868e96">rep 1</text>
+    <rect x="60"  y="76" width="14" height="12" fill="#fab005"/>
+    <rect x="86"  y="76" width="14" height="12" fill="#4c6ef5"/>
+    <rect x="112" y="76" width="14" height="12" fill="#fab005"/>
+    <rect x="138" y="76" width="14" height="12" fill="#4c6ef5"/>
+    <text x="22" y="108" font-size="10" fill="#868e96">rep 2</text>
+    <rect x="60"  y="98" width="14" height="12" fill="#fab005"/>
+    <rect x="86"  y="98" width="14" height="12" fill="#4c6ef5"/>
+    <rect x="112" y="98" width="14" height="12" fill="#fab005"/>
+    <rect x="138" y="98" width="14" height="12" fill="#4c6ef5"/>
+    <text x="22" y="130" font-size="10" fill="#868e96">rep 3</text>
+    <rect x="60"  y="120" width="14" height="12" fill="#fab005"/>
+    <rect x="86"  y="120" width="14" height="12" fill="#4c6ef5"/>
+    <rect x="112" y="120" width="14" height="12" fill="#fab005"/>
+    <rect x="138" y="120" width="14" height="12" fill="#4c6ef5"/>
+    <text x="170" y="86" font-size="10" fill="#495057">黄=launch(派发)</text>
+    <text x="170" y="108" font-size="10" fill="#495057">蓝=compute</text>
+    <!-- cost tag -->
+    <rect x="60" y="150" width="240" height="40" rx="6" fill="#fff4e6" stroke="#fab005"/>
+    <text x="72" y="170" font-size="11" fill="#1f2d3d">host 开销 = N × K × L_stream</text>
+    <text x="72" y="186" font-size="10" fill="#868e96">每次 launch 都要 CPU→GPU 派发+依赖检查</text>
+    <text x="170" y="220" font-size="12" font-weight="bold" fill="#e67700" text-anchor="middle">K 个 kernel × N 次 = N·K 次派发（开销主导）</text>
+    <text x="170" y="248" font-size="10" fill="#868e96" text-anchor="middle">例 K=4,N=1000 → 20000 µs 纯派发</text>
+  </g>
+
+  <!-- ============ Panel 2: graph capture + replay ============ -->
+  <g>
+    <rect x="350" y="38" width="320" height="232" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+    <text x="362" y="60" font-size="13" font-weight="bold" fill="#1f2d3d">② CUDA Graph：capture 1 次 + replay N 次</text>
+    <!-- capture block -->
+    <rect x="362" y="76" width="120" height="26" rx="6" fill="#7048e8" stroke="#5f3dc4"/>
+    <text x="422" y="94" font-size="11" fill="#fff" text-anchor="middle">capture（建图）</text>
+    <!-- 3 replay ticks (small) -->
+    <rect x="362" y="116" width="10" height="12" fill="#fab005"/>
+    <rect x="392" y="116" width="10" height="12" fill="#fab005"/>
+    <rect x="422" y="116" width="10" height="12" fill="#fab005"/>
+    <rect x="452" y="116" width="10" height="12" fill="#fab005"/>
+    <rect x="482" y="116" width="10" height="12" fill="#fab005"/>
+    <text x="510" y="126" font-size="10" fill="#495057">…×N 次 replay</text>
+    <!-- cost tag -->
+    <rect x="362" y="150" width="290" height="40" rx="6" fill="#ebfbee" stroke="#2f9e44"/>
+    <text x="374" y="170" font-size="11" fill="#1f2d3d">host 开销 = C_capture + N × L_graph</text>
+    <text x="374" y="186" font-size="10" fill="#868e96">整条链固化为 1 图 → 每次重放只 1 次图派发</text>
+    <text x="510" y="220" font-size="12" font-weight="bold" fill="#2f9e44" text-anchor="middle">K 个 kernel 打包进 1 图：派发次数 1/N·K → 1</text>
+    <text x="510" y="248" font-size="10" fill="#868e96" text-anchor="middle">例 K=4,N=1000 → 100+1000=1100 µs（≈18×↓）</text>
+    <line x1="510" y1="140" x2="510" y2="150" stroke="#2f9e44" stroke-width="1" stroke-dasharray="3 2"/>
+  </g>
+
+  <!-- ============ Panel 3: speedup model ============ -->
+  <g>
+    <rect x="10" y="300" width="320" height="262" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+    <text x="22" y="322" font-size="13" font-weight="bold" fill="#1f2d3d">③ 加速比量化（launch 开销模型）</text>
+    <text x="22" y="344" font-size="10" fill="#868e96">K=4，随重放次数 N（渐近上界 20×）：</text>
+    <!-- bars -->
+    <rect x="30" y="352" width="40" height="14" fill="#4c6ef5"/><text x="76" y="363" font-size="10" fill="#495057">N=100  →10.0×</text>
+    <rect x="30" y="372" width="74" height="14" fill="#4c6ef5"/><text x="110" y="383" font-size="10" fill="#495057">N=1k →18.2×</text>
+    <rect x="30" y="392" width="80" height="14" fill="#4c6ef5"/><text x="116" y="403" font-size="10" fill="#495057">N=10k→19.8×</text>
+    <line x1="30" y1="416" x2="290" y2="416" stroke="#ced4da" stroke-dasharray="3 3"/>
+    <text x="22" y="436" font-size="10" fill="#868e96">N=1000，随每图 kernel 数 K（上界=5×K）：</text>
+    <rect x="30" y="444" width="18"  height="14" fill="#2f9e44"/><text x="54" y="455" font-size="10" fill="#495057">K=1  →4.5×</text>
+    <rect x="30" y="464" width="74"  height="14" fill="#2f9e44"/><text x="110" y="475" font-size="10" fill="#495057">K=4  →18×</text>
+    <rect x="30" y="484" width="180" height="14" fill="#2f9e44"/><text x="216" y="495" font-size="10" fill="#495057">K=10 →45×</text>
+    <rect x="30" y="504" width="280" height="14" fill="#2f9e44"/><text x="316" y="515" font-size="10" fill="#495057">K=20→91×</text>
+    <text x="170" y="544" font-size="10" fill="#868e96" text-anchor="middle">kernel 越多/重放越频繁 → 收益越大</text>
+  </g>
+
+  <!-- ============ Panel 4: real API mapping ============ -->
+  <g>
+    <rect x="350" y="300" width="320" height="262" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+    <text x="362" y="322" font-size="13" font-weight="bold" fill="#1f2d3d">④ 真实 API 映射（#ifdef __CUDACC__）</text>
+    <!-- stream capture -->
+    <rect x="362" y="334" width="296" height="48" rx="6" fill="#fff4e6" stroke="#fab005"/>
+    <text x="374" y="352" font-size="11" font-weight="bold" fill="#1f2d3d">① stream capture（零改造）</text>
+    <text x="374" y="370" font-size="10" fill="#495057">BeginCapture → 照常写 launch → EndCapture → Instantiate → GraphLaunch×N</text>
+    <!-- graph API -->
+    <rect x="362" y="392" width="296" height="48" rx="6" fill="#e7f5ff" stroke="#1971c2"/>
+    <text x="374" y="410" font-size="11" font-weight="bold" fill="#1f2d3d">② Graph API（显式节点+依赖）</text>
+    <text x="374" y="428" font-size="10" fill="#495057">AddKernelNode + AddDependencies → Instantiate → GraphLaunch；可 SetParams 更新指针</text>
+    <!-- conditional -->
+    <rect x="362" y="450" width="296" height="48" rx="6" fill="#f3f0ff" stroke="#7048e8"/>
+    <text x="374" y="468" font-size="11" font-weight="bold" fill="#1f2d3d">③ 条件/循环节点（CUDA 12+）</text>
+    <text x="374" y="486" font-size="10" fill="#495057">ConditionalHandle + AddWhileNode：把控制流也固化进图</text>
+    <text x="510" y="522" font-size="10" fill="#868e96" text-anchor="middle">graph 重放 = 单图派发，省掉 N·K 次逐 kernel 派发</text>
+    <text x="510" y="544" font-size="10" fill="#868e96" text-anchor="middle">→ 推理/训练 step 的 launch 开销被压平</text>
+  </g>
+</svg>

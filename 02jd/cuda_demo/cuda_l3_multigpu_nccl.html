@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3.4 多 GPU &#x2F; NVLink &#x2F; NCCL 通信 —— 架构级收官站 配套代码：cuda_l3_multigpu_nccl.cpp（纯 C++ 可跑，无 GPU &#x2F; 无 NCCL 也能跑全部模型与对拍）。图示：images&#x2F;fig15_l3_multigpu_nccl.svg（四联图）。真实文档&#x2F;源码锚点见各节（NCCL 为开源库，本文引用其官方 API 文档与架构博客，未逐行搬源码）。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3.4 多 GPU &#x2F; NVLink &#x2F; NCCL 通信 —— 架构级收官站">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_multigpu_nccl.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3.4 多 GPU &#x2F; NVLink &#x2F; NCCL 通信 —— 架构级收官站 配套代码：cuda_l3_multigpu_nccl.cpp（纯 C++ 可跑，无 GPU &#x2F; 无 NCCL 也能跑全部模型与对拍）。图示：images&#x2F;fig15_l3_multigpu_nccl.svg（四联图）。真实文档&#x2F;源码锚点见各节（NCCL 为开源库，本文引用其官方 API 文档与架构博客，未逐行搬源码）。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_multigpu_nccl">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_multigpu_nccl.html","path":"02jd/cuda_demo/cuda_l3_multigpu_nccl.html","title":"L3.4 多 GPU / NVLink / NCCL 通信 —— 架构级收官站"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3.4 多 GPU / NVLink / NCCL 通信 —— 架构级收官站 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-4-%E5%A4%9A-GPU-NVLink-NCCL-%E9%80%9A%E4%BF%A1-%E2%80%94%E2%80%94-%E6%9E%B6%E6%9E%84%E7%BA%A7%E6%94%B6%E5%AE%98%E7%AB%99"><span class="nav-number">1.</span> <span class="nav-text">L3.4 多 GPU &#x2F; NVLink &#x2F; NCCL 通信 —— 架构级收官站</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A70-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E6%98%AF-L3-%E7%9A%84%E6%94%B6%E5%AE%98%EF%BC%9A%E6%8A%8A%E5%89%8D%E9%9D%A2%E6%89%80%E6%9C%89%E4%B8%9C%E8%A5%BF%E6%94%BE%E5%A4%A7%E5%88%B0%E3%80%8C%E4%B8%80%E6%95%B4%E5%BC%A0%E5%8D%A1%E3%80%8D"><span class="nav-number">1.1.</span> <span class="nav-text">§0 为什么这是 L3 的收官：把前面所有东西放大到「一整张卡」</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A71-%E5%9B%9B%E7%A7%8D%E5%B9%B6%E8%A1%8C%E5%BD%A2%E6%80%81%EF%BC%9A%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%A6%81%E9%80%9A%E4%BF%A1%E3%80%81%E9%80%9A%E4%BF%A1%E5%A4%9A%E9%A2%91%E7%B9%81"><span class="nav-number">1.2.</span> <span class="nav-text">§1 四种并行形态：什么时候要通信、通信多频繁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A72-PCIe-vs-NVLink-vs-NVSwitch%EF%BC%9A%E5%B8%A6%E5%AE%BD%E6%82%AC%E5%B4%96"><span class="nav-number">1.3.</span> <span class="nav-text">§2 PCIe vs NVLink vs NVSwitch：带宽悬崖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A73-NCCL%EF%BC%9A%E6%8A%8A%E9%9B%86%E5%90%88%E9%80%9A%E4%BF%A1%E5%81%9A%E6%88%90%E3%80%8C%E8%87%AA%E5%8A%A8%E9%80%89%E8%B7%AF%E3%80%8D%E7%9A%84%E5%BA%93"><span class="nav-number">1.4.</span> <span class="nav-text">§3 NCCL：把集合通信做成「自动选路」的库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%88%9D%E5%A7%8B%E5%8C%96%EF%BC%88%E4%B8%A4%E7%A7%8D%E5%86%99%E6%B3%95%EF%BC%89"><span class="nav-number">1.4.1.</span> <span class="nav-text">3.1 初始化（两种写法）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E9%9B%86%E5%90%88%E5%8E%9F%E8%AF%AD%EF%BC%88%E6%8A%8A-%C2%A71-%E7%9A%84%E9%80%9A%E4%BF%A1%E8%90%BD%E5%88%B0-API%EF%BC%89"><span class="nav-number">1.4.2.</span> <span class="nav-text">3.2 集合原语（把 §1 的通信落到 API）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%BC%82%E6%AD%A5-%E4%B8%8E%E8%AE%A1%E7%AE%97%E9%87%8D%E5%8F%A0%EF%BC%88-L3-1-%E7%9A%84%E8%B7%A8%E5%8D%A1%E7%89%88%EF%BC%89"><span class="nav-number">1.4.3.</span> <span class="nav-text">3.3 异步 + 与计算重叠（&#x3D; L3.1 的跨卡版）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-NCCL-%E8%87%AA%E5%8A%A8%E9%80%89%E8%B7%AF%EF%BC%88%E6%8B%93%E6%89%91%E6%84%9F%E7%9F%A5%EF%BC%89"><span class="nav-number">1.4.4.</span> <span class="nav-text">3.4 NCCL 自动选路（拓扑感知）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A74-Ring-vs-Tree%EF%BC%9AAllReduce-%E7%9A%84%E4%B8%A4%E6%9D%A1%E7%AE%97%E6%B3%95%EF%BC%8C%E5%AF%B9%E5%BA%94%E5%B8%A6%E5%AE%BD-vs-%E5%BB%B6%E8%BF%9F"><span class="nav-number">1.5.</span> <span class="nav-text">§4 Ring vs Tree：AllReduce 的两条算法，对应带宽 vs 延迟</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-Ring-AllReduce%EF%BC%88%E5%B8%A6%E5%AE%BD%E6%9C%80%E4%BC%98%EF%BC%8C%E5%A4%A7%E6%B6%88%E6%81%AF%E9%A6%96%E9%80%89%EF%BC%89"><span class="nav-number">1.5.1.</span> <span class="nav-text">4.1 Ring AllReduce（带宽最优，大消息首选）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-Tree-AllReduce%EF%BC%88%E5%BB%B6%E8%BF%9F%E6%9C%80%E4%BC%98%EF%BC%8C%E5%B0%8F%E6%B6%88%E6%81%AF%E9%A6%96%E9%80%89%EF%BC%89"><span class="nav-number">1.5.2.</span> <span class="nav-text">4.2 Tree AllReduce（延迟最优，小消息首选）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-busbw-vs-algobw%EF%BC%88%E8%A1%A1%E9%87%8F%E6%98%AF%E5%90%A6%E5%8E%8B%E6%BB%A1%E9%93%BE%E8%B7%AF%EF%BC%89"><span class="nav-number">1.5.3.</span> <span class="nav-text">4.3 busbw vs algobw（衡量是否压满链路）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A75-comm-compute-overlap%EF%BC%9A%E7%94%A8%E8%AE%A1%E7%AE%97%E8%97%8F%E9%80%9A%E4%BF%A1%EF%BC%88-L3-1-%E8%B7%A8%E5%8D%A1%E7%89%88%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">§5 comm-compute overlap：用计算藏通信（&#x3D; L3.1 跨卡版）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A76-%E4%B8%8E%E5%89%8D%E9%9D%A2%E6%89%80%E6%9C%89%E7%AB%99%E7%9A%84%E9%97%AD%E7%8E%AF%EF%BC%88%E4%B8%80%E5%BC%A0%E7%BD%91%EF%BC%89"><span class="nav-number">1.7.</span> <span class="nav-text">§6 与前面所有站的闭环（一张网）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A77-%E6%95%B0%E5%80%BC%E8%87%AA%E6%A3%80%EF%BC%88%E4%BB%A3%E7%A0%81-main-%E5%85%A8%E8%B7%91%EF%BC%89"><span class="nav-number">1.8.</span> <span class="nav-text">§7 数值自检（代码 main() 全跑）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A78-%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C"><span class="nav-number">1.9.</span> <span class="nav-text">§8 编译运行</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3.4 多 GPU / NVLink / NCCL 通信 —— 架构级收官站
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L3_MULTIGPU_NCCL</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-4-多-GPU-NVLink-NCCL-通信-——-架构级收官站"><a href="#L3-4-多-GPU-NVLink-NCCL-通信-——-架构级收官站" class="headerlink" title="L3.4 多 GPU / NVLink / NCCL 通信 —— 架构级收官站"></a>L3.4 多 GPU / NVLink / NCCL 通信 —— 架构级收官站</h1><blockquote>
+<p>配套代码：<code>cuda_l3_multigpu_nccl.cpp</code>（纯 C++ 可跑，无 GPU / 无 NCCL 也能跑全部模型与对拍）。<br>图示：<code>images/fig15_l3_multigpu_nccl.svg</code>（四联图）。<br>真实文档/源码锚点见各节（NCCL 为开源库，本文引用其官方 API 文档与架构博客，未逐行搬源码）。</p>
+</blockquote>
+<hr>
+<h2 id="§0-为什么这是-L3-的收官：把前面所有东西放大到「一整张卡」"><a href="#§0-为什么这是-L3-的收官：把前面所有东西放大到「一整张卡」" class="headerlink" title="§0 为什么这是 L3 的收官：把前面所有东西放大到「一整张卡」"></a>§0 为什么这是 L3 的收官：把前面所有东西放大到「一整张卡」</h2><p>前面三站已经把「单卡内」的并行榨干了：</p>
+<ul>
+<li><strong>L2.4 共享内存归约</strong>：一个 tile（warp / block）内把 N 个数相加。</li>
+<li><strong>L3.1 pipeline / fusion</strong>：用计算去藏访存，让 SM 别空转。</li>
+<li><strong>L3.2 Tensor Core + 混合精度</strong>：一层 GEMM 用低精度输入 × fp32 累加吃满算力。</li>
+<li><strong>station 4 EVT</strong>：CUTLASS 把「输出算子」做成可组合树，但那棵树只在<strong>一张卡内的多个 CTA</strong> 之间。</li>
+</ul>
+<p>当一张卡的 HBM / 算力到顶，自然的下一步是<strong>把多张卡当成一个更大的「虚拟 GPU」</strong>。<br>这一站的三件事是同一根线的延伸：</p>
+<table>
+<thead>
+<tr>
+<th>单卡内（已学）</th>
+<th>跨多卡（本站）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>L2.4 shared 归约</td>
+<td>跨卡归约：一个 GPU 就是上一个「tile」</td>
+</tr>
+<tr>
+<td>L3.1 用计算藏访存</td>
+<td>用计算藏<strong>通信</strong>（comm-compute overlap）</td>
+</tr>
+<tr>
+<td>L3.2 张量并行切 GEMM</td>
+<td>把一层 GEMM 切到多卡 + NCCL 求和（fp32 累加）</td>
+</tr>
+</tbody></table>
+<p>多卡不是新概念，是<strong>把并行结构放大到网卡/交换机的尺度</strong>。</p>
+<hr>
+<h2 id="§1-四种并行形态：什么时候要通信、通信多频繁"><a href="#§1-四种并行形态：什么时候要通信、通信多频繁" class="headerlink" title="§1 四种并行形态：什么时候要通信、通信多频繁"></a>§1 四种并行形态：什么时候要通信、通信多频繁</h2><p>把「模型」映射到「多卡」，有四种经典切法（以 transformer 一层为例）：</p>
+<table>
+<thead>
+<tr>
+<th>形态</th>
+<th>切什么</th>
+<th>通信量</th>
+<th>必须待在？</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>数据并行 DP</strong></td>
+<td>每卡一份完整模型，切 <strong>batch</strong></td>
+<td>每步一次全量梯度 AllReduce</td>
+<td>无所谓（一步一次）</td>
+</tr>
+<tr>
+<td><strong>张量并行 TP</strong></td>
+<td>把<strong>一层</strong>的权重矩阵切开（列/行并行，Megatron 风格）</td>
+<td>每层多次 AllReduce/ReduceScatter</td>
+<td><strong>NVLink 域内</strong>（最频繁）</td>
+</tr>
+<tr>
+<td><strong>流水线并行 PP</strong></td>
+<td>把<strong>不同层</strong>分到不同卡，micro-batch 流水</td>
+<td>相邻卡点对点传激活</td>
+<td>节点内/跨节点都行</td>
+</tr>
+<tr>
+<td><strong>模型并行 MP</strong></td>
+<td>单算子放不下一张卡（如超大词表）</td>
+<td>视结构</td>
+<td>视结构</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>直觉：<strong>TP 通信最频繁</strong>（每层前向/反向都要 AllReduce），所以 TP 一定圈在 NVLink 域内；<br>DP 每步才同步一次，容忍跨节点；PP 只在相邻 stage 间传激活。<br>这就是分布式训练里「同节点内 TP、跨节点 DP」的由来——<strong>每一次跨链路的通信都要掉一级带宽悬崖</strong>（见 §3）。</p>
+</blockquote>
+<hr>
+<h2 id="§2-PCIe-vs-NVLink-vs-NVSwitch：带宽悬崖"><a href="#§2-PCIe-vs-NVLink-vs-NVSwitch：带宽悬崖" class="headerlink" title="§2 PCIe vs NVLink vs NVSwitch：带宽悬崖"></a>§2 PCIe vs NVLink vs NVSwitch：带宽悬崖</h2><p>GPU 之间怎么连，决定了通信的上限。这是一张「悬崖图」（每级差一个数量级左右）：</p>
+<table>
+<thead>
+<tr>
+<th>互连</th>
+<th>单向带宽 / 总双向</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HBM（本卡显存）</td>
+<td>数 TB/s</td>
+<td>顶点</td>
+</tr>
+<tr>
+<td><strong>NVLink 5.0</strong>（B200, 2024）</td>
+<td>100 GB/s / <strong>1.8 TB/s</strong></td>
+<td>18 链路</td>
+</tr>
+<tr>
+<td><strong>NVLink 4.0</strong>（H100, 2022）</td>
+<td>100 GB/s / <strong>900 GB/s</strong></td>
+<td>18 链路</td>
+</tr>
+<tr>
+<td><strong>NVLink 3.0</strong>（A100, 2020）</td>
+<td>50 GB/s / <strong>600 GB/s</strong></td>
+<td>12 链路</td>
+</tr>
+<tr>
+<td><strong>NVLink 2.0</strong>（V100, 2017）</td>
+<td>25 GB/s / <strong>300 GB/s</strong></td>
+<td>6 链路</td>
+</tr>
+<tr>
+<td>PCIe Gen5 ×16</td>
+<td>64 GB/s / 128 GB/s</td>
+<td>通用地板</td>
+</tr>
+<tr>
+<td>PCIe Gen4 ×16</td>
+<td>32 GB/s / 64 GB/s</td>
+<td>主流服务器</td>
+</tr>
+<tr>
+<td>PCIe Gen3 ×16</td>
+<td>16 GB/s / 32 GB/s</td>
+<td>老机器</td>
+</tr>
+<tr>
+<td>100G 以太网</td>
+<td>~12.5 GB/s</td>
+<td>跨机</td>
+</tr>
+<tr>
+<td>InfiniBand NDR</td>
+<td>50 GB/s</td>
+<td>跨机首选</td>
+</tr>
+</tbody></table>
+<p>（来源：NVIDIA NVLink 技术博客 <a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/upgrading-multi-gpu-interconnectivity">developer.nvidia.com/blog/upgrading-multi-gpu-interconnectivity</a>；NVLink 代际表 <a target="_blank" rel="noopener" href="https://www.intuitionlabs.ai/articles/nvidia-nvlink-gpu-interconnect">www.intuitionlabs.ai/articles/nvidia-nvlink-gpu-interconnect</a>）</p>
+<p><strong>关键洞察</strong>：</p>
+<ol>
+<li><strong>NVLink 是 NVIDIA 专用、绕过 CPU 的 GPU-GPU 直连</strong>，带宽比 PCIe 高一个数量级，延迟 ~1μs。</li>
+<li><strong>NVSwitch</strong>（DGX H100：4 片交换芯片接 8 张 H100）把「点对点 NVLink」升级成<strong>全连接 mesh</strong>——任意两卡同时以 900 GB/s 互通，没有最慢的环链路。这是 ring AllReduce 性能的关键（见 §4）。</li>
+<li><strong>PCIe 是「通用地板」</strong>：它是给 CPU 挂设备的树形总线，GPU 之间走 PCIe 还要争用存储/网卡，跨 PCIe switch 的有效带宽常常只剩理论值的一半（8–12 GB/s）。</li>
+<li>所以：<strong>TP 必须待在 NVLink 域内</strong>；否则每层通信立刻掉进 PCIe 悬崖，算力全空转。</li>
+</ol>
+<hr>
+<h2 id="§3-NCCL：把集合通信做成「自动选路」的库"><a href="#§3-NCCL：把集合通信做成「自动选路」的库" class="headerlink" title="§3 NCCL：把集合通信做成「自动选路」的库"></a>§3 NCCL：把集合通信做成「自动选路」的库</h2><p>NCCL（NVIDIA Collective Communications Library）是 GPU 集合通信的事实标准，API 仿 MPI。</p>
+<h3 id="3-1-初始化（两种写法）"><a href="#3-1-初始化（两种写法）" class="headerlink" title="3.1 初始化（两种写法）"></a>3.1 初始化（两种写法）</h3><figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 单进程多卡（教学/示例常用）</span></span><br><span class="line">ncclComm_t comms[<span class="number">4</span>];</span><br><span class="line"><span class="type">int</span> devs[<span class="number">4</span>] = {<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>};</span><br><span class="line"><span class="built_in">ncclCommInitAll</span>(comms, <span class="number">4</span>, devs);          <span class="comment">// 一行建好 clique</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 多进程/MPI（生产环境）</span></span><br><span class="line">ncclUniqueId id;</span><br><span class="line"><span class="keyword">if</span> (rank == <span class="number">0</span>) <span class="built_in">ncclGetUniqueId</span>(&amp;id);     <span class="comment">// rank0 生成，再 MPI_Bcast 给其余 rank</span></span><br><span class="line"><span class="built_in">MPI_Bcast</span>(&amp;id, <span class="built_in">sizeof</span>(id), MPI_BYTE, <span class="number">0</span>, MPI_COMM_WORLD);</span><br><span class="line"><span class="built_in">cudaSetDevice</span>(localRank);</span><br><span class="line"><span class="built_in">ncclCommInitRank</span>(&amp;comm, worldSize, id, rank);</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>注意：<code>ncclCommInitRank</code> <strong>会隐式与其他 rank 同步</strong>，必须从不同线程/进程调用，或用 <code>ncclGroupStart/End</code> 包住；单线程循环里逐个调会死锁（见 <a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/api/comms.html">NCCL 文档</a>）。</p>
+</blockquote>
+<h3 id="3-2-集合原语（把-§1-的通信落到-API）"><a href="#3-2-集合原语（把-§1-的通信落到-API）" class="headerlink" title="3.2 集合原语（把 §1 的通信落到 API）"></a>3.2 集合原语（把 §1 的通信落到 API）</h3><table>
+<thead>
+<tr>
+<th>原语</th>
+<th>语义</th>
+<th>用在</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ncclAllReduce(send, recv, count, type, op, comm, stream)</code></td>
+<td>各卡 send 求和 → 每卡 recv 都一样</td>
+<td><strong>DP 梯度同步</strong></td>
+</tr>
+<tr>
+<td><code>ncclBroadcast</code></td>
+<td>root 的数据 → 所有卡</td>
+<td>初始参数广播</td>
+</tr>
+<tr>
+<td><code>ncclReduce</code></td>
+<td>各卡求和 → 仅 root</td>
+<td>loss 聚合</td>
+</tr>
+<tr>
+<td><code>ncclAllGather</code></td>
+<td>各卡贡献一段 → 每卡拿到拼接全量</td>
+<td><strong>TP 收集分片</strong></td>
+</tr>
+<tr>
+<td><code>ncclReduceScatter</code></td>
+<td>求和后按卡切分 → 每卡只拿 1/N</td>
+<td><strong>Megatron TP（列/行并行接缝）</strong></td>
+</tr>
+<tr>
+<td><code>ncclSend</code> / <code>ncclRecv</code></td>
+<td>点对点 P2P</td>
+<td>PP 相邻 stage 传激活</td>
+</tr>
+</tbody></table>
+<ul>
+<li><strong>redOp</strong>：<code>ncclSum / ncclProd / ncclMax / ncclMin / ncclAvg</code></li>
+<li><strong>type</strong>：<code>ncclFloat16/32/64</code>、<code>ncclBfloat16</code>、<code>ncclInt8/32/64</code>…</li>
+<li><strong>关键</strong>：<code>ncclAllReduce</code> 在 fp16/bf16 输入上仍用 <strong>fp32 累加</strong>求和——这正是 §L3.2 混合精度的「低精度输入 × 高精度累加」在多卡尺度的回响。</li>
+</ul>
+<h3 id="3-3-异步-与计算重叠（-L3-1-的跨卡版）"><a href="#3-3-异步-与计算重叠（-L3-1-的跨卡版）" class="headerlink" title="3.3 异步 + 与计算重叠（= L3.1 的跨卡版）"></a>3.3 异步 + 与计算重叠（= L3.1 的跨卡版）</h3><p><code>ncclAllReduce(..., stream)</code> 把通信<strong>排在某个 CUDA stream 上、立即返回</strong>。<br>于是可以把它和计算 kernel 放在不同 stream，让 GPU <strong>边算边传</strong>：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="type">int</span> gpu = <span class="number">0</span>; gpu &lt; nGPUs; ++gpu) {</span><br><span class="line">    <span class="built_in">cudaSetDevice</span>(devList[gpu]);</span><br><span class="line">    local_compute_kernel&lt;&lt;&lt;...&gt;&gt;&gt;(stream[gpu]);      <span class="comment">// 算下一步</span></span><br><span class="line">    <span class="built_in">ncclAllReduce</span>(grad_send[gpu], grad_recv[gpu],</span><br><span class="line">                  count, ncclFloat, ncclSum, comms[gpu], stream[gpu]); <span class="comment">// 传上一步梯度</span></span><br><span class="line">}</span><br><span class="line"><span class="built_in">cudaDeviceSynchronize</span>();</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>官方博客原话：「This leaves the bulk of the GPU free to execute compute tasks concurrently with the communication.」——把 §L3.1 的 overlap 思想直接放大到跨卡。<br>想最大化重叠，可把 NCCL 放在<strong>高优先级 stream</strong>，让它插进计算 grid 的缝隙。</p>
+</blockquote>
+<h3 id="3-4-NCCL-自动选路（拓扑感知）"><a href="#3-4-NCCL-自动选路（拓扑感知）" class="headerlink" title="3.4 NCCL 自动选路（拓扑感知）"></a>3.4 NCCL 自动选路（拓扑感知）</h3><p>NCCL 启动时探测拓扑，自动在下面里挑最快：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NVLink  &gt;  PCIe GPUDirect P2P  &gt;  GPUDirect RDMA(InfiniBand)  &gt;  IP socket(跨机兜底)</span><br></pre></td></tr></tbody></table></figure>
+
+<p>排查可用 <code>nvidia-smi topo -m</code> 看每张卡的关系列（NVL / PIX / PXB / NODE），对应 NCCL 选路（见代码 <code>analyze_topology()</code>）。<br>调参：<code>NCCL_ALGO=Ring|Tree|CollnetDirect</code>、<code>NCCL_PROTO=Simple|LL|LL128</code>、<code>NCCL_NET_GDR_LEVEL</code>。</p>
+<hr>
+<h2 id="§4-Ring-vs-Tree：AllReduce-的两条算法，对应带宽-vs-延迟"><a href="#§4-Ring-vs-Tree：AllReduce-的两条算法，对应带宽-vs-延迟" class="headerlink" title="§4 Ring vs Tree：AllReduce 的两条算法，对应带宽 vs 延迟"></a>§4 Ring vs Tree：AllReduce 的两条算法，对应带宽 vs 延迟</h2><p>AllReduce = 让每张卡都拿到「所有卡数据的归约结果」。两条经典算法：</p>
+<h3 id="4-1-Ring-AllReduce（带宽最优，大消息首选）"><a href="#4-1-Ring-AllReduce（带宽最优，大消息首选）" class="headerlink" title="4.1 Ring AllReduce（带宽最优，大消息首选）"></a>4.1 Ring AllReduce（带宽最优，大消息首选）</h3><p>把数据切成 N 块，环上跑两阶段：</p>
+<ul>
+<li><strong>scatter-reduce</strong>（N−1 步）：每步 rank r 把「块 (r−step)」累加发给 (r+1)；N−1 步后，每卡持有<strong>一块</strong>的完整归约。</li>
+<li><strong>all-gather</strong>（N−1 步）：把已完整的块沿环覆盖式扩散，N−1 步后每卡拿全量。</li>
+</ul>
+<p>每卡线上搬运的字节数（bus bytes）：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bus_bytes / GPU = 2 · (N−1)/N · K</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>代码 <code>ring_allreduce_host()</code> 用分块环算法在 CPU 上模拟，<strong>与朴素求和对拍 PASS</strong>（N=4, K=256）。这正是 L2.4 跨线程归约的「跨卡放大版」——把「一个 tile」换成一个 GPU。</p>
+</blockquote>
+<h3 id="4-2-Tree-AllReduce（延迟最优，小消息首选）"><a href="#4-2-Tree-AllReduce（延迟最优，小消息首选）" class="headerlink" title="4.2 Tree AllReduce（延迟最优，小消息首选）"></a>4.2 Tree AllReduce（延迟最优，小消息首选）</h3><ul>
+<li><strong>reduce up</strong>：叶子→根，log N 步求和。</li>
+<li><strong>broadcast down</strong>：根→叶子，log N 步下发。</li>
+<li>好处：步数仅 log N，<strong>小消息延迟更低</strong>；且在 NVSwitch 上可做 <strong>in-network reduction（SHARP）</strong>——交换机内部直接求和，不占 GPU 带宽。</li>
+</ul>
+<p>NCCL 按消息大小/拓扑自动选 Ring 还是 Tree（<code>NCCL_ALGO</code> 可强制）。</p>
+<h3 id="4-3-busbw-vs-algobw（衡量是否压满链路）"><a href="#4-3-busbw-vs-algobw（衡量是否压满链路）" class="headerlink" title="4.3 busbw vs algobw（衡量是否压满链路）"></a>4.3 busbw vs algobw（衡量是否压满链路）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">algobw = K / time                       （把 K 字节「广播到所有卡」的有效速率）</span><br><span class="line">busbw  = 2·(N−1)/N · K / time = 2·(N−1)/N · algobw   （链路真实占用，看是否压满 NVLink）</span><br></pre></td></tr></tbody></table></figure>
+
+<p>代码 <code>report_bandwidth()</code> 输出（N=8, K=1 GB）：</p>
+<table>
+<thead>
+<tr>
+<th>链路（单向）</th>
+<th>bus_bytes/GPU</th>
+<th>t(ms)</th>
+<th>algobw</th>
+<th>busbw</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NVLink 4.0 (450 GB/s)</td>
+<td>1.750 GB</td>
+<td>3.89</td>
+<td>257.1 GB/s</td>
+<td><strong>450.0 GB/s（压满）</strong></td>
+</tr>
+<tr>
+<td>PCIe Gen5 (64 GB/s)</td>
+<td>1.750 GB</td>
+<td>27.34</td>
+<td>36.6 GB/s</td>
+<td>64.0 GB/s</td>
+</tr>
+<tr>
+<td>PCIe Gen4 (32 GB/s)</td>
+<td>1.750 GB</td>
+<td>54.69</td>
+<td>18.3 GB/s</td>
+<td>32.0 GB/s</td>
+</tr>
+</tbody></table>
+<p>→ NVLink 用满时 busbw≈450 GB/s，是 PCIe Gen4 的 <strong>~14×</strong>；大 N 时 <code>algobw → link/2</code>（环算法每块走 N−1 跳）。</p>
+<hr>
+<h2 id="§5-comm-compute-overlap：用计算藏通信（-L3-1-跨卡版）"><a href="#§5-comm-compute-overlap：用计算藏通信（-L3-1-跨卡版）" class="headerlink" title="§5 comm-compute overlap：用计算藏通信（= L3.1 跨卡版）"></a>§5 comm-compute overlap：用计算藏通信（= L3.1 跨卡版）</h2><p>数据并行一步 = 本地前向/反向（<code>compute_ms</code>）+ 梯度 ring AllReduce（<code>comm_ms</code>）。</p>
+<ul>
+<li><strong>不重叠</strong>：<code>step = compute + comm</code></li>
+<li><strong>重叠</strong>（通信排在另一 stream，藏进计算里）：<code>step = max(compute, comm)</code></li>
+</ul>
+<p>代码 <code>report_overlap()</code>（N=8, 模型梯度 14 GB, compute=100ms）：</p>
+<table>
+<thead>
+<tr>
+<th>链路</th>
+<th>comm(ms)</th>
+<th>不重叠</th>
+<th>重叠</th>
+<th>通信被藏比例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NVLink 450 GB/s</td>
+<td>54.4</td>
+<td>154.4</td>
+<td><strong>100.0</strong></td>
+<td>35.3%</td>
+</tr>
+<tr>
+<td>PCIe Gen4 32 GB/s</td>
+<td>765.6</td>
+<td>865.6</td>
+<td><strong>765.6</strong></td>
+<td>11.6%</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>结论：<strong>模型越大 / 越偏通信，NVLink 与 PCIe 的差距越致命</strong>；<br>而 TP（每层通信）比 DP（每步一次）更需要 overlap + NVLink，否则算力全空转。<br>这把 §L3.1「用计算藏访存」和 §L2.3「compute-bound vs memory-bound」彻底闭环：<br>多卡扩展的瓶颈从「显存带宽」变成了「卡间带宽」。</p>
+</blockquote>
+<hr>
+<h2 id="§6-与前面所有站的闭环（一张网）"><a href="#§6-与前面所有站的闭环（一张网）" class="headerlink" title="§6 与前面所有站的闭环（一张网）"></a>§6 与前面所有站的闭环（一张网）</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">L2.4  shared 归约  ──放大──▶  跨卡归约（一个 GPU = 一个 tile）</span><br><span class="line">   │</span><br><span class="line">L3.1  pipeline/fusion（用计算藏访存）</span><br><span class="line">   │──放大──▶  comm-compute overlap（用计算藏通信）</span><br><span class="line">   │</span><br><span class="line">L3.2  Tensor Core + 混合精度（低精度入 × fp32 累加）</span><br><span class="line">   │──放大──▶  张量并行切 GEMM + NCCL 求和（fp32 累加，呼应 loss scaling）</span><br><span class="line">   │</span><br><span class="line">station4  CUTLASS EVT 输出算子树（卡内多 CTA 归约）</span><br><span class="line">   │──放大──▶  NCCL 跨卡归约（卡间 CollectiveEpilogue 的边界外推）</span><br><span class="line">   │</span><br><span class="line">L3.3  cooperative groups（一整张 grid 同步）</span><br><span class="line">   │──放大──▶  多卡 = 把整节点当一个大 grid；NCCL 是让它动起来的集合原语</span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li><strong>CUTLASS 3.x <code>CollectiveEpilogue</code></strong> 能在<strong>一张卡内多个 CTA</strong> 之间做归约（输出算子树的一部分）；<br>但一旦要<strong>跨 GPU</strong>，归约的边界就交给了 NCCL——这就是「卡内可组合输出算子」与「卡间集合通信」的责任划分。</li>
+<li><strong>混合精度 fp32 累加</strong>：单卡 MMA 累加器是 fp32（§L3.2），NCCL AllReduce 的 redOp 同样用 fp32 累加——尺度变了，原则不变。</li>
+</ul>
+<hr>
+<h2 id="§7-数值自检（代码-main-全跑）"><a href="#§7-数值自检（代码-main-全跑）" class="headerlink" title="§7 数值自检（代码 main() 全跑）"></a>§7 数值自检（代码 <code>main()</code> 全跑）</h2><table>
+<thead>
+<tr>
+<th>检查</th>
+<th>方法</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>跨卡 ring 归约正确</td>
+<td><code>ring_allreduce_host()</code> vs 朴素求和</td>
+<td><strong>PASS</strong>（N=4, K=256, maxdiff≈0）</td>
+</tr>
+<tr>
+<td>ring 带宽模型</td>
+<td><code>report_bandwidth()</code> N=8 K=1GB</td>
+<td>NVLink busbw=450 / PCIe4=32 GB/s</td>
+</tr>
+<tr>
+<td>overlap 收益</td>
+<td><code>report_overlap()</code> K=14GB</td>
+<td>NVLink 重叠 100ms vs PCIe4 765ms</td>
+</tr>
+<tr>
+<td>拓扑选路</td>
+<td><code>analyze_topology()</code> 解析 <code>nvidia-smi topo -m</code></td>
+<td>NVL→NVLink, PIX→PCIe P2P …</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="§8-编译运行"><a href="#§8-编译运行" class="headerlink" title="§8 编译运行"></a>§8 编译运行</h2><figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 纯 C++ 路径（无 GPU / 无 NCCL 也能跑，跑全部模型与对拍）</span></span><br><span class="line">g++ -O3 -std=c++17 cuda_l3_multigpu_nccl.cpp -o mg &amp;&amp; ./mg</span><br><span class="line"><span class="comment">#   预期：[verify_ring_allreduce] PASS / [report_bandwidth] NVLink busbw≈450 / [report_overlap] NVLink 100ms</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 真机多卡（需 NVIDIA HPC + NCCL，编译时加 -D HAVE_NCCL 并链接 -lnccl）</span></span><br><span class="line">nvcc -O3 -std=c++17 -D HAVE_NCCL cuda_l3_multigpu_nccl.cpp -lnccl -o mg_gpu</span><br><span class="line"><span class="comment">#   注：真机 NCCL 段为单进程 ncclCommInitAll + ncclAllReduce 骨架，</span></span><br><span class="line"><span class="comment">#        生产多进程请用 ncclGetUniqueId + MPI_Bcast + ncclCommInitRank。</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>一句话收束</strong>：多卡把「并行结构」放大到交换机尺度——<strong>NVLink 决定带宽天花板，NCCL 自动选路 + 异步重叠把通信藏进计算，张量并行把一层 GEMM 切到多卡并用 fp32 累加求和</strong>；而它背后的每一条原理，都是 L2.4→L3.3 已经学过的东西在更大尺度上的回响。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L3_MULTIGPU_NCCL</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

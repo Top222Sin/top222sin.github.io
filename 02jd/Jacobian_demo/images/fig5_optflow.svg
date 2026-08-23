@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#ffffff"/>
+
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L1.5 光流：残差雅可比 [Ix; Iy] 与 Lucas-Kanade</text>
+  <text x="20" y="56" font-size="12" fill="#555">平移假设 I2(x+d) = I1(x)。对 d 迭代最小化 Σ(I2−I1)²，方向由残差雅可比给出</text>
+
+  <!-- I1 -->
+  <g transform="translate(40,90)">
+    <rect x="0" y="0" width="120" height="110" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="6" y="16" font-size="11" fill="#334155">图像 I1</text>
+    <circle cx="60" cy="55" r="14" fill="#94a3b8"/>
+    <text x="52" y="59" font-size="10" fill="#fff">斑点</text>
+  </g>
+  <!-- I2 -->
+  <g transform="translate(200,90)">
+    <rect x="0" y="0" width="120" height="110" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="6" y="16" font-size="11" fill="#334155">图像 I2（平移 d）</text>
+    <circle cx="86" cy="33" r="14" fill="#94a3b8"/>
+    <text x="78" y="37" font-size="10" fill="#fff">斑点</text>
+    <line x1="60" y1="55" x2="86" y2="33" stroke="#059669" stroke-width="2" marker-end="url(#arr5)"/>
+    <text x="64" y="40" font-size="9" fill="#065f46">d=(dx,dy)</text>
+  </g>
+  <defs><marker id="arr5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#059669"/></marker></defs>
+
+  <g transform="translate(380,110)" font-size="13" fill="#222">
+    <text x="0" y="0">r(d) = I2(x+d) − I1(x)</text>
+    <text x="0" y="28" fill="#d97706">J = [∂r/∂dx; ∂r/∂dy] = [Ix; Iy]</text>
+    <text x="0" y="56" fill="#2563eb">d ← d − (JᵀJ)⁻¹ Jᵀ r   (G-N 一步)</text>
+    <text x="0" y="84" font-size="11" fill="#555">迭代 forward-additive 收敛到真位移</text>
+  </g>
+
+  <text x="20" y="350" font-size="11" fill="#666">要点：光流的"系统矩阵"就是图像梯度拼成的残差雅可比。demo 用迭代 LK 收敛到真实平移 (2,1)，单步求解会因大位移偏置而失败。</text>
+</svg>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L4.9 PCA &#x2F; 低秩（作为 LS） 前几篇把 LS 当”拟合一条曲线&#x2F;一个模型”。PCA 揭示一个更深的视角：LS 本身就是降维与低秩逼近的引擎——把数据投影到使其重构误差最小的方向，等价于在协方差阵上做特征分解。本项目用 Jacobi 旋转做对称特征分解，并以 Eckart-Young 定理自证”PCA &#x3D; 最佳低秩逼近”。   〇、动机：为什么 PCA 是”作为 LS”   问题 LS">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L4.9 PCA &#x2F; 低秩（作为 LS）">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l4_pca_lowrank.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L4.9 PCA &#x2F; 低秩（作为 LS） 前几篇把 LS 当”拟合一条曲线&#x2F;一个模型”。PCA 揭示一个更深的视角：LS 本身就是降维与低秩逼近的引擎——把数据投影到使其重构误差最小的方向，等价于在协方差阵上做特征分解。本项目用 Jacobi 旋转做对称特征分解，并以 Eckart-Young 定理自证”PCA &#x3D; 最佳低秩逼近”。   〇、动机：为什么 PCA 是”作为 LS”   问题 LS">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/images/fig24_pca_lowrank.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.950Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/images/fig24_pca_lowrank.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l4_pca_lowrank">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l4_pca_lowrank.html","path":"02jd/Least_squares_method_demo/ls_l4_pca_lowrank.html","title":"L4.9 PCA / 低秩（作为 LS）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L4.9 PCA / 低秩（作为 LS） | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L4-9-PCA-%E4%BD%8E%E7%A7%A9%EF%BC%88%E4%BD%9C%E4%B8%BA-LS%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">L4.9 PCA &#x2F; 低秩（作为 LS）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E3%80%87%E3%80%81%E5%8A%A8%E6%9C%BA%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88-PCA-%E6%98%AF%E2%80%9D%E4%BD%9C%E4%B8%BA-LS%E2%80%9D"><span class="nav-number">1.1.</span> <span class="nav-text">〇、动机：为什么 PCA 是”作为 LS”</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%8E%9F%E7%90%86"><span class="nav-number">1.2.</span> <span class="nav-text">一、原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E7%AE%97%E6%B3%95%EF%BC%9AJacobi-%E7%89%B9%E5%BE%81%E5%88%86%E8%A7%A3%EF%BC%88%E5%AF%B9%E7%A7%B0%E9%98%B5%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">二、算法：Jacobi 特征分解（对称阵）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%B8%8E%E4%BB%93%E5%BA%93%E4%B8%BB%E7%BA%BF%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.4.</span> <span class="nav-text">三、与仓库主线的关系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88ls-l4-pca-lowrank-cpp%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">四、代码走读（ls_l4_pca_lowrank.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E9%AA%8C%E8%AF%81%E8%A1%A8%EF%BC%88%E5%8F%97%E7%AE%A1-Python-C-%E6%8E%A7%E5%88%B6%E6%B5%81%E9%95%9C%E5%83%8F%EF%BC%8C%E5%9D%87-5-5-PASS%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">五、验证表（受管 Python + C++ 控制流镜像，均 5&#x2F;5 PASS）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80-%E6%98%93%E9%94%99%E7%82%B9"><span class="nav-number">1.7.</span> <span class="nav-text">六、自检 &#x2F; 易错点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%BA%92%E5%BC%95"><span class="nav-number">1.8.</span> <span class="nav-text">七、互引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.9.</span> <span class="nav-text">八、下一步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B9%9D%E3%80%81%E5%9B%BE%E7%A4%BA"><span class="nav-number">1.10.</span> <span class="nav-text">九、图示</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L4.9 PCA / 低秩（作为 LS）
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Least_squares_method_demo/">LEAST_SQUARES_METHOD_DEMO</a></li>
+            <li>LS_L4_PCA_LOWRANK</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L4-9-PCA-低秩（作为-LS）"><a href="#L4-9-PCA-低秩（作为-LS）" class="headerlink" title="L4.9 PCA / 低秩（作为 LS）"></a>L4.9 PCA / 低秩（作为 LS）</h1><blockquote>
+<p>前几篇把 LS 当”拟合一条曲线/一个模型”。PCA 揭示一个更深的视角：<strong>LS 本身就是降维与低秩逼近的引擎</strong>——把数据投影到使其重构误差最小的方向，等价于在协方差阵上做特征分解。本项目用 Jacobi 旋转做对称特征分解，并以 <strong>Eckart-Young 定理</strong>自证”PCA = 最佳低秩逼近”。</p>
+</blockquote>
+<hr>
+<h2 id="〇、动机：为什么-PCA-是”作为-LS”"><a href="#〇、动机：为什么-PCA-是”作为-LS”" class="headerlink" title="〇、动机：为什么 PCA 是”作为 LS”"></a>〇、动机：为什么 PCA 是”作为 LS”</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>LS 视角</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据有冗余维度</td>
+<td>找最小二乘意义下”最能代表数据”的低维子空间</td>
+</tr>
+<tr>
+<td>去噪 / 压缩</td>
+<td>截断小特征值 = 丢掉对重构误差贡献最小的成分</td>
+</tr>
+<tr>
+<td>可视化（高维→2D）</td>
+<td>投影到 top-2 主方向，使投影后方差最大（信息损失最小）</td>
+</tr>
+</tbody></table>
+<p>PCA 的目标 <code>min ‖X − X_k‖²_ F</code> 在 <code>X_k</code> 为秩 k 时，最优解就是取协方差 <code>C = XᵀX</code> 的 top-k 特征向量——<strong>这是一串最小二乘问题</strong>（每步投影到当前最优方向，即幂迭代 / Rayleigh 商）。</p>
+<hr>
+<h2 id="一、原理"><a href="#一、原理" class="headerlink" title="一、原理"></a>一、原理</h2><p>中心化数据 <code>Xc</code>（列均值归零），协方差 <code>C = Xcᵀ Xc /(n−1)</code>（d×d 对称半正定）。</p>
+<ul>
+<li><strong>主方向</strong>：第 1 主方向 <code>v1 = argmax_{‖v‖=1} ‖Xc v‖² = argmax vᵀ C v</code>（Rayleigh 商），即 <code>C</code> 的最大特征向量。</li>
+<li><strong>Eckart-Young</strong>：最佳秩-k 逼近 <code>X_k = Xc·V_k·V_kᵀ</code>，其中 <code>V_k</code> 为 top-k 特征向量；重构误差<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">‖Xc − X_k‖²_F = (n−1) · Σ_{i=k+1}^{d} λ_i</span><br></pre></td></tr></tbody></table></figure>
+即被丢掉的特征值之和——<strong>丢谁、丢多少，由 LS 残差精确量化</strong>。</li>
+<li><strong>方差解释比</strong>：<code>Σ_{i≤k} λ_i / Σ_i λ_i</code>，衡量前 k 主成分保留了多少信息。</li>
+</ul>
+<hr>
+<h2 id="二、算法：Jacobi-特征分解（对称阵）"><a href="#二、算法：Jacobi-特征分解（对称阵）" class="headerlink" title="二、算法：Jacobi 特征分解（对称阵）"></a>二、算法：Jacobi 特征分解（对称阵）</h2><p>反复做 2×2 Givens 旋转消去最大非对角元，直到对角占优：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">θ = (C_qq − C_pp)/(2 C_pq);  t = sign(θ)/(|θ|+√(θ²+1));  c=1/√(t²+1), s=tc</span><br></pre></td></tr></tbody></table></figure>
+<p>旋转同时更新 <code>C</code> 与特征向量矩阵 <code>V</code>。收敛后特征值降序排列。纯 C++17 可写、确定、数值稳定（比幂迭代更适合”取 top-k 全部特征向量”）。</p>
+<p><strong>“PCA 作为 LS”的三重体现</strong>：</p>
+<ol>
+<li>主方向 = 最大方差 = Rayleigh 商最大 → 一个 LS 投影问题；</li>
+<li>低秩重建 = 最小化重构误差 → 一个 LS 近似问题；</li>
+<li>幂迭代求解主方向 = 反复做 <code>v ← C v / ‖C v‖</code>（迭代 LS 投影）。</li>
+</ol>
+<hr>
+<h2 id="三、与仓库主线的关系"><a href="#三、与仓库主线的关系" class="headerlink" title="三、与仓库主线的关系"></a>三、与仓库主线的关系</h2><ul>
+<li>上游：<code>[L1.4 QR/数值稳定](/02jd/Least_squares_method_demo/ls_l1_qr.html)</code>（SVD 是 PCA 的更通用分解）、<code>[L2.1 雅可比 ∇=Jᵀr](/02jd/Least_squares_method_demo/ls_l2_jac.html)</code>（Jacobian 结构是 GN 的基石，这里 Jacobi 旋转同理）。</li>
+<li>同构家族（写在 MEMORY 的”贡献累加”范式）：PCA 的协方差 <code>C=XᵀX</code> 是 GN 中 <code>JᵀJ</code> 的特例——<strong>GN 的 Hₖₖ = Σ JᵀJ 逐项累加 ≡ PCA 的 XᵀX 累加 ≡ SME 的 ZA 外积累加 ≡ KF 因子图信息矩阵累加</strong>，四者同构（见 <code>[L4.10 Schur 补 BA](/02jd/Least_squares_method_demo/ls_l4_schur_ba.html)</code> 的块累加同构）。</li>
+<li>应用出口：<code>cali_demo</code> 的 <code>L4.5 RGB-D</code> 深度图降维、NMF（<code>[L4.8 NNLS](/02jd/Least_squares_method_demo/ls_l4_nnls.html)</code> 的非负版降维）。</li>
+</ul>
+<hr>
+<h2 id="四、代码走读（ls-l4-pca-lowrank-cpp）"><a href="#四、代码走读（ls-l4-pca-lowrank-cpp）" class="headerlink" title="四、代码走读（ls_l4_pca_lowrank.cpp）"></a>四、代码走读（<code>ls_l4_pca_lowrank.cpp</code>）</h2><ul>
+<li><code>matmul/matvec/transpose/dot/normv</code>：小矩阵库。</li>
+<li><code>ortho_columns</code>：Gram-Schmidt，生成确定性正交基（真值信号子空间）。</li>
+<li><code>jacobi_eig</code>：对称阵 Jacobi 旋转，返回降序特征值 + 特征向量（列）。</li>
+<li><code>rnd()</code>：LCG（<code>seed=20260820</code>），与受管 Python 验证逐位同序。</li>
+<li><code>main</code>：合成秩-2 数据 <code>X = U·diag(3,1.5)·Vᵀ</code> + 1e-3 噪声 → 中心化 → 协方差 → 特征分解 → 断言 5 条。</li>
+</ul>
+<hr>
+<h2 id="五、验证表（受管-Python-C-控制流镜像，均-5-5-PASS）"><a href="#五、验证表（受管-Python-C-控制流镜像，均-5-5-PASS）" class="headerlink" title="五、验证表（受管 Python + C++ 控制流镜像，均 5/5 PASS）"></a>五、验证表（受管 Python + C++ 控制流镜像，均 5/5 PASS）</h2><table>
+<thead>
+<tr>
+<th>#</th>
+<th>检查</th>
+<th>判据</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>①</td>
+<td>特征向量正交归一</td>
+<td><code>VᵀV = I</code>，maxdev &lt; 1e-6</td>
+<td>6.7e-16 ✅</td>
+</tr>
+<tr>
+<td>②</td>
+<td>top-2 方差解释比</td>
+<td><code>1 − ratio &lt; 0.1</code></td>
+<td>ratio=1.0000 ✅</td>
+</tr>
+<tr>
+<td>③</td>
+<td>真信号子空间被恢复</td>
+<td><code>min‖proj‖ &gt; 0.99</code>（真 V2 落在 top-2 子空间）</td>
+<td>1.0000 ✅</td>
+</tr>
+<tr>
+<td>④</td>
+<td>重建误差≈尾部和</td>
+<td>`</td>
+<td>rec − (n−1)Σ_{i&gt;2}λ_i</td>
+</tr>
+<tr>
+<td>⑤</td>
+<td>第一主方向=最大方差</td>
+<td>幂迭代 cos(v,v1)≈1 且 var(v1)=λ1</td>
+<td>cos=1.0 ✅</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>第 ④ 项直接验证 Eckart-Young：PCA 的低秩重建误差恰好等于被舍弃特征值之和——这就是”PCA 作为 LS 近似”的量化证明。</p>
+</blockquote>
+<hr>
+<h2 id="六、自检-易错点"><a href="#六、自检-易错点" class="headerlink" title="六、自检 / 易错点"></a>六、自检 / 易错点</h2><ul>
+<li><strong>中心化忘了</strong>：PCA 必须减去列均值，否则第一主成分会被”整体偏移”带偏（变成拟合均值而非方差方向）。</li>
+<li><strong>Jacobi 的 <code>θ</code> 符号</strong>：<code>t = sign(θ)/(|θ|+√(θ²+1))</code>，写错符号会让旋转方向反掉、收敛变慢甚至不收敛。</li>
+<li><strong>特征向量列序</strong>：排序后务必同步重排 <code>V</code> 的列，否则”top-k”取到的是错误方向（见 <code>[[ls_l2_qr|L1.4]]</code> 的”列对应”坑）。</li>
+</ul>
+<hr>
+<h2 id="七、互引"><a href="#七、互引" class="headerlink" title="七、互引"></a>七、互引</h2><ul>
+<li>上游：<code>[L1.4 QR/数值稳定](/02jd/Least_squares_method_demo/ls_l1_qr.html)</code>、<code>[L2.1 雅可比](/02jd/Least_squares_method_demo/ls_l2_jac.html)</code></li>
+<li>同构：<code>[L4.10 Schur 补 BA](/02jd/Least_squares_method_demo/ls_l4_schur_ba.html)</code>（JᵀJ 累加同构）、<code>[L4.8 NNLS](/02jd/Least_squares_method_demo/ls_l4_nnls.html)</code>（非负降维）</li>
+<li>下游：<code>cali_demo</code> 深度图降维、NMF</li>
+</ul>
+<hr>
+<h2 id="八、下一步"><a href="#八、下一步" class="headerlink" title="八、下一步"></a>八、下一步</h2><ul>
+<li>用 <strong>SVD 直接分解 Xc</strong>（不经协方差），对”样本数 &lt; 维度”或奇异协方差更稳；</li>
+<li>拓展 <strong>Probabilistic PCA / 核 PCA</strong>（非线性流形）；</li>
+<li>接 <code>[L4.7 子空间辨识](/02jd/Least_squares_method_demo/ls_l4_subspace_pem.html)</code>：子空间模型本身就是”动态系统的 PCA”。</li>
+</ul>
+<hr>
+<h2 id="九、图示"><a href="#九、图示" class="headerlink" title="九、图示"></a>九、图示</h2><p><img src="/02jd/Least_squares_method_demo/images/fig24_pca_lowrank.svg" alt="PCA 作为最佳低秩逼近"></p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Least_squares_method_demo/">LEAST_SQUARES_METHOD_DEMO</a></li>
+            <li>LS_L4_PCA_LOWRANK</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

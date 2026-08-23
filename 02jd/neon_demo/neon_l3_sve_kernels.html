@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3 深度优化（库开发者 &#x2F; 推理引擎后端）· 第五部分SVE 三件套极致优化：矩阵乘 &#x2F; FFT(变换) &#x2F; 编解码 —— NCNN、MNN 的 ARM 后端就是这层 配套文件：neon_l3_sve_kernels.cpp（可运行实验台：GEMM SVE2 8×VL &#x2F; FFT radix-4 蝶形 &#x2F; requantize SVE2，均带标量对拍）图示文件：images&#x2F;fig15_stac">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3 深度优化（库开发者 &#x2F; 推理引擎后端）· 第五部分">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/neon_demo/neon_l3_sve_kernels.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3 深度优化（库开发者 &#x2F; 推理引擎后端）· 第五部分SVE 三件套极致优化：矩阵乘 &#x2F; FFT(变换) &#x2F; 编解码 —— NCNN、MNN 的 ARM 后端就是这层 配套文件：neon_l3_sve_kernels.cpp（可运行实验台：GEMM SVE2 8×VL &#x2F; FFT radix-4 蝶形 &#x2F; requantize SVE2，均带标量对拍）图示文件：images&#x2F;fig15_stac">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.960Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/neon_demo/neon_l3_sve_kernels">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/neon_demo/neon_l3_sve_kernels.html","path":"02jd/neon_demo/neon_l3_sve_kernels.html","title":"L3 深度优化（库开发者 / 推理引擎后端）· 第五部分"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3 深度优化（库开发者 / 推理引擎后端）· 第五部分 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%8C%96%EF%BC%88%E5%BA%93%E5%BC%80%E5%8F%91%E8%80%85-%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E%E5%90%8E%E7%AB%AF%EF%BC%89%C2%B7-%E7%AC%AC%E4%BA%94%E9%83%A8%E5%88%86"><span class="nav-number">1.</span> <span class="nav-text">L3 深度优化（库开发者 &#x2F; 推理引擎后端）· 第五部分</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#SVE-%E4%B8%89%E4%BB%B6%E5%A5%97%E6%9E%81%E8%87%B4%E4%BC%98%E5%8C%96%EF%BC%9A%E7%9F%A9%E9%98%B5%E4%B9%98-FFT-%E5%8F%98%E6%8D%A2-%E7%BC%96%E8%A7%A3%E7%A0%81-%E2%80%94%E2%80%94-NCNN%E3%80%81MNN-%E7%9A%84-ARM-%E5%90%8E%E7%AB%AF%E5%B0%B1%E6%98%AF%E8%BF%99%E5%B1%82"><span class="nav-number">1.1.</span> <span class="nav-text">SVE 三件套极致优化：矩阵乘 &#x2F; FFT(变换) &#x2F; 编解码 —— NCNN、MNN 的 ARM 后端就是这层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E3%80%87%E3%80%81%E5%85%88%E5%AE%9A%E4%BD%8D%E2%80%9D%E8%BF%99%E5%B1%82%E2%80%9D%E5%9C%A8%E5%93%AA"><span class="nav-number">1.2.</span> <span class="nav-text">〇、先定位”这层”在哪</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E7%9F%A9%E9%98%B5%E4%B9%98%EF%BC%88GEMM%EF%BC%89%E2%80%94%E2%80%94-%E5%90%8E%E7%AB%AF%E6%9C%80%E7%83%AD%E8%B0%83%E7%94%A8"><span class="nav-number">1.3.</span> <span class="nav-text">一、矩阵乘（GEMM）—— 后端最热调用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81FFT-%E5%8F%98%E6%8D%A2-%E2%80%94%E2%80%94-conv-%E7%9A%84%E2%80%9D%E7%BC%96%E8%A7%A3%E7%A0%81%E2%80%9D"><span class="nav-number">1.4.</span> <span class="nav-text">二、FFT &#x2F; 变换 —— conv 的”编解码”</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E7%BC%96%E8%A7%A3%E7%A0%81%EF%BC%88%E9%87%8F%E5%8C%96-requantize%EF%BC%89%E2%80%94%E2%80%94-%E6%8A%8A-float%E2%86%94int8-%E5%81%9A%E6%88%90%E4%B8%80%E6%9D%A1%E6%B5%81%E6%B0%B4%E7%BA%BF"><span class="nav-number">1.5.</span> <span class="nav-text">三、编解码（量化 requantize）—— 把 float↔int8 做成一条流水线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%B8%89%E4%BB%B6%E5%A5%97%E4%B8%B2%E8%B5%B7%E6%9D%A5%EF%BC%9A%E4%B8%80%E4%BB%BD-SVE2-%E5%90%8E%E7%AB%AF%E8%AF%A5%E9%95%BF%E4%BB%80%E4%B9%88%E6%A0%B7"><span class="nav-number">1.6.</span> <span class="nav-text">四、三件套串起来：一份 SVE2 后端该长什么样</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3 深度优化（库开发者 / 推理引擎后端）· 第五部分
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/neon_demo/">NEON_DEMO</a></li>
+            <li>NEON_L3_SVE_KERNELS</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-深度优化（库开发者-推理引擎后端）·-第五部分"><a href="#L3-深度优化（库开发者-推理引擎后端）·-第五部分" class="headerlink" title="L3 深度优化（库开发者 / 推理引擎后端）· 第五部分"></a>L3 深度优化（库开发者 / 推理引擎后端）· 第五部分</h1><h2 id="SVE-三件套极致优化：矩阵乘-FFT-变换-编解码-——-NCNN、MNN-的-ARM-后端就是这层"><a href="#SVE-三件套极致优化：矩阵乘-FFT-变换-编解码-——-NCNN、MNN-的-ARM-后端就是这层" class="headerlink" title="SVE 三件套极致优化：矩阵乘 / FFT(变换) / 编解码 —— NCNN、MNN 的 ARM 后端就是这层"></a>SVE 三件套极致优化：矩阵乘 / FFT(变换) / 编解码 —— NCNN、MNN 的 ARM 后端就是这层</h2><blockquote>
+<p>配套文件：<code>neon_l3_sve_kernels.cpp</code>（可运行实验台：GEMM SVE2 8×VL / FFT radix-4 蝶形 / requantize SVE2，均带标量对拍）<br>图示文件：<code>images/fig15_stack.svg</code> / <code>fig16_gemm.svg</code> / <code>fig17_fft.svg</code> / <code>fig18_quant.svg</code><br>浏览器预览：<code>neon_l3_sve_kernels_diagrams.html</code><br>真实代码锚点（均来自本工作区）：<br>  · 矩阵乘 → <code>ncnn/src/layer/arm/gemm_int8.h</code>(SDOT) + <code>MNN/cmake/KleidiAI.cmake</code>(kai ukernels)<br>  · FFT/变换 → <code>ncnn/src/layer/arm/convolution_3x3_winograd.h</code>(transform_kernel/input/output)<br>  · 编解码 → <code>ncnn/src/layer/arm/requantize_arm.cpp</code> + <code>MNN/source/backend/cpu/arm/CommonOptFunctionNeon.cpp</code></p>
+</blockquote>
+<hr>
+<h2 id="〇、先定位”这层”在哪"><a href="#〇、先定位”这层”在哪" class="headerlink" title="〇、先定位”这层”在哪"></a>〇、先定位”这层”在哪</h2><p>你说”NCNN、MNN 的 ARM 后端就是这层”——精确说，是<strong>推理引擎的底层微内核层（ukernel layer）</strong>。引擎上层做图调度、内存管理；真正吃满芯片算力的是最底那一层：GEMM、卷积变换、量化(编解码) 的几个手调内核。这层在 NCNN 里是手写 NEON，在 MNN 里已<strong>整层委托给 Arm 官方 KleidiAI</strong>（它的 <code>kai</code> ukernels 同时提供 NEON / SVE / SVE2 / SME2 多档内核）。</p>
+<div align="center">
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 270" font-family="Menlo, Consolas, monospace" font-size="12">
+  <rect x="0" y="0" width="680" height="270" fill="#fbfcfe"></rect>
+  <text x="20" y="22" font-size="14" font-weight="bold" fill="#1f2933">图一：推理引擎后端分层 —— "这层"= 最底的手调微内核</text>
+
+  <rect x="200" y="40" width="280" height="34" rx="6" fill="#fff" stroke="#64748b"></rect>
+  <text x="340" y="62" fill="#334155" text-anchor="middle">应用 / 模型 (ResNet, LLM...)</text>
+
+  <rect x="200" y="86" width="280" height="34" rx="6" fill="#fff" stroke="#64748b"></rect>
+  <text x="340" y="108" fill="#334155" text-anchor="middle">NCNN / MNN 图调度 + 内存管理</text>
+
+  <rect x="160" y="132" width="360" height="90" rx="6" fill="#eef2ff" stroke="#6366f1"></rect>
+  <text x="340" y="152" fill="#3730a3" font-weight="bold" text-anchor="middle">← 这层：ARM 微内核 (ukernel)</text>
+  <g font-size="11">
+    <rect x="176" y="160" width="104" height="26" fill="#fff" stroke="#6366f1"></rect><text x="228" y="177" fill="#3730a3" text-anchor="middle">GEMM 矩阵乘</text>
+    <rect x="288" y="160" width="104" height="26" fill="#fff" stroke="#6366f1"></rect><text x="340" y="177" fill="#3730a3" text-anchor="middle">变换(FFT/Winograd)</text>
+    <rect x="400" y="160" width="104" height="26" fill="#fff" stroke="#6366f1"></rect><text x="452" y="177" fill="#3730a3" text-anchor="middle">量化编解码</text>
+  </g>
+  <text x="340" y="210" fill="#4338ca" text-anchor="middle">MNN 此层直接复用 KleidiAI 的 kai ukernels</text>
+
+  <rect x="200" y="234" width="280" height="28" rx="6" fill="#ecfdf5" stroke="#10b981"></rect>
+  <text x="340" y="253" fill="#065f46" text-anchor="middle">硅：NEON(128b) / SVE2 / SME2</text>
+
+</svg><p>  <defs><marker id="sm" markerwidth="9" markerheight="9" refx="7" refy="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#475569"></path></marker></defs><br>  <line x1="340" y1="222" x2="340" y2="234" stroke="#475569" stroke-width="1.4" marker-end="url(#sm)"><br>  <line x1="340" y1="120" x2="340" y2="132" stroke="#475569" stroke-width="1.4" marker-end="url(#sm)"><br>  <line x1="340" y1="74" x2="340" y2="86" stroke="#475569" stroke-width="1.4" marker-end="url(#sm)"><br></line></line></line></p>
+</div>
+
+<hr>
+<h2 id="一、矩阵乘（GEMM）——-后端最热调用"><a href="#一、矩阵乘（GEMM）——-后端最热调用" class="headerlink" title="一、矩阵乘（GEMM）—— 后端最热调用"></a>一、矩阵乘（GEMM）—— 后端最热调用</h2><p>GEMM 占推理 90%+ 算力。两家的落点：</p>
+<ul>
+<li><strong>NCNN</strong>：手写 NEON。fp32 微内核在 <code>gemm_arm.cpp</code>（8×4 块、fmla rank-1 更新），int8 在 <code>gemm_int8.h</code>（SDOT 微内核，16 个 int32x4 累加器）。本工作区这版<strong>还没有 SVE</strong>——正是第四部分讲的”逐代 NEON 手写”。</li>
+<li><strong>MNN</strong>：<code>cmake/KleidiAI.cmake</code> 直接拉取 <strong>Arm 官方 KleidiAI</strong>，其 <code>kai</code> ukernels 把 GEMM 做了<strong>多档分代</strong>：<ul>
+<li><code>matmul_clamp_f32_qai8dxp_qsi4cxp/*dotprod.c</code> / <code>*i8mm.c</code> → <strong>NEON</strong>（dotprod / i8mm）</li>
+<li><code>.../*sdot.c</code> / <code>*sdot_asm.S</code> → <strong>SVE2</strong>（<code>svdot</code> 向量长度自适应；注意**基础 SVE 没有 <code>svdot</code>**，int8 矩阵乘需 SVE2）</li>
+<li><code>.../*mopa.c</code> / <code>*sme2_mla.c</code> / <code>*sme2_dot.c</code> → <strong>SME2</strong>（外积/矩阵指令，更大吞吐）</li>
+<li>编译旗（KleidiAI.cmake 实摘，<strong>分两档</strong>）：NEON 档 <code>-march=armv8.2-a+i8mm+dotprod+fp16</code>；SVE/SVE2 档 <code>-march=armv8.2-a+sve+sve2</code>（<strong>注意</strong>：该旗标不代表 SME2——SME/SME2 需独立架构扩展与工具链支持，且”两档”的准确语义以实际版本源码为准）。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>⚠️ 本部分 §一<del>§三 的 <strong>FP32</strong> GEMM / FFT / requantize 三件套只用<strong>基础 SVE</strong> 指令（<code>svld1</code>/<code>svmla</code>/<code>svwhilelt</code>/<code>svst</code> 等），所以<strong>支持 SVE 的核</strong>（V1/X2/V2/X4 等）跑同一份 VLA 源码。<strong>概念澄清</strong>：V1 是 Neoverse V1 核心名；VL（向量长度）是实现参数——<code>VL=8</code> 只表示 FP32 8 lane = 256-bit（V1 的典型实现），<strong>不是 SVE 的通用事实</strong>（SVE 支持 128</del>2048-bit）。SVE2 在这些 FP32 路径上兼容、不引入新指令；SVE2 真正的增量是 <strong>int8 <code>svdot</code> 矩阵乘</strong>（即 KleidiAI 的 <code>*sdot</code> 档，以及 int8 GEMM/量化），基础 SVE 并没有 <code>svdot</code>。<strong>注意</strong>：SME2 需要独立架构扩展与工具链（<code>-march=armv8.2-a+sve+sve2</code> 不代表 SME2）——KleidiAI.cmake 中”两档”旗标的准确含义以实际版本源码为准。</p>
+</blockquote>
+<p><strong>这正是第四部分”SVE/SVE2 一份内核跨核”的工程现实版</strong>：KleidiAI 用同一套 ukernel 源码，靠编译旗与运行时分发，在 NEON/SVE2/SME2 三代核上全自动选路。你自己写引擎时，最务实的做法就是<strong>直接复用 KleidiAI</strong>（或参考它的 ukernel 布局），而不是从零手敲汇编。</p>
+<div align="center">
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 240" font-family="Menlo, Consolas, monospace" font-size="12">
+  <rect x="0" y="0" width="680" height="240" fill="#fbfcfe"></rect>
+  <text x="20" y="22" font-size="14" font-weight="bold" fill="#1f2933">图二：GEMM 微内核在 NCNN/MNN 的三代分档</text>
+
+  <g font-size="11">
+    <rect x="20" y="50" width="200" height="160" rx="6" fill="#fff7ed" stroke="#fb923c"></rect>
+    <text x="120" y="72" fill="#9a3412" font-weight="bold" text-anchor="middle">NEON (128b)</text>
+    <text x="120" y="98" fill="#7c2d12" text-anchor="middle">NCNN: 手写</text>
+    <text x="120" y="118" fill="#7c2d12" text-anchor="middle">gemm_int8.h SDOT</text>
+    <text x="120" y="142" fill="#7c2d12" text-anchor="middle">MNN KleidiAI:</text>
+    <text x="120" y="162" fill="#7c2d12" text-anchor="middle">dotprod / i8mm</text>
+    <text x="120" y="190" fill="#b91c1c" text-anchor="middle">每代一份汇编</text>
+
+</g></svg><pre><code>&lt;rect x="240" y="50" width="200" height="160" rx="6" fill="#ecfdf5" stroke="#10b981"/&gt;
+&lt;text x="340" y="72" fill="#065f46" font-weight="bold" text-anchor="middle"&gt;SVE2 (VLA)&lt;/text&gt;
+&lt;text x="340" y="98" fill="#065f46" text-anchor="middle"&gt;MNN KleidiAI:&lt;/text&gt;
+&lt;text x="340" y="118" fill="#065f46" text-anchor="middle"&gt;*sdot / *sdot_asm&lt;/text&gt;
+&lt;text x="340" y="142" fill="#065f46" text-anchor="middle"&gt;一份源码&lt;/text&gt;
+&lt;text x="340" y="162" fill="#065f46" text-anchor="middle"&gt;VL 随核自适应&lt;/text&gt;
+&lt;text x="340" y="190" fill="#047857" font-weight="bold" text-anchor="middle"&gt;X2/V1/X4 通吃&lt;/text&gt;
+
+&lt;rect x="460" y="50" width="200" height="160" rx="6" fill="#f5f3ff" stroke="#8b5cf6"/&gt;
+&lt;text x="560" y="72" fill="#5b21b6" font-weight="bold" text-anchor="middle"&gt;SME2 (外积)&lt;/text&gt;
+&lt;text x="560" y="98" fill="#5b21b6" text-anchor="middle"&gt;MNN KleidiAI:&lt;/text&gt;
+&lt;text x="560" y="118" fill="#5b21b6" text-anchor="middle"&gt;*mopa / sme2_mla&lt;/text&gt;
+&lt;text x="560" y="142" fill="#5b21b6" text-anchor="middle"&gt;/ sme2_dot&lt;/text&gt;
+&lt;text x="560" y="162" fill="#5b21b6" text-anchor="middle"&gt;矩阵外积指令&lt;/text&gt;
+&lt;text x="560" y="190" fill="#6d28d9" font-weight="bold" text-anchor="middle"&gt;吞吐再上一档&lt;/text&gt;
+</code></pre>
+  
+  <text x="340" y="228" fill="#64748b" font-size="10" text-anchor="middle">编译旗(KleidiAI.cmake实摘, 分两档): NEON=armv8.2-a+i8mm+dotprod+fp16; SME2=armv8.2-a+sve+sve2</text>
+
+
+</div>
+
+<hr>
+<h2 id="二、FFT-变换-——-conv-的”编解码”"><a href="#二、FFT-变换-——-conv-的”编解码”" class="headerlink" title="二、FFT / 变换 —— conv 的”编解码”"></a>二、FFT / 变换 —— conv 的”编解码”</h2><p>NCNN 的卷积并不用 FFT（视觉模型用 Winograd/im2col 更划算），但**Winograd 变换本身就是卷积版的”编码→逐点乘→解码”**，角色与 DSP 里的 FFT 完全同构：</p>
+<ul>
+<li><code>conv3x3s1_winograd23_transform_kernel</code> → <strong>编码权重</strong>进 Winograd 域（预计算，一次）</li>
+<li><code>conv3x3s1_winograd23_transform_input_tile</code> → <strong>编码输入</strong> tile</li>
+<li>在变换域做逐点乘（变成小 GEMM）</li>
+<li><code>conv3x3s1_winograd23_transform_output_tile</code> → <strong>解码</strong>回像素域</li>
+</ul>
+<p>这就是”编解码”在 conv 里的真身。换成<strong>真 FFT（音频/DSP/kissfft/CMSIS-DSP）</strong>，SVE2 的写法极其顺手：</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// radix-4 蝶形：svld2 把交织复数 [re,im,re,im,...] 拆成实部/虚部两个向量</span></span><br><span class="line"><span class="type">svfloat32x2_t</span> ri = svld2_f32(pg, &amp;x[<span class="number">2</span>*s]);   <span class="comment">// .v0=实部, .v1=虚部</span></span><br><span class="line"><span class="comment">// 之后所有复数乘加 = 两个 float32 向量上的分量运算，零标量分支</span></span><br><span class="line">svst2_f32(pg, &amp;x[<span class="number">2</span>*s], new_re, new_im);      <span class="comment">// 写回（pg 掩尾部不被 4 整除的点）</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p><code>svld2</code>/<code>svst2</code> 直接完成复数据的<strong>解交织/交织</strong>，省掉 NEON 里那串 <code>vtrn</code>/<code>vuzp</code> 搬弄；<code>svwhilelt_b32</code> 掩掉 n 非 4 倍数的尾部，免写 remainder——与第四部分谓词消除尾部一脉相承。</p>
+<div align="center">
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 250" font-family="Menlo, Consolas, monospace" font-size="12">
+  <rect x="0" y="0" width="680" height="250" fill="#fbfcfe"></rect>
+  <text x="20" y="22" font-size="14" font-weight="bold" fill="#1f2933">图三：变换即"编解码"——conv(Winograd)=FFT 的角色替代</text>
+
+  <rect x="20" y="50" width="150" height="50" rx="6" fill="#dbeafe" stroke="#3b82f6"></rect>
+  <text x="95" y="72" fill="#1e40af" text-anchor="middle">输入(像素域)</text>
+  <text x="95" y="92" fill="#1e40af" text-anchor="middle">↓ 编码</text>
+
+  <rect x="20" y="110" width="150" height="50" rx="6" fill="#bfdbfe" stroke="#3b82f6"></rect>
+  <text x="95" y="132" fill="#1e40af" text-anchor="middle">变换域</text>
+  <text x="95" y="152" fill="#1e40af" text-anchor="middle">↓ 逐点乘(GEMM)</text>
+
+  <rect x="20" y="170" width="150" height="50" rx="6" fill="#93c5fd" stroke="#3b82f6"></rect>
+  <text x="95" y="192" fill="#1e3a8a" text-anchor="middle">输出(像素域)</text>
+  <text x="95" y="212" fill="#1e3a8a" text-anchor="middle">↑ 解码</text>
+
+</svg><p>  <text x="235" y="80" fill="#334155">NCNN: transform_input → 变换域乘 → transform_output</text><br>  <text x="235" y="104" fill="#334155">FFT:   fft_forward    → 频域乘   → fft_inverse</text><br>  <text x="235" y="135" fill="#047857" font-weight="bold">SVE2 写法：</text><br>  <text x="235" y="158" fill="#047857">svld2 拆 [re,im] 成两向量 → 分量级复数乘加 → svst2 写回</text><br>  <text x="235" y="182" fill="#047857">svwhilelt 掩尾部，零 remainder 循环</text><br>  <text x="235" y="212" fill="#64748b" font-size="10">锚点：ncnn convolution_3x3_winograd.h: transform_kernel/input/output</text><br></p>
+</div>
+
+<hr>
+<h2 id="三、编解码（量化-requantize）——-把-float↔int8-做成一条流水线"><a href="#三、编解码（量化-requantize）——-把-float↔int8-做成一条流水线" class="headerlink" title="三、编解码（量化 requantize）—— 把 float↔int8 做成一条流水线"></a>三、编解码（量化 requantize）—— 把 float↔int8 做成一条流水线</h2><p>推理里 int8 是命门：4× 密度、4× 带宽、SDOT 16 MAC/指令。但每次 GEMM 后必须<strong>把 float 累加结果重新量化回 int8</strong>，这一步就是”编解码”热路径：</p>
+<ul>
+<li><strong>NCNN</strong> <code>requantize_arm.cpp</code>：<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// int8( relu(v * scale_in + bias) * scale_out )</span></span><br><span class="line"><span class="type">float32x4_t</span> _scale = vmulq_f32(_scale_in, _scale_out);  <span class="comment">// 合并缩放</span></span><br><span class="line"><span class="comment">// 逐通道 vmlaq + vdupq + vmulq，最后饱和窄化到 signed char</span></span><br></pre></td></tr></tbody></table></figure></li>
+<li><strong>MNN</strong> <code>CommonOptFunctionNeon.cpp</code> 量化路径：<code>quantScaleVal</code>、<code>-128</code> 偏移、<code>vmulq_f32</code> 做 float↔int8 编解码。</li>
+</ul>
+<p>SVE2 把这条流水线<strong>融合成少量带谓词的指令</strong>：</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">svfloat32_t</span> f = svmla_f32(pg, svdup_n_f32(bias), v, svdup_n_f32(scale_in)); <span class="comment">// v*scale_in+bias</span></span><br><span class="line">f = svmul_f32_x(pg, f, scale_out);                 <span class="comment">// *scale_out</span></span><br><span class="line"><span class="type">svint32_t</span> i32 = svcvt_s32_f32_z(pg, svrintn_f32_x(pg, f));  <span class="comment">// 四舍五入→int32</span></span><br><span class="line"><span class="type">svint8_t</span> i8 = <span class="comment">/* 两级饱和窄化: int32 → int16 → int8 */</span>;</span><br><span class="line"><span class="comment">// 注意: svqxtnt_s32 语义是 int64→int32 的 top-half 窄化, 不能把 int32 直接变 int16!</span></span><br><span class="line"><span class="comment">// int32→int8 需两级: svqxtnb_s16/svqxtnt_s16 (s32→s16) 再 svqxtnb_s8 (s16→s8),</span></span><br><span class="line"><span class="comment">// 且各级 predicate 宽度要对应; 真实代码以 ncnn requantize_arm.cpp 对应版本的 ACLE 原型为准</span></span><br><span class="line">svst1b_s8(pg, out, i8);                           <span class="comment">// 谓词按字节写回（用刚算出的 i8）</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>后端里常把这一步<strong>直接 fuse 进 GEMM 微内核</strong>（KleidiAI 的 <code>matmul_clamp_*</code> 就带 clamp/requant），省掉”先写 float 再读 int8”的往返。这正是极致优化的最后一块拼图。</p>
+<div align="center">
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 240" font-family="Menlo, Consolas, monospace" font-size="12">
+  <rect x="0" y="0" width="680" height="240" fill="#fbfcfe"></rect>
+  <text x="20" y="22" font-size="14" font-weight="bold" fill="#1f2933">图四：requantize 编解码流水线（float ↔ int8）</text>
+
+  <g font-size="11">
+    <rect x="20" y="60" width="110" height="50" rx="6" fill="#fff" stroke="#fb923c"></rect>
+    <text x="75" y="82" fill="#7c2d12" text-anchor="middle">float v</text>
+    <text x="75" y="100" fill="#7c2d12" text-anchor="middle">×(scale_in)</text>
+
+</g></svg><pre><code>&lt;rect x="150" y="60" width="110" height="50" rx="6" fill="#fff" stroke="#fb923c"/&gt;
+&lt;text x="205" y="82" fill="#7c2d12" text-anchor="middle"&gt;+bias&lt;/text&gt;
+&lt;text x="205" y="100" fill="#7c2d12" text-anchor="middle"&gt;relu&lt;/text&gt;
+
+&lt;rect x="280" y="60" width="110" height="50" rx="6" fill="#fff" stroke="#fb923c"/&gt;
+&lt;text x="335" y="82" fill="#7c2d12" text-anchor="middle"&gt;×(scale_out)&lt;/text&gt;
+&lt;text x="335" y="100" fill="#7c2d12" text-anchor="middle"&gt;round&lt;/text&gt;
+
+&lt;rect x="410" y="60" width="110" height="50" rx="6" fill="#dcfce7" stroke="#10b981"/&gt;
+&lt;text x="465" y="82" fill="#065f46" text-anchor="middle"&gt;饱和窄化&lt;/text&gt;
+&lt;text x="465" y="100" fill="#065f46" text-anchor="middle"&gt;→ int8&lt;/text&gt;
+
+&lt;rect x="540" y="60" width="110" height="50" rx="6" fill="#dcfce7" stroke="#10b981"/&gt;
+&lt;text x="595" y="82" fill="#065f46" text-anchor="middle"&gt;int8 out&lt;/text&gt;
+&lt;text x="595" y="100" fill="#065f46" text-anchor="middle"&gt;谓词写回&lt;/text&gt;
+</code></pre>
+  
+
+  <g stroke="#94a3b8" stroke-width="1.4" marker-end="url(#qm)">
+    <line x1="130" y1="85" x2="150" y2="85">
+    <line x1="260" y1="85" x2="280" y2="85">
+    <line x1="390" y1="85" x2="410" y2="85">
+    <line x1="520" y1="85" x2="540" y2="85">
+  </line></line></line></line></g>
+  <defs><marker id="qm" markerwidth="9" markerheight="9" refx="7" refy="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"></path></marker></defs>
+
+  <rect x="20" y="140" width="630" height="70" rx="6" fill="#f8fafc" stroke="#cbd5e1">
+  <text x="35" y="162" fill="#334155" font-weight="bold">SVE2 一行流：</text>
+  <text x="35" y="184" fill="#475569">f = svmla(pg, bias, v, scale_in);  f = svmul(pg, f, scale_out);</text>
+  <text x="35" y="204" fill="#475569">i8 = svqxtnb(svqxtnt(i32));  svst1b(pg, out, i8);   // 谓词掩尾部，可 fuse 进 GEMM</text>
+  <text x="35" y="224" fill="#64748b" font-size="9">锚点：ncnn requantize_arm.cpp / MNN CommonOptFunctionNeon.cpp 量化路径</text>
+
+
+</rect></div>
+
+<hr>
+<h2 id="四、三件套串起来：一份-SVE2-后端该长什么样"><a href="#四、三件套串起来：一份-SVE2-后端该长什么样" class="headerlink" title="四、三件套串起来：一份 SVE2 后端该长什么样"></a>四、三件套串起来：一份 SVE2 后端该长什么样</h2><table>
+<thead>
+<tr>
+<th>内核</th>
+<th>后端角色</th>
+<th>NEON 现状（NCNN 手写）</th>
+<th>SVE2 改写（MNN/KleidiAI 路线）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GEMM</td>
+<td>占 90% 算力</td>
+<td><code>gemm_int8.h</code> SDOT，逐代手写</td>
+<td>复用 KleidiAI <code>kai</code> ukernel，<code>*sdot</code> 一份跨 X2/V1/X4/SME2</td>
+</tr>
+<tr>
+<td>变换</td>
+<td>conv 的编解码</td>
+<td><code>transform_kernel/input/output</code> Winograd</td>
+<td><code>svld2</code>/<code>svst2</code> 解交织复数 + 谓词尾部（FFT 同理）</td>
+</tr>
+<tr>
+<td>编解码</td>
+<td>int8 量化往返</td>
+<td><code>requantize_arm.cpp</code> vdupq/vmulq</td>
+<td><code>svmul</code>+<code>svcvt</code>+<code>svqxtnt</code> 饱和窄化，fuse 进 GEMM</td>
+</tr>
+</tbody></table>
+<p><strong>工程结论（你真正该带走的）：</strong></p>
+<ol>
+<li>NCNN 这版还是手写 NEON（无 SVE）；<strong>MNN 已经把整层后端交给 KleidiAI</strong>，后者用同一套 ukernel 源码 + 编译旗，在 NEON/SVE2/SME2 三代核上自动选路。</li>
+<li>你自己要做的”SVE 极致优化”，最务实的不是从零写汇编，而是<strong>照 KleidiAI 的 ukernel 布局写 VLA 内核 + 谓词尾部 + 运行时 HWCAP 三路分发</strong>（第四部分已讲），再 fuse 量化。</li>
+<li>FFT 与 Winograd 变换是”编解码”的两种形态：前者服务 DSP/音频，后者服务视觉 conv；<strong>基础 SVE</strong> 的 <code>svld2</code> 解交织 + 谓词，对两者通用（V1 即可跑）。</li>
+<li>第四部分的”VLA + 谓词 + 三路分发”在这里闭环：它就是你写一个能跑在 V1(X2 基础 SVE)/X2/V2/X4( SVE2)/Neoverse 上、且自带 GEMM+变换+量化三件套的推理后端内核所需的全部底层能力。</li>
+</ol>
+<blockquote>
+<p>一句话：<strong>NCNN/MNN 的 ARM 后端这层 = GEMM + 变换(FFT/Winograd) + 量化(编解码) 三个手调内核；SVE/SVE2 让它们从”每代一份 NEON 汇编”升级为”一份 VLA 内核跨 V1→X4 多代核”（FP32 路径基础 SVE 即够，int8 矩阵乘才需 SVE2 的 <code>svdot</code>），而 MNN 已用 KleidiAI 把这条路走通了。</strong></p>
+</blockquote>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/neon_demo/">NEON_DEMO</a></li>
+            <li>NEON_L3_SVE_KERNELS</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

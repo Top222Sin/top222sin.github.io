@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="CUTLASS GEMM 分块 vs onnxruntime 工业模式看 CUTLASS 如何把「tiling + 双缓冲 + pipeline + Tensor Core」封装成可复用模板 配套：cuda_l2_cutlass_gemm.cpp（缩小版 CUTLASS 参考 kernel + CPU 对拍 + 确定性量化）、images&#x2F;fig9_cutlass_gemm.svg + cuda_">
+<meta property="og:type" content="website">
+<meta property="og:title" content="CUTLASS GEMM 分块 vs onnxruntime 工业模式">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l2_cutlass_gemm.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="CUTLASS GEMM 分块 vs onnxruntime 工业模式看 CUTLASS 如何把「tiling + 双缓冲 + pipeline + Tensor Core」封装成可复用模板 配套：cuda_l2_cutlass_gemm.cpp（缩小版 CUTLASS 参考 kernel + CPU 对拍 + 确定性量化）、images&#x2F;fig9_cutlass_gemm.svg + cuda_">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l2_cutlass_gemm">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cuda_demo/cuda_l2_cutlass_gemm.html","path":"02jd/cuda_demo/cuda_l2_cutlass_gemm.html","title":"CUTLASS GEMM 分块 vs onnxruntime 工业模式"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>CUTLASS GEMM 分块 vs onnxruntime 工业模式 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CUTLASS-GEMM-%E5%88%86%E5%9D%97-vs-onnxruntime-%E5%B7%A5%E4%B8%9A%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">CUTLASS GEMM 分块 vs onnxruntime 工业模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9C%8B-CUTLASS-%E5%A6%82%E4%BD%95%E6%8A%8A%E3%80%8Ctiling-%E5%8F%8C%E7%BC%93%E5%86%B2-pipeline-Tensor-Core%E3%80%8D%E5%B0%81%E8%A3%85%E6%88%90%E5%8F%AF%E5%A4%8D%E7%94%A8%E6%A8%A1%E6%9D%BF"><span class="nav-number">1.0.1.</span> <span class="nav-text">看 CUTLASS 如何把「tiling + 双缓冲 + pipeline + Tensor Core」封装成可复用模板</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%AF%BB-CUTLASS%EF%BC%88%E6%89%BF%E4%B8%8A%E5%90%AF%E4%B8%8B%EF%BC%89"><span class="nav-number">1.1.</span> <span class="nav-text">0. 为什么读 CUTLASS（承上启下）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-CUTLASS-%E7%9A%84%E5%9B%9B%E4%BB%B6%E5%A5%97%E5%B0%81%E8%A3%85%E6%80%BB%E8%A7%88"><span class="nav-number">1.2.</span> <span class="nav-text">1. CUTLASS 的四件套封装总览</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-tiling-%E2%80%94%E2%80%94-%E4%B8%89%E7%BA%A7-GemmShape-ThreadblockSwizzle"><span class="nav-number">1.3.</span> <span class="nav-text">2. tiling —— 三级 GemmShape + ThreadblockSwizzle</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E4%B8%89%E7%BA%A7-tile-%E5%BD%A2%E7%8A%B6%EF%BC%88%E5%AF%B9%E7%85%A7-ORT-transpose-%E7%9A%84%E2%80%9D%E4%B8%80%E4%B8%AA%E5%9B%BA%E5%AE%9A-tile%E2%80%9D%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">2.1 三级 tile 形状（对照 ORT transpose 的”一个固定 tile”）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-ThreadblockSwizzle%EF%BC%88%E5%AF%B9%E7%85%A7-L2-1-%E5%90%88%E5%B9%B6%E8%AE%BF%E9%97%AE%EF%BC%89"><span class="nav-number">1.3.2.</span> <span class="nav-text">2.2 ThreadblockSwizzle（对照 L2.1 合并访问）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E7%A1%AE%E5%AE%9A%E6%80%A7%E9%87%8F%E5%8C%96%EF%BC%88%E8%A7%81-analyze-cutlass-tiling-%EF%BC%89"><span class="nav-number">1.3.3.</span> <span class="nav-text">2.3 确定性量化（见 analyze_cutlass_tiling()）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%8F%8C%E7%BC%93%E5%86%B2-%E2%80%94%E2%80%94-kStages-%E6%A8%A1%E6%9D%BF-%E5%AF%84%E5%AD%98%E5%99%A8%E7%BA%A7-double-buffer"><span class="nav-number">1.4.</span> <span class="nav-text">3. 双缓冲 —— kStages 模板 + 寄存器级 double buffer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E5%A4%9A%E4%BB%BD-K-%E5%88%87%E7%89%87%EF%BC%88%E7%8E%AF%E5%BD%A2%E7%BC%93%E5%86%B2%EF%BC%89"><span class="nav-number">1.4.1.</span> <span class="nav-text">3.1 共享内存多份 K 切片（环形缓冲）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E5%AF%84%E5%AD%98%E5%99%A8%E7%BA%A7%E5%8F%8C%E7%BC%93%E5%86%B2%EF%BC%88%E8%AE%A9%E2%80%9D%E5%8F%96%E4%B8%8B%E4%B8%80-warp-tile%E2%80%9D%E4%B8%8E%E2%80%9D%E7%AE%97%E5%BD%93%E5%89%8D%E2%80%9D%E9%87%8D%E5%8F%A0%EF%BC%89"><span class="nav-number">1.4.2.</span> <span class="nav-text">3.2 寄存器级双缓冲（让”取下一 warp-tile”与”算当前”重叠）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E7%A1%AE%E5%AE%9A%E6%80%A7%E9%87%8F%E5%8C%96%EF%BC%88%E8%A7%81-analyze-cutlass-tiling-%EF%BC%89"><span class="nav-number">1.4.3.</span> <span class="nav-text">3.3 确定性量化（见 analyze_cutlass_tiling()）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-pipeline-%E2%80%94%E2%80%94-cp-async-%E5%9B%B4%E6%A0%8F-prologue-%E7%81%8C%E6%B0%B4"><span class="nav-number">1.5.</span> <span class="nav-text">4. pipeline —— cp.async + 围栏 + prologue 灌水</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E7%94%9F%E4%BA%A7%E8%80%85%EF%BC%9Acp-async%EF%BC%88HBM-%E2%86%92-shared%EF%BC%8Ccopy-engine-%E5%BC%82%E6%AD%A5%E5%81%9A%EF%BC%89"><span class="nav-number">1.5.1.</span> <span class="nav-text">4.1 生产者：cp.async（HBM → shared，copy engine 异步做）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E5%9B%B4%E6%A0%8F%E4%B8%8E%E7%AD%89%E5%BE%85"><span class="nav-number">1.5.2.</span> <span class="nav-text">4.2 围栏与等待</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-prologue-%EF%BC%9A%E9%A2%84%E5%8F%96-kStages-1-%E4%B8%AA-stage-%E7%81%8C%E6%BB%A1%E6%B5%81%E6%B0%B4%E7%BA%BF%EF%BC%88bootstrap%EF%BC%89"><span class="nav-number">1.5.3.</span> <span class="nav-text">4.3 prologue()：预取 kStages-1 个 stage 灌满流水线（bootstrap）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-%E4%B8%BB%E5%BE%AA%E7%8E%AF%E4%B8%89%E6%AE%B5%E4%BA%A4%E9%94%99%EF%BC%88mac-loop-iter%EF%BC%8C-505-607%EF%BC%89"><span class="nav-number">1.5.4.</span> <span class="nav-text">4.4 主循环三段交错（mac_loop_iter，:505-607）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Tensor-Core-%E2%80%94%E2%80%94-Operator-%E7%BB%84%E4%BB%B6-mma-sync-PTX"><span class="nav-number">1.6.</span> <span class="nav-text">5. Tensor Core —— Operator 组件 + mma.sync PTX</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-Operator-%E6%98%AF%E6%8A%8A%E2%80%9D%E7%AE%97%E6%B3%95%E2%80%9D%E6%8A%BD%E8%B1%A1%E5%87%BA%E6%9D%A5%E7%9A%84%E7%BB%84%E4%BB%B6"><span class="nav-number">1.6.1.</span> <span class="nav-text">5.1 Operator 是把”算法”抽象出来的组件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E5%AF%B9%E7%85%A7-ORT-GEMM-%E7%9A%84%E2%80%9D%E4%BA%A4%E5%BA%93%E2%80%9D%E5%86%B3%E7%AD%96"><span class="nav-number">1.6.2.</span> <span class="nav-text">5.2 对照 ORT GEMM 的”交库”决策</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E4%B8%8E-onnxruntime-%E4%B8%89%E4%BB%B6%E5%A5%97%E7%9A%84%E4%B8%80%E4%B8%80%E5%AF%B9%E7%85%A7%E8%A1%A8"><span class="nav-number">1.7.</span> <span class="nav-text">6. 与 onnxruntime 三件套的一一对照表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E5%B7%A5%E7%A8%8B%E4%B8%8A%E6%80%8E%E4%B9%88%E2%80%9D%E5%A4%8D%E7%94%A8%E2%80%9D-CUTLASS%EF%BC%88%E7%BB%99%E8%87%AA%E5%B7%B1%E7%9A%84%E8%BE%B9%E7%95%8C%E5%88%A4%E6%96%AD%EF%BC%89"><span class="nav-number">1.8.</span> <span class="nav-text">7. 工程上怎么”复用” CUTLASS（给自己的边界判断）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E8%87%AA%E6%A3%80%EF%BC%88%E7%9C%8B-cuda-l2-cutlass-gemm-cpp-%E8%BE%93%E5%87%BA%EF%BC%89"><span class="nav-number">1.9.</span> <span class="nav-text">8. 自检（看 cuda_l2_cutlass_gemm.cpp 输出）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E4%B8%8E%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E7%9A%84%E4%B8%B2%E8%81%94"><span class="nav-number">1.10.</span> <span class="nav-text">9. 与学习路线的串联</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">CUTLASS GEMM 分块 vs onnxruntime 工业模式
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L2_CUTLASS_GEMM</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="CUTLASS-GEMM-分块-vs-onnxruntime-工业模式"><a href="#CUTLASS-GEMM-分块-vs-onnxruntime-工业模式" class="headerlink" title="CUTLASS GEMM 分块 vs onnxruntime 工业模式"></a>CUTLASS GEMM 分块 vs onnxruntime 工业模式</h1><h3 id="看-CUTLASS-如何把「tiling-双缓冲-pipeline-Tensor-Core」封装成可复用模板"><a href="#看-CUTLASS-如何把「tiling-双缓冲-pipeline-Tensor-Core」封装成可复用模板" class="headerlink" title="看 CUTLASS 如何把「tiling + 双缓冲 + pipeline + Tensor Core」封装成可复用模板"></a>看 CUTLASS 如何把「tiling + 双缓冲 + pipeline + Tensor Core」封装成可复用模板</h3><blockquote>
+<p>配套：<code>cuda_l2_cutlass_gemm.cpp</code>（缩小版 CUTLASS 参考 kernel + CPU 对拍 + 确定性量化）、<br><code>images/fig9_cutlass_gemm.svg</code> + <code>cuda_l2_cutlass_gemm_diagrams.html</code>（四联图）。<br>真实源码（NVIDIA/cutlass <code>main</code> 分支，2026-08 拉取，备份于 <code>cuda_demo/_cutlass_src/</code>）：<br><code>include/cutlass/gemm/threadblock/mma_multistage.h</code>、<code>.../kernel/gemm.h</code>、<code>.../device/gemm.h</code>。</p>
+</blockquote>
+<hr>
+<h2 id="0-为什么读-CUTLASS（承上启下）"><a href="#0-为什么读-CUTLASS（承上启下）" class="headerlink" title="0. 为什么读 CUTLASS（承上启下）"></a>0. 为什么读 CUTLASS（承上启下）</h2><p>上一节我们读 onnxruntime CUDA EP，发现它对 <strong>GEMM 根本不手写分块</strong>，而是直接交给<br><strong>cuBLASLt / TunableGemm</strong>（<code>gemm.cc:79,157</code>）。这恰恰指向真正”把分块+双缓冲+pipeline+<br>Tensor Core 写成极致模板”的工程——<strong>CUTLASS</strong>。CUTLASS 既是独立库，也是 cuBLAS/cuBLASLt<br>背后的手写 GEMM 实现基础。</p>
+<p>所以本节路线：<strong>把上一节看的 transpose / softmax / layernorm 三种”工业手写 kernel”套路，<br>对照 CUTLASS 的 GEMM 模板，看清”手写高手”是怎么把这些套路抽象成可复用模板的。</strong></p>
+<hr>
+<h2 id="1-CUTLASS-的四件套封装总览"><a href="#1-CUTLASS-的四件套封装总览" class="headerlink" title="1. CUTLASS 的四件套封装总览"></a>1. CUTLASS 的四件套封装总览</h2><p>CUTLASS 把四个关注点拆成<strong>模板参数 + 组件类</strong>，互不耦合：</p>
+<table>
+<thead>
+<tr>
+<th>关注点</th>
+<th>CUTLASS 落点</th>
+<th>真实源码</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>tiling（分块）</strong></td>
+<td><code>ThreadblockShape</code> / <code>WarpShape</code> / <code>InstructionShape</code> 三模板 + <code>ThreadblockSwizzle</code></td>
+<td><code>device/gemm.h:150-167</code>、<code>kernel/gemm.h:206-227</code></td>
+</tr>
+<tr>
+<td><strong>双缓冲</strong></td>
+<td><code>int kStages</code> 模板 → 共享内存多份 K 切片环形缓冲；寄存器级 <code>warp_loaded_frag_[2]</code></td>
+<td><code>mma_multistage.h:58-91,178-184,249-285</code></td>
+</tr>
+<tr>
+<td><strong>pipeline</strong></td>
+<td><code>cp.async</code> + <code>cp_async_fence()</code> + <code>cp_async_wait&lt;&gt;()</code> + <code>prologue()</code> 灌水</td>
+<td><code>mma_multistage.h:311-316,434,489,362-481</code></td>
+</tr>
+<tr>
+<td><strong>Tensor Core</strong></td>
+<td><code>Operator warp_mma_</code>（warp 级 MMA），底层 <code>mma.sync</code> PTX</td>
+<td><code>mma_multistage.h:122-123,194,541</code>、<code>device/gemm.h:156</code></td>
+</tr>
+</tbody></table>
+<p>公共 API（<code>device/gemm.h:150-167</code>）就是把它们”装进一个类”：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;</span><br><span class="line">  <span class="keyword">typename</span> ElementA_, <span class="keyword">typename</span> LayoutA_,</span><br><span class="line">  <span class="keyword">typename</span> ElementB_, <span class="keyword">typename</span> LayoutB_,</span><br><span class="line">  <span class="keyword">typename</span> ElementC_,</span><br><span class="line">  <span class="keyword">typename</span> ElementAccumulator_ = ElementC_,</span><br><span class="line">  <span class="keyword">typename</span> OperatorClass_,     <span class="comment">// tensor::OpClassTensorOp / Simt</span></span><br><span class="line">  <span class="keyword">typename</span> ArchTag_,</span><br><span class="line">  <span class="keyword">typename</span> ThreadblockShape_ = ...,  <span class="comment">// GemmShape&lt;128,128,8&gt;</span></span><br><span class="line">  <span class="keyword">typename</span> WarpShape_        = ...,  <span class="comment">// GemmShape&lt; 64, 64, 8&gt;</span></span><br><span class="line">  <span class="keyword">typename</span> InstructionShape_ = ...,  <span class="comment">// GemmShape&lt; 16,  8, 8&gt;</span></span><br><span class="line">  <span class="keyword">typename</span> EpilogueOutputOp_,</span><br><span class="line">  <span class="keyword">typename</span> ThreadblockSwizzle_ = ...,</span><br><span class="line">  <span class="type">int</span> kStages = ...&gt;                  <span class="comment">// ← 双/三/四缓冲的份数</span></span><br><span class="line"><span class="keyword">class</span> Gemm {</span><br><span class="line">  <span class="keyword">using</span> GemmKernel = <span class="keyword">typename</span> kernel::DefaultGemm&lt;</span><br><span class="line">      ThreadblockShape, WarpShape, InstructionShape, ...&gt;;  <span class="comment">// 组装 kernel</span></span><br><span class="line">};</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p><strong>一句话</strong>：onnxruntime 的 <code>tile[32][33]</code>、<code>__shfl_xor</code>、<code>grid-stride</code> 是<strong>单点技巧</strong>；<br>CUTLASS 把它们<strong>提升为模板参数 + 组件接口</strong>，于是”换精度 / 换 tile 形状 / 换 2 缓冲还是 3 缓冲 /<br>换 SIMT 还是 Tensor Core”只改模板实参，不动 kernel 主体。</p>
+</blockquote>
+<hr>
+<h2 id="2-tiling-——-三级-GemmShape-ThreadblockSwizzle"><a href="#2-tiling-——-三级-GemmShape-ThreadblockSwizzle" class="headerlink" title="2. tiling —— 三级 GemmShape + ThreadblockSwizzle"></a>2. tiling —— 三级 <code>GemmShape</code> + <code>ThreadblockSwizzle</code></h2><h3 id="2-1-三级-tile-形状（对照-ORT-transpose-的”一个固定-tile”）"><a href="#2-1-三级-tile-形状（对照-ORT-transpose-的”一个固定-tile”）" class="headerlink" title="2.1 三级 tile 形状（对照 ORT transpose 的”一个固定 tile”）"></a>2.1 三级 tile 形状（对照 ORT transpose 的”一个固定 tile”）</h3><p>onnxruntime 的转置只写死一个 <code>tile[32][33]</code>（<code>transpose_impl.cu:18</code>）。CUTLASS 把”tile”拆成<br><strong>三层</strong>，每层独立模板化：</p>
+<ul>
+<li><strong>ThreadblockShape</strong>（CTA 级 tile）：一个 block 负责 <code>M×N</code> 输出块、每步搬 <code>K</code> 切片，如 <code>&lt;128,128,8&gt;</code>。</li>
+<li><strong>WarpShape</strong>（warp 级 tile）：一个 warp 在 CTA 内再分 <code>M×N</code>，如 <code>&lt;64,64,8&gt;</code>。</li>
+<li><strong>InstructionShape</strong>（指令级 tile）：一次 Tensor Core 的形状，如 <code>&lt;16,8,8&gt;</code>（即 <code>mma.sync.m16n8k8</code>）。</li>
+</ul>
+<p>在 kernel 里直接用（<code>kernel/gemm.h:220-227</code>）：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cutlass::MatrixCoord tb_offset_A{</span><br><span class="line">  threadblock_tile_offset.<span class="built_in">m</span>() * Mma::Shape::kM,       <span class="comment">// ← ThreadblockShape.M</span></span><br><span class="line">  threadblock_tile_offset.<span class="built_in">k</span>() * params.gemm_k_size,</span><br><span class="line">};</span><br></pre></td></tr></tbody></table></figure>
+
+<p><code>Mma::Shape::kM/kN/kK</code> 就是 <code>ThreadblockShape</code> 的三个维度——<strong>tiling 就是模板常量</strong>，<br>CTA 网格 <code>grid_tiled_shape</code> 自动按它切分全局问题。</p>
+<h3 id="2-2-ThreadblockSwizzle（对照-L2-1-合并访问）"><a href="#2-2-ThreadblockSwizzle（对照-L2-1-合并访问）" class="headerlink" title="2.2 ThreadblockSwizzle（对照 L2.1 合并访问）"></a>2.2 <code>ThreadblockSwizzle</code>（对照 L2.1 合并访问）</h3><p><code>onnxruntime transpose</code> 要手工保证合并；CUTLASS 用 <code>ThreadblockSwizzle</code> 在 <strong>运行时重排<br>CTA 的执行顺序</strong>，让相邻 CTA 访问相邻显存，天然合并（<code>kernel/gemm.h:206-209</code>）：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ThreadblockSwizzle threadblock_swizzle;</span><br><span class="line">cutlass::gemm::GemmCoord threadblock_tile_offset =</span><br><span class="line">    threadblock_swizzle.<span class="built_in">get_tile_offset</span>(params.swizzle_log_tile);</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p><strong>回扣 L2.1</strong>：swizzle 本质就是”用地址重排换合并访问”，和 ORT 把 <code>tile[32][33]</code> 的 <code>+1</code><br>都是为了消灭 bank/合并冲突——只是 CUTLASS 把它做成了<strong>可参数化的通用组件</strong>。</p>
+</blockquote>
+<h3 id="2-3-确定性量化（见-analyze-cutlass-tiling-）"><a href="#2-3-确定性量化（见-analyze-cutlass-tiling-）" class="headerlink" title="2.3 确定性量化（见 analyze_cutlass_tiling()）"></a>2.3 确定性量化（见 <code>analyze_cutlass_tiling()</code>）</h3><p>典型 FP16 配置 <code>TB&lt;128,128,8&gt; / W&lt;64,64,8&gt; / I&lt;16,8,8&gt;</code> / <code>kStages=3</code>：</p>
+<ul>
+<li>每 CTA <code>warps = (128/64)×(128/64) = 4</code>（128 线程）；</li>
+<li>每 warp MMA 数 <code>(64/16)×(64/8)×(8/8) = 4×8×1 = 32</code>；每 K 步 CTA 总 MMA <code>32×4 = 128</code>。</li>
+</ul>
+<hr>
+<h2 id="3-双缓冲-——-kStages-模板-寄存器级-double-buffer"><a href="#3-双缓冲-——-kStages-模板-寄存器级-double-buffer" class="headerlink" title="3. 双缓冲 —— kStages 模板 + 寄存器级 double buffer"></a>3. 双缓冲 —— <code>kStages</code> 模板 + 寄存器级 double buffer</h2><h3 id="3-1-共享内存多份-K-切片（环形缓冲）"><a href="#3-1-共享内存多份-K-切片（环形缓冲）" class="headerlink" title="3.1 共享内存多份 K 切片（环形缓冲）"></a>3.1 共享内存多份 K 切片（环形缓冲）</h3><p><code>MmaMultistage</code> 的 <code>Stages</code> 模板参数决定共享内存里开几份 K 切片（<code>mma_multistage.h:58-91</code>）：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Shape_, ... <span class="keyword">typename</span> IteratorA_, ... <span class="type">int</span> Stages, ...&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MmaMultistage</span> : <span class="keyword">public</span> MmaBase&lt;Shape_, Policy_, Stages&gt; { ... };</span><br></pre></td></tr></tbody></table></figure>
+
+<p>环形推进靠读写 stage 索引（mod <code>kStages</code>），写满自动回绕（<code>mma_multistage.h:249-285</code>）：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">advance_smem_write_stage</span><span class="params">(...)</span> </span>{</span><br><span class="line">  ++smem_write_stage_idx_;</span><br><span class="line">  <span class="keyword">if</span> (smem_write_stage_idx_ == Base::kStages) {           <span class="comment">// 回绕到环首</span></span><br><span class="line">    smem_iterator_A_.<span class="built_in">add_tile_offset</span>({<span class="number">0</span>, -Base::kStages});</span><br><span class="line">    smem_write_stage_idx_ = <span class="number">0</span>;</span><br><span class="line">  }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="3-2-寄存器级双缓冲（让”取下一-warp-tile”与”算当前”重叠）"><a href="#3-2-寄存器级双缓冲（让”取下一-warp-tile”与”算当前”重叠）" class="headerlink" title="3.2 寄存器级双缓冲（让”取下一 warp-tile”与”算当前”重叠）"></a>3.2 寄存器级双缓冲（让”取下一 warp-tile”与”算当前”重叠）</h3><p>除了共享内存的多份，CUTLASE 还在<strong>寄存器</strong>上开两份 fragment（<code>mma_multistage.h:178-184</code>）：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">WarpLoadedFragmentA warp_loaded_frag_A_[<span class="number">2</span>];    <span class="comment">// 双缓冲！</span></span><br><span class="line">WarpLoadedFragmentB warp_loaded_frag_B_[<span class="number">2</span>];</span><br></pre></td></tr></tbody></table></figure>
+
+<p>主循环里用 <code>(warp_mma_k + 1) % 2</code> 交替索引，实现”提前取下一 warp-tile 进寄存器，<br>当前 warp-tile 在跑 MMA”（<code>:505-607</code>）：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>-&gt;warp_tile_iterator_A_.<span class="built_in">load</span>(pipe_state.warp_loaded_frag_A_[(warp_mma_k + <span class="number">1</span>) % <span class="number">2</span>]);</span><br><span class="line"><span class="comment">// ... 当前 warp_mma_k 的 MMA 用 [warp_mma_k % 2] ...</span></span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p><strong>对照 ORT softmax</strong>（<code>softmax_warpwise_impl.cuh:45</code>）用 <code>__shfl_xor</code> 在寄存器间归约、<br><strong>ORT layernorm</strong> 把跨 warp 的部分和放共享内存——两者的共同目标都是”省一次 shared 往返”。<br>CUTLASS 的 <code>warp_loaded_frag_[2]</code> 是同一思想的<strong>模板化极致</strong>：用寄存器双缓冲彻底消除<br>“取数→计算”的依赖停顿。</p>
+</blockquote>
+<h3 id="3-3-确定性量化（见-analyze-cutlass-tiling-）"><a href="#3-3-确定性量化（见-analyze-cutlass-tiling-）" class="headerlink" title="3.3 确定性量化（见 analyze_cutlass_tiling()）"></a>3.3 确定性量化（见 <code>analyze_cutlass_tiling()</code>）</h3><p>单 K 步：全局抓取 <code>2·TB_M·TB_K + 2·TB_K·TB_N</code> 字节写进 shared 后，被 <code>warpsPerCTA</code> 个 warp<br>在各自 <code>W_K/I_K</code> 次 MMA 中复用 → <strong>共享复用 ≈ <code>TB_M·TB_N</code> 元素/步</strong>。这正是 L2.4 说的<br>“每个全局元素只取 1 次、被 tile² 线程复用”，只是 CUTLASS 把它写成<strong>模板自动展开</strong>。</p>
+<hr>
+<h2 id="4-pipeline-——-cp-async-围栏-prologue-灌水"><a href="#4-pipeline-——-cp-async-围栏-prologue-灌水" class="headerlink" title="4. pipeline —— cp.async + 围栏 + prologue 灌水"></a>4. pipeline —— <code>cp.async</code> + 围栏 + <code>prologue</code> 灌水</h2><p>这是 CUTLASS 和 ORT 手写 kernel <strong>最大的结构差异</strong>：ORT 用普通 <code>__syncthreads</code> + 手动循环，<br>CUTLASS 用 <strong><code>cp.async</code>（异步拷贝指令）+ 屏障</strong> 把”生产者（HBM→shared）”和”消费者（MMA）”<br>解耦。</p>
+<h3 id="4-1-生产者：cp-async（HBM-→-shared，copy-engine-异步做）"><a href="#4-1-生产者：cp-async（HBM-→-shared，copy-engine-异步做）" class="headerlink" title="4.1 生产者：cp.async（HBM → shared，copy engine 异步做）"></a>4.1 生产者：<code>cp.async</code>（HBM → shared，copy engine 异步做）</h3><p><code>copy_tiles_and_advance</code> 里（<code>mma_multistage.h:311-316</code>）：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cutlass::arch::<span class="built_in">cp_async</span>&lt;kSrcBytes, kCacheOpA&gt;(</span><br><span class="line">    dst_ptr + v, gmem_ptr, iterator_A.<span class="built_in">valid</span>());   <span class="comment">// 异步：不占 SM 计算流水线</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>注意 <code>iterator_A.valid()</code> 做<strong>边界谓词</strong>——越界 K 片用 zfill/predicate 处理（对照 L2.2 分支发散：<br>predicate 是”每线程自己判断”，不引发 warp 发散）。</p>
+<h3 id="4-2-围栏与等待"><a href="#4-2-围栏与等待" class="headerlink" title="4.2 围栏与等待"></a>4.2 围栏与等待</h3><ul>
+<li><code>cutlass::arch::cp_async_fence()</code>（<code>:434,580,664</code>）—— 一个 stage 的 cp.async 全部发出后插内存屏障。</li>
+<li><code>cutlass::arch::cp_async_wait&lt;kStages-2&gt;()</code>（<code>:489</code>）—— 消费者等”至少有 1 个 fetch stage 完成”：</li>
+</ul>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">gmem_wait</span><span class="params">()</span> </span>{</span><br><span class="line">  cutlass::arch::<span class="built_in">cp_async_wait</span>&lt;Base::kStages - <span class="number">2</span>&gt;();  <span class="comment">// 等流水线里有数据</span></span><br><span class="line">  __syncthreads();</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<h3 id="4-3-prologue-：预取-kStages-1-个-stage-灌满流水线（bootstrap）"><a href="#4-3-prologue-：预取-kStages-1-个-stage-灌满流水线（bootstrap）" class="headerlink" title="4.3 prologue()：预取 kStages-1 个 stage 灌满流水线（bootstrap）"></a>4.3 <code>prologue()</code>：预取 <code>kStages-1</code> 个 stage 灌满流水线（bootstrap）</h3><p>不等全部搬完再算——先灌满 <code>kStages-1</code> 份，主循环一边算一边补（<code>:362-481</code>）：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="type">int</span> stage = <span class="number">0</span>; stage &lt; Base::kStages - <span class="number">1</span>; ++stage, --gemm_k_iterations) {</span><br><span class="line">  ... <span class="comment">// cp_async 搬第 stage 份 K 切片</span></span><br><span class="line">  <span class="built_in">advance_smem_write_stage</span>(iterator_A, iterator_B);</span><br><span class="line">  cutlass::arch::<span class="built_in">cp_async_fence</span>();</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p><strong>对照 ORT layernorm</strong>（<code>layer_norm_impl.cu:136</code>）的”跨 warp 归约 + grid-stride 循环”：<br>二者都在管理”生产者/消费者”重叠，但 ORT 是<strong>手写 while + 原子</strong>，CUTLASS 是<br><strong><code>kStages</code> 模板 + 显式 pipe state + cp.async 指令</strong>——把”重叠”做成可验证、可穷举调优的模板。</p>
+</blockquote>
+<h3 id="4-4-主循环三段交错（mac-loop-iter，-505-607）"><a href="#4-4-主循环三段交错（mac-loop-iter，-505-607）" class="headerlink" title="4.4 主循环三段交错（mac_loop_iter，:505-607）"></a>4.4 主循环三段交错（<code>mac_loop_iter</code>，<code>:505-607</code>）</h3><p>对每个 warp-tile：</p>
+<ol>
+<li><strong>提前取</strong>下一 warp-tile 的 A/B 碎片（shared→reg，双缓冲索引）；</li>
+<li><strong>执行</strong>当前 warp-tile 的 MMA（<code>warp_mma_(...)</code>）；</li>
+<li><strong>发出</strong>下一 stage 的 <code>cp.async</code>（生产者补货）。<br>三组动作交错，使 Tensor Core 几乎不被 HBM 延迟饿着。</li>
+</ol>
+<hr>
+<h2 id="5-Tensor-Core-——-Operator-组件-mma-sync-PTX"><a href="#5-Tensor-Core-——-Operator-组件-mma-sync-PTX" class="headerlink" title="5. Tensor Core —— Operator 组件 + mma.sync PTX"></a>5. Tensor Core —— <code>Operator</code> 组件 + <code>mma.sync</code> PTX</h2><h3 id="5-1-Operator-是把”算法”抽象出来的组件"><a href="#5-1-Operator-是把”算法”抽象出来的组件" class="headerlink" title="5.1 Operator 是把”算法”抽象出来的组件"></a>5.1 <code>Operator</code> 是把”算法”抽象出来的组件</h3><p><code>MmaMultistage</code> 持有一个 warp 级 MMA 算子（<code>mma_multistage.h:122-123,194</code>）：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> Operator = <span class="keyword">typename</span> Policy::Operator;   <span class="comment">// SIMT 或 TensorOp</span></span><br><span class="line">Operator warp_mma_;</span><br></pre></td></tr></tbody></table></figure>
+
+<p>调它就是在发 Tensor Core 指令（<code>:541-546</code>）：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">warp_mma_</span>(accum,</span><br><span class="line">          pipe_state.warp_transformed_frag_A_[warp_mma_k % <span class="number">2</span>],</span><br><span class="line">          pipe_state.warp_transformed_frag_B_[warp_mma_k % <span class="number">2</span>],</span><br><span class="line">          accum);</span><br></pre></td></tr></tbody></table></figure>
+
+<p><code>Operator</code> 底层（warp 级 <code>MmaTensorOp</code> / <code>arch::Mma&lt;GemmShape&lt;16,8,8&gt;,...&gt;</code>）最终发出<br><strong><code>mma.sync.aligned.m16n8k8.row.col.f16.f16.f16.f32</code></strong> 这类 PTX——这正是<br><code>InstructionShape&lt;16,8,8&gt;</code> 的来历。</p>
+<h3 id="5-2-对照-ORT-GEMM-的”交库”决策"><a href="#5-2-对照-ORT-GEMM-的”交库”决策" class="headerlink" title="5.2 对照 ORT GEMM 的”交库”决策"></a>5.2 对照 ORT GEMM 的”交库”决策</h3><p><code>onnxruntime</code> 的 <code>gemm.cc:79,157</code> 直接调 cuBLASLt / TunableGemm，<strong>不手写这一层</strong>。<br>这正是工程边界判断的范例：</p>
+<ul>
+<li><strong>极致手活</strong>（分块 + 双缓冲 + pipeline + Tensor Core）→ 交给 CUTLASS / cuBLASLt；</li>
+<li><strong>shape / broadcast / bias / stream / 类型胶水</strong> → ORT 自己写。</li>
+</ul>
+<blockquote>
+<p>CUTLASS 把”Tensor Core 怎么用”封装成 <code>Operator</code> 组件，于是 ORT 想换 SIMT/TensorOp、<br>换精度，只改模板，不碰 MMA 指令。<strong>这就是”可复用模板”相对于 ORT 单点 kernel 的根本优势。</strong></p>
+</blockquote>
+<hr>
+<h2 id="6-与-onnxruntime-三件套的一一对照表"><a href="#6-与-onnxruntime-三件套的一一对照表" class="headerlink" title="6. 与 onnxruntime 三件套的一一对照表"></a>6. 与 onnxruntime 三件套的一一对照表</h2><table>
+<thead>
+<tr>
+<th>onnxruntime 模式（上一节）</th>
+<th>CUTLASS 对应封装</th>
+<th>升级点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>transpose</code> <code>tile[32][33]</code> +1 破 bank conflict</td>
+<td><code>ThreadblockShape</code> 模板 + <code>ThreadblockSwizzle</code></td>
+<td>固定 tile → <strong>可参数化三级 tile + 自动 swizzle</strong></td>
+</tr>
+<tr>
+<td><code>softmax</code> <code>__shfl_xor</code> warp 归约（省 shared）</td>
+<td><code>Operator</code> 组件（SIMT / TensorOp 可换）</td>
+<td>单点技巧 → <strong>组件接口，可替换算法</strong></td>
+</tr>
+<tr>
+<td><code>layernorm</code> 跨 warp 归约 + grid-stride</td>
+<td><code>kStages</code> + <code>prologue</code>/<code>pipeline</code> 管 生产者/消费者</td>
+<td>手写 while+原子 → <strong>模板化 pipe state + cp.async</strong></td>
+</tr>
+<tr>
+<td><code>GEMM</code> 直接交 cuBLASLt（<code>gemm.cc</code>）</td>
+<td>CUTLASS 即其底层手写模板</td>
+<td>工程边界：自己只写胶水</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="7-工程上怎么”复用”-CUTLASS（给自己的边界判断）"><a href="#7-工程上怎么”复用”-CUTLASS（给自己的边界判断）" class="headerlink" title="7. 工程上怎么”复用” CUTLASS（给自己的边界判断）"></a>7. 工程上怎么”复用” CUTLASS（给自己的边界判断）</h2><ol>
+<li><strong>别重写 GEMM</strong>：直接用 <code>cutlass::gemm::device::Gemm&lt;ThreadblockShape, WarpShape, InstructionShape, kStages, ...&gt;</code>，按精度/形状选模板实参即可（<code>device/gemm.h</code>）。</li>
+<li><strong>自定义 epilogue</strong>：CUTLASS 把”bias + 激活 + 写回”做成 <code>Epilogue</code> 组件<br>（<code>kernel/gemm.h:332 epilogue(output_op, iterator_D, accumulators, iterator_C)</code>）——<br>仿 ORT 的 bias broadcast 巧法，可挂自己的 <code>EpilogueOp</code>。</li>
+<li><strong>自定义算子复用 tiling/pipeline</strong>：想写非 GEMM 的高性能 kernel（如 conv、softmax、<br>layer_norm），直接套 <code>MmaMultistage</code> 的”双缓冲 + cp.async pipeline”骨架——这正是<br>CUTLASS 3.x / CuTe 的方向：<strong>用同一套 pipeline 原语描述任意算子</strong>。</li>
+<li><strong>调优思路</strong>：<code>kStages</code>、tile 形状、swizzle 都是<strong>穷举调优维度</strong>；这正是 NVIDIA<br>CUTLASS Profiler / 启发式库做的事。</li>
+</ol>
+<hr>
+<h2 id="8-自检（看-cuda-l2-cutlass-gemm-cpp-输出）"><a href="#8-自检（看-cuda-l2-cutlass-gemm-cpp-输出）" class="headerlink" title="8. 自检（看 cuda_l2_cutlass_gemm.cpp 输出）"></a>8. 自检（看 <code>cuda_l2_cutlass_gemm.cpp</code> 输出）</h2><ol>
+<li><code>tiny_gemm_ref_cpu(A, I)</code> 结果应等于 A 本身（单位阵）✅ 一致性 PASS。</li>
+<li><code>analyze_cutlass_tiling()</code> 打印：<code>warps=4 (threads=128)</code>、<br><code>每 warp MMA=32</code>、<code>kStages=3</code>、<code>S=256 全局流量下降 171×</code>、<br><code>AI≈0.167 FLOP/Byte</code>（与 L2.3/L2.4 一致）。</li>
+<li><code>tiny_wmma_gemm&lt;64,64,32,2&gt;</code>（WMMA Tensor Core + 双缓冲 + prologue/mainloop 骨架）<br>真机跑 <code>run_gpu_checks()</code>：max|GPU-CPU| &lt; 1e-2（FP16 精度）。</li>
+<li>能在 <code>device/gemm.h</code> 找到 <code>ThreadblockShape/WarpShape/InstructionShape/kStages</code> 四个模板参数，<br>在 <code>mma_multistage.h</code> 找到 <code>cp_async</code> / <code>cp_async_fence</code> / <code>cp_async_wait</code> /<br><code>prologue</code> / <code>warp_loaded_frag_[2]</code> 五处源码。</li>
+</ol>
+<hr>
+<h2 id="9-与学习路线的串联"><a href="#9-与学习路线的串联" class="headerlink" title="9. 与学习路线的串联"></a>9. 与学习路线的串联</h2><ul>
+<li><strong>L2.1 合并/bank conflict</strong>：<code>ThreadblockSwizzle</code> 是合并的模板化；<code>+1</code> padding 思想被吸收进<br>shared 内存 <code>ThreadblockSwizzle</code> 与 fragment 布局。</li>
+<li><strong>L2.2 warp / 分支发散</strong>：<code>cp.async</code> 的 <code>valid()</code> 谓词是”每线程独立判断”，不引发 warp 发散；<br><code>Operator</code> 组件让 SIMT/TensorOp 可换。</li>
+<li><strong>L2.3 compute/memory-bound</strong>：双缓冲 + pipeline 隐藏 HBM 延迟，让 compute-bound 的<br>Tensor Core 吃满带宽（Roofline 上移向算力屋顶）。</li>
+<li><strong>L2.4 共享内存归约 / 分块 tiling</strong>：CUTLASS 的 <code>kStages</code> 环形缓冲 + <code>warp_loaded_frag_[2]</code><br>是你手写 <code>matmul_tiled</code> / <code>reduce_warp_shuffle</code> 的<strong>工业升级版</strong>。</li>
+<li><strong>上节 ORT</strong>：CUTLASS 是 ORT “交库”背后那层手写模板；二者对照，看清”单点技巧 → 可复用模板”。</li>
+</ul>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L2_CUTLASS_GEMM</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

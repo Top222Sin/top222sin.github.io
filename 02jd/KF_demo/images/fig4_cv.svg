@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L1.4 CV 模型：位置观测如何"恢复"速度 + Joseph 形式</text>
+  <defs>
+    <marker id="arr4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#555"/>
+    </marker>
+  </defs>
+  <!-- 状态与观测 -->
+  <rect x="40" y="60" width="180" height="70" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="130" y="88" font-size="14" font-weight="bold" fill="#1e3a8a" text-anchor="middle">x = [p, v]</text>
+  <text x="130" y="112" font-size="12" fill="#1e3a8a" text-anchor="middle">F=[[1,dt],[0,1]]</text>
+  <line x1="220" y1="95" x2="300" y2="95" stroke="#555" stroke-width="2" marker-end="url(#arr4)"/>
+  <rect x="300" y="60" width="160" height="70" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="380" y="88" font-size="14" font-weight="bold" fill="#14532d" text-anchor="middle">z = 位置</text>
+  <text x="380" y="112" font-size="12" fill="#14532d" text-anchor="middle">H = [1, 0]</text>
+  <!-- 信息流 -->
+  <rect x="490" y="45" width="170" height="100" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="575" y="70" font-size="13" font-weight="bold" fill="#78350f" text-anchor="middle">速度信息从哪来？</text>
+  <text x="575" y="92" font-size="12" fill="#78350f" text-anchor="middle">观测连续偏左</text>
+  <text x="575" y="110" font-size="12" fill="#78350f" text-anchor="middle">⇒ 残差经 K₁ 通道下修 v</text>
+  <text x="575" y="132" font-size="11" fill="#555" text-anchor="middle">速度 RMSE ≈ √P_vv ✓(demo)</text>
+  <!-- Joseph -->
+  <rect x="40" y="180" width="340" height="150" rx="10" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+  <text x="210" y="208" font-size="14" font-weight="bold" fill="#581c87" text-anchor="middle">Joseph 稳定形式</text>
+  <text x="210" y="236" font-size="13" fill="#581c87" text-anchor="middle">P = (I−KH)P⁻(I−KH)ᵀ + K·R·Kᵀ</text>
+  <text x="210" y="262" font-size="12" fill="#581c87" text-anchor="middle">对任意 K 都对称半正定（工程标配）</text>
+  <text x="210" y="288" font-size="12" fill="#dc2626" text-anchor="middle">⚠ 漏写 +KRKᵀ → P 缩小 20 倍（真实踩坑）</text>
+  <text x="210" y="312" font-size="11" fill="#555" text-anchor="middle">demo: 400 步后 P 仍对称(1e-17) 正定 ✓</text>
+  <!-- Q 精确离散 -->
+  <rect x="410" y="180" width="230" height="150" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="525" y="208" font-size="13" font-weight="bold" fill="#7f1d1d" text-anchor="middle">精确离散 Q 的坑</text>
+  <text x="525" y="234" font-size="12" fill="#7f1d1d" text-anchor="middle">每步独立加速度：</text>
+  <text x="525" y="256" font-size="12.5" fill="#7f1d1d" text-anchor="middle">Q = q[[dt⁴/4, dt³/2],[dt³/2, dt²]]</text>
+  <text x="525" y="282" font-size="12" fill="#7f1d1d" text-anchor="middle">教材 dt³/3 是 Van Loan 模型</text>
+  <text x="525" y="304" font-size="11" fill="#555" text-anchor="middle">用错 → NEES 偏（L3.4 实测）</text>
+</svg>

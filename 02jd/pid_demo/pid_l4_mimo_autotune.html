@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L4 MIMO 解耦 + IAE 自动整定（per-loop autotune） L4.7 MIMO PID 用静态解耦器 D&#x3D;K(0)⁻¹ 把 2×2 对象在直流严格对角化，再给每个对角回路一个「手工固定」的 PID（Kp&#x3D;1, Ki&#x3D;0.5, Kd&#x3D;0.2）。一个现实问题立刻冒出来：这两个回路的增益，到底该怎么定？ 本 demo 把 L4.8 的指标驱动寻优 思想套到 MIMO 上——解耦后，">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L4 MIMO 解耦 + IAE 自动整定（per-loop autotune）">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/pid_demo/pid_l4_mimo_autotune.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L4 MIMO 解耦 + IAE 自动整定（per-loop autotune） L4.7 MIMO PID 用静态解耦器 D&#x3D;K(0)⁻¹ 把 2×2 对象在直流严格对角化，再给每个对角回路一个「手工固定」的 PID（Kp&#x3D;1, Ki&#x3D;0.5, Kd&#x3D;0.2）。一个现实问题立刻冒出来：这两个回路的增益，到底该怎么定？ 本 demo 把 L4.8 的指标驱动寻优 思想套到 MIMO 上——解耦后，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/pid_demo/images/fig23_mimo_autotune.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.970Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/pid_demo/images/fig23_mimo_autotune.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/pid_demo/pid_l4_mimo_autotune">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/pid_demo/pid_l4_mimo_autotune.html","path":"02jd/pid_demo/pid_l4_mimo_autotune.html","title":"L4 MIMO 解耦 + IAE 自动整定（per-loop autotune）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L4 MIMO 解耦 + IAE 自动整定（per-loop autotune） | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L4-MIMO-%E8%A7%A3%E8%80%A6-IAE-%E8%87%AA%E5%8A%A8%E6%95%B4%E5%AE%9A%EF%BC%88per-loop-autotune%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">L4 MIMO 解耦 + IAE 自动整定（per-loop autotune）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%8F%AA%E7%BB%99%E4%B8%80%E4%B8%AA%E3%80%8C%E7%BB%9F%E4%B8%80%E6%95%B4%E5%AE%9A%E3%80%8D"><span class="nav-number">1.1.</span> <span class="nav-text">一、为什么不能只给一个「统一整定」</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E6%A0%B8%E5%BF%83%EF%BC%9A%E8%A7%A3%E8%80%A6-%E6%AF%8F%E5%9B%9E%E8%B7%AF-IAE-%E7%BD%91%E6%A0%BC%E6%90%9C%E7%B4%A2"><span class="nav-number">1.2.</span> <span class="nav-text">二、核心：解耦 + 每回路 IAE 网格搜索</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88pid-l4-mimo-autotune-cpp%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、代码走读（pid_l4_mimo_autotune.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88%EF%BC%88%E5%8F%97%E7%AE%A1-Python-3-13-12-%E9%AA%8C%E8%AF%81%EF%BC%8C%E5%85%A8%E9%83%A8-PASS%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、你会看到什么（受管 Python 3.13.12 验证，全部 PASS）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E6%B4%9E%E8%A7%81%EF%BC%9AIAE-%E5%8D%95%E7%9B%AE%E6%A0%87%E5%9C%A8%E7%A8%B3%E5%AE%9A%E5%AF%B9%E8%B1%A1%E4%B8%8A%E3%80%8C%E6%97%A0%E5%86%85%E7%82%B9%E6%9C%80%E4%BC%98%E3%80%8D"><span class="nav-number">1.5.</span> <span class="nav-text">五、洞见：IAE 单目标在稳定对象上「无内点最优」</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%B7%A5%E7%A8%8B%E5%9D%91%EF%BC%88%E7%9C%9F%E5%AE%9E%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">六、工程坑（真实）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.7.</span> <span class="nav-text">七、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E4%B8%8E-PID-%E5%AE%B6%E6%97%8F%E7%9A%84%E8%A1%94%E6%8E%A5"><span class="nav-number">1.8.</span> <span class="nav-text">八、与 PID 家族的衔接</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L4 MIMO 解耦 + IAE 自动整定（per-loop autotune）
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/pid_demo/">PID_DEMO</a></li>
+            <li>PID_L4_MIMO_AUTOTUNE</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L4-MIMO-解耦-IAE-自动整定（per-loop-autotune）"><a href="#L4-MIMO-解耦-IAE-自动整定（per-loop-autotune）" class="headerlink" title="L4 MIMO 解耦 + IAE 自动整定（per-loop autotune）"></a>L4 MIMO 解耦 + IAE 自动整定（per-loop autotune）</h1><blockquote>
+<p><a href="/02jd/pid_demo/pid_l4_mimo.html">L4.7 MIMO PID</a> 用静态解耦器 <code>D=K(0)⁻¹</code> 把 2×2 对象在直流严格对角化，再给每个对角回路一个「手工固定」的 PID（<code>Kp=1, Ki=0.5, Kd=0.2</code>）。一个现实问题立刻冒出来：<strong>这两个回路的增益，到底该怎么定？</strong> 本 demo 把 <a href="/02jd/pid_demo/pid_l4_fopid_autotune.html">L4.8 的指标驱动寻优</a> 思想套到 MIMO 上——解耦后，每个回路独立用 <a href="/02jd/pid_demo/pid_l4_iae_ise.html">L4.6 的 IAE 指标</a> 当「打分函数」，对 <code>(Kp,Ki)</code> 做网格搜索自动整定。</p>
+</blockquote>
+<hr>
+<h2 id="一、为什么不能只给一个「统一整定」"><a href="#一、为什么不能只给一个「统一整定」" class="headerlink" title="一、为什么不能只给一个「统一整定」"></a>一、为什么不能只给一个「统一整定」</h2><p>L4.7 已经证明：解耦后各回路可当 SISO 独立整定。但 L4.7 给两回路<strong>同一个</strong> <code>Kp=1, Ki=0.5, Kd=0.2</code>——这是「拍脑袋」的折中：回路 1 时间常数 <code>τ1=1</code>、回路 2 时间常数 <code>τ2=2</code>，动态根本不同，同一组增益不可能同时最优。</p>
+<p>自然想法（与 L4.8 同构）：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">解耦 → 每回路当 SISO → 用 IAE 打分 → 网格搜索各自最优 (Kp,Ki)</span><br></pre></td></tr></tbody></table></figure>
+
+<p>而 <a href="/02jd/pid_demo/pid_l4_iae_ise.html">L4.6</a> 恰好给了这把「尺子」：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IAE = Σ |e_i(k)| · h      —— 第 i 回路误差绝对值的累计，越小整定越准、越快</span><br></pre></td></tr></tbody></table></figure>
+
+<p>于是每个回路各自变成标准最优化：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(Kp_i*, Ki_i*) = argmin_{Kp,Ki} IAE_i(Kp,Ki)</span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="二、核心：解耦-每回路-IAE-网格搜索"><a href="#二、核心：解耦-每回路-IAE-网格搜索" class="headerlink" title="二、核心：解耦 + 每回路 IAE 网格搜索"></a>二、核心：解耦 + 每回路 IAE 网格搜索</h2><p>做法（裸且有效，适合教学与初版）：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1. 同 L4.7 建 2×2 对象 K=[[1,0.3],[0.5,1]]，τ1=1, τ2=2，解耦器 D=K⁻¹</span><br><span class="line">2. 回路1：参考 r=[1,0]，回路2 固定 NOM；在 (Kp,Ki)∈{0.5…2.3}×{0.3…1.5} 铺 7×7 网格</span><br><span class="line">3. 每格跑一遍解耦闭环仿真（同 L4.7 的 2×2 递推），算回路1的 IAE</span><br><span class="line">4. 取 IAE 最小的那一格 → (Kp1*, Ki1*)</span><br><span class="line">5. 对回路2 对称地做（r=[0,1]，回路1 固定 NOM），得 (Kp2*, Ki2*)</span><br><span class="line">6. 把两组自动整定增益同时装回全系统，验证各自阶跃的 IAE 与交叉耦合</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>为什么解耦后才能「逐回路独立整定」？因为 <code>D·K=I</code> 使直流严格对角化，回路间的稳态耦合被积分器消除、瞬态耦合被压到 ≈0（见 L4.7），于是整定回路 i 时可以把其它回路近似当扰动、独立优化。</p>
+</blockquote>
+<h2 id="三、代码走读（pid-l4-mimo-autotune-cpp）"><a href="#三、代码走读（pid-l4-mimo-autotune-cpp）" class="headerlink" title="三、代码走读（pid_l4_mimo_autotune.cpp）"></a>三、代码走读（pid_l4_mimo_autotune.cpp）</h2><ul>
+<li>矩阵库 / <code>inv</code> / <code>sim_mimo</code> 与 L4.7 <strong>逐字一致</strong>（2×2 递推、<code>D=inv(Kss)</code> 预补偿、<code>Kd=0.2</code> 固定）。</li>
+<li><code>sim_mimo</code> 返回四条全程轨迹 <code>y1,y2,e1,e2</code>：既要回路误差算 IAE，也要 <code>y2</code>/<code>y1</code> 算交叉耦合峰值。</li>
+<li><code>iae(e,dt)</code>：离散 <code>Σ|e|·h</code>，来自 L4.6。</li>
+<li><code>main</code> 里两个 7×7 双层循环分别扫回路 1 / 回路 2，用 <code>best1/best2</code> 与 <code>Kp?_opt/Ki?_opt</code> 跟踪最小值；最后用自动增益重跑全系统。</li>
+<li>检验（chk）：自动 IAE <strong>&lt;</strong> 固定 NOM IAE（两回路 + 全系统总和）；自动增益已偏离 NOM；两回路阶跃稳态 ≈1/≈0、瞬态交叉耦合峰值 &lt;0.03。</li>
+</ul>
+<p><img src="/02jd/pid_demo/images/fig23_mimo_autotune.svg" alt="L4 MIMO 解耦 + IAE 自动整定"></p>
+<h2 id="四、你会看到什么（受管-Python-3-13-12-验证，全部-PASS）"><a href="#四、你会看到什么（受管-Python-3-13-12-验证，全部-PASS）" class="headerlink" title="四、你会看到什么（受管 Python 3.13.12 验证，全部 PASS）"></a>四、你会看到什么（受管 Python 3.13.12 验证，全部 PASS）</h2><p>对象 <code>K=[[1,0.3],[0.5,1]]</code>，<code>τ1=1, τ2=2</code>，<code>dt=0.05, T=15</code>，<code>Kd=0.2</code> 固定；NOM 增益 <code>(Kp,Ki)=(1.0,0.5)</code>：</p>
+<table>
+<thead>
+<tr>
+<th>回路</th>
+<th>整定</th>
+<th>(Kp,Ki)</th>
+<th>该回路 IAE</th>
+<th>相对 NOM</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>回路1（r=[1,0]）</td>
+<td>固定 NOM</td>
+<td>(1.0, 0.5)</td>
+<td>1.9816</td>
+<td>基准</td>
+</tr>
+<tr>
+<td>回路1（r=[1,0]）</td>
+<td><strong>IAE 自动</strong></td>
+<td><strong>(2.3, 1.5)</strong></td>
+<td><strong>0.6666</strong></td>
+<td><strong>−66.4%</strong></td>
+</tr>
+<tr>
+<td>回路2（r=[0,1]）</td>
+<td>固定 NOM</td>
+<td>(1.0, 0.5)</td>
+<td>2.0013</td>
+<td>基准</td>
+</tr>
+<tr>
+<td>回路2（r=[0,1]）</td>
+<td><strong>IAE 自动</strong></td>
+<td><strong>(2.3, 1.5)</strong></td>
+<td><strong>0.8084</strong></td>
+<td><strong>−59.6%</strong></td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>检查</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>全系统 IAE 总和（固定 3.9828 → 自动 1.4750）</td>
+<td>PASS（−63.0%）</td>
+</tr>
+<tr>
+<td>回路1 阶跃稳态 y1_ss≈1、交叉 y2_ss≈0</td>
+<td>PASS（0.0000）</td>
+</tr>
+<tr>
+<td>回路2 阶跃稳态 y2_ss≈1、交叉 y1_ss≈0</td>
+<td>PASS（0.0000）</td>
+</tr>
+<tr>
+<td>两回路瞬态交叉耦合峰值 &lt;0.03</td>
+<td>PASS（0.0000，仍被解耦压住）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>关键结论：解耦后每回路用 IAE 独立整定，全系统 IAE 比统一 NOM 降 **63%**；且解耦器把交叉耦合压到 ≈0，自动整定只管「把自己这条回路调快」，不会把邻居带跑。</p>
+</blockquote>
+<h2 id="五、洞见：IAE-单目标在稳定对象上「无内点最优」"><a href="#五、洞见：IAE-单目标在稳定对象上「无内点最优」" class="headerlink" title="五、洞见：IAE 单目标在稳定对象上「无内点最优」"></a>五、洞见：IAE 单目标在稳定对象上「无内点最优」</h2><p>注意自动整定落到了网格的<strong>激进端</strong> <code>(Kp=2.3, Ki=1.5)</code>——这不是偶然。IAE 只惩罚「误差有多大、持续多久」，对稳定对象而言<strong>增益越大响应越快、误差累计越小</strong>，于是无约束 IAE 会一路把增益顶到搜索窗边界（本 demo 两回路的有效对象都较良性，不超调，更助长这一现象）。</p>
+<p>这恰是 <a href="/02jd/pid_demo/pid_l4_fopid_autotune.html">L4.8</a>「选哪个指标，最优就落哪」的孪生教训：<strong>IAE 偏向激进增益</strong>。工程整定不能只喂 IAE，必须加约束：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">min  IAE</span><br><span class="line">s.t. 超调 ≤ 2%        （不允许过冲）</span><br><span class="line">      调节时间 ≤ T_set  （不允许拖尾）</span><br><span class="line">      |u| ≤ u_max       （不允许饱和/噪声放大）</span><br></pre></td></tr></tbody></table></figure>
+
+<p>或干脆换指标——<a href="/02jd/pid_demo/pid_l4_iae_ise.html">L4.6</a> 的 <strong>ITAE</strong>（<code>Σ k·h·|e|·h</code>）给早期误差加权，最优会落到一个更「中庸」、更工程可行的点。本仓库的 IAE/ITAE 取舍在 L4.6、L4.8 已反复印证。</p>
+<h2 id="六、工程坑（真实）"><a href="#六、工程坑（真实）" class="headerlink" title="六、工程坑（真实）"></a>六、工程坑（真实）</h2><ol>
+<li><strong>整定回路时要冻结邻居</strong>：扫回路 1 时回路 2 固定 NOM（r=0），否则两条回路的积分器互相激励会让 IAE 评估失真。解耦保证了「冻结邻居 ≈ 只评自己」。</li>
+<li><strong>IAE 无内点最优</strong>：如第五节，纯 IAE 会把增益顶到窗边界；demo 的「−63%」是「窗内最优」，不是「理论最优」。要工程可行整定须加约束或换 ITAE。</li>
+<li><strong>网格分辨率换精度</strong>：7×7 只给 0.3/0.2 步长最优；要更精可在盆地内加密。</li>
+<li><strong>解耦是前提</strong>：没解耦前直接逐回路 IAE 整定会「按下葫芦浮起瓢」——L4.7 已演示无解耦时交叉耦合峰值 0.1479，整定没法稳定收敛。本 demo 的 IAE 搜索建立在 L4.7 解耦之后。</li>
+<li><strong>无编译器确认</strong>：本机无 C++ 编译器，demo 用受管 Python 3.13.12 做算法验证（10/10 PASS），再逐字转写 C++17，并用 C++ 控制流镜像（12/12 PASS）兜底静态类型 bug。</li>
+</ol>
+<h2 id="七、自检"><a href="#七、自检" class="headerlink" title="七、自检"></a>七、自检</h2><ul>
+<li>把网格步长改成 <code>0.1</code>、范围扩到 <code>[0,3]×[0,2]</code>，看最优 <code>(Kp,Ki)</code> 是否继续外推（验证「IAE 顶边界」现象）。</li>
+<li>在 <code>sim_mimo</code> 里把 <code>decouple</code> 置 <code>false</code> 再扫：应发现无解耦时 IAE 搜索发散/互相牵制——亲手验证「解耦是逐回路整定的前提」。</li>
+<li>把目标函数从 <code>iae</code> 换成 <code>itae</code>（给早期误差加权），重扫看最优是否移向更温和的增益。</li>
+</ul>
+<h2 id="八、与-PID-家族的衔接"><a href="#八、与-PID-家族的衔接" class="headerlink" title="八、与 PID 家族的衔接"></a>八、与 PID 家族的衔接</h2><ul>
+<li>上游：<a href="/02jd/pid_demo/pid_l4_mimo.html">L4.7 MIMO PID</a>（提供解耦器 <code>D=K⁻¹</code> 与 2×2 仿真框架）；<a href="/02jd/pid_demo/pid_l4_iae_ise.html">L4.6 IAE/ISE</a>（提供打分函数）；<a href="/02jd/pid_demo/pid_l4_fopid_autotune.html">L4.8 指标驱动寻优</a>（本 demo 的方法论母版）。</li>
+<li>下游：自动整定可接模糊/增益调度——「按工况调增益」与「指标驱动寻优」是同一目标的两套实现（见 <a href="/02jd/pid_demo/pid_l4_fuzzy.html">L4.5 模糊 PID</a>）。</li>
+<li><strong>指标即偏好验证</strong>：把本 demo 的 IAE 目标<strong>换成 ITAE</strong> 同台对比，最优增益整体移向更温和——见 <a href="/02jd/pid_demo/pid_l4_mimo_itae_autotune.html">L4.10 MIMO + ITAE 自动整定</a>。</li>
+<li>跨仓同构：control_demo 的 <a href="/02jd/control_demo/ctrl_l4_mimo_decoupling.cpp">L4.5 MIMO 解耦</a> 用同一 <code>D=K(0)⁻¹</code> 范式，本 demo 在其基础上加了「解耦后 IAE 自动整定」一层。</li>
+</ul>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/pid_demo/">PID_DEMO</a></li>
+            <li>PID_L4_MIMO_AUTOTUNE</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

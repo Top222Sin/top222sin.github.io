@@ -1,0 +1,42 @@
+<svg viewBox="0 0 680 320" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,'Microsoft YaHei',sans-serif">
+  <text x="340" y="26" text-anchor="middle" font-size="15" font-weight="500" fill="#1a202c">L1.5 眼在手上 vs 眼在手外</text>
+
+  <!-- 眼在手上 -->
+  <g transform="translate(20,50)">
+    <rect x="0" y="0" width="300" height="180" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1"/>
+    <text x="150" y="-8" text-anchor="middle" font-size="13" font-weight="500" fill="#27500a">眼在手上 (eye-in-hand)</text>
+    <!-- base -->
+    <circle cx="50" cy="150" r="3" fill="#444441"/><text x="40" y="166" font-size="10" fill="#444441">base</text>
+    <line x1="50" y1="150" x2="80" y2="150" stroke="#639922" stroke-width="2"/><line x1="50" y1="150" x2="50" y2="124" stroke="#639922" stroke-width="2"/>
+    <!-- gripper + camera -->
+    <g transform="translate(140,90)"><circle cx="0" cy="0" r="3" fill="#185FA5"/><line x1="0" y1="0" x2="26" y2="0" stroke="#378ADD" stroke-width="2"/><line x1="0" y1="0" x2="0" y2="-24" stroke="#378ADD" stroke-width="2"/>
+      <rect x="22" y="-8" width="18" height="12" fill="#222"/><text x="-6" y="18" font-size="9" fill="#0c447c">夹爪+相机</text></g>
+    <!-- board -->
+    <rect x="220" y="70" width="40" height="30" fill="#E24B4A"/><text x="232" y="118" font-size="9" fill="#a32d2d">标定板</text>
+    <!-- 标注 -->
+    <text x="95" y="120" font-size="10" fill="#BA7517">A:夹爪运动</text>
+    <text x="175" y="60" font-size="10" fill="#185FA5">X=cam2gripper</text>
+    <text x="225" y="60" font-size="10" fill="#BA7517">B:板运动</text>
+  </g>
+
+  <!-- 眼在手外 -->
+  <g transform="translate(360,50)">
+    <rect x="0" y="0" width="300" height="180" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+    <text x="150" y="-8" text-anchor="middle" font-size="13" font-weight="500" fill="#0c447c">眼在手外 (eye-to-hand)</text>
+    <!-- base + fixed camera -->
+    <circle cx="50" cy="150" r="3" fill="#444441"/><text x="40" y="166" font-size="10" fill="#444441">base</text>
+    <line x1="50" y1="150" x2="80" y2="150" stroke="#639922" stroke-width="2"/><line x1="50" y1="150" x2="50" y2="124" stroke="#639922" stroke-width="2"/>
+    <rect x="86" y="118" width="20" height="14" fill="#222"/><text x="76" y="146" font-size="9" fill="#0c447c">固定相机</text>
+    <!-- gripper holding board, moving -->
+    <g transform="translate(180,90)"><circle cx="0" cy="0" r="3" fill="#185FA5"/><line x1="0" y1="0" x2="26" y2="0" stroke="#378ADD" stroke-width="2"/><line x1="0" y1="0" x2="0" y2="-24" stroke="#378ADD" stroke-width="2"/><text x="-6" y="18" font-size="9" fill="#0c447c">夹爪+板</text></g>
+    <rect x="210" y="60" width="40" height="30" fill="#E24B4A"/>
+    <!-- 标注 -->
+    <text x="110" y="120" font-size="10" fill="#BA7517">A:夹爪运动</text>
+    <text x="95" y="40" font-size="10" fill="#185FA5">X=cam2base</text>
+    <text x="215" y="50" font-size="10" fill="#BA7517">B:板运动</text>
+  </g>
+
+  <rect x="150" y="250" width="380" height="48" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="1"/>
+  <text x="340" y="272" text-anchor="middle" font-size="14" fill="#633806">A · X = X · B</text>
+  <text x="340" y="290" text-anchor="middle" font-size="10" fill="#854f0b">眼外/眼手仅 A、B 的相对运动配对方向不同</text>
+</svg>

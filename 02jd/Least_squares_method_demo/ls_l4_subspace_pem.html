@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L4.7 子空间辨识：N4SID（斜投影）+ MOESP（正交投影）+ 状态空间 PEM 一句话：子空间辨识 &#x3D; 用 Hankel 数据矩阵做”斜投影&#x2F;正交投影”，直接从 I&#x2F;O 数据里搬出状态空间模型 (A,B,C,D)，是工业系统辨识（L3.3 ARX&#x2F;OE 类最小二乘辨识）的状态空间升级版——不再假设固定 ARX 结构，而是先估阶数 n、再估全状态矩阵。   一、问题定义与工业背景L3.3">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L4.7 子空间辨识：N4SID（斜投影）+ MOESP（正交投影）+ 状态空间 PEM">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l4_subspace_pem.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L4.7 子空间辨识：N4SID（斜投影）+ MOESP（正交投影）+ 状态空间 PEM 一句话：子空间辨识 &#x3D; 用 Hankel 数据矩阵做”斜投影&#x2F;正交投影”，直接从 I&#x2F;O 数据里搬出状态空间模型 (A,B,C,D)，是工业系统辨识（L3.3 ARX&#x2F;OE 类最小二乘辨识）的状态空间升级版——不再假设固定 ARX 结构，而是先估阶数 n、再估全状态矩阵。   一、问题定义与工业背景L3.3">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/images/fig22_subspace.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.950Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/images/fig22_subspace.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l4_subspace_pem">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l4_subspace_pem.html","path":"02jd/Least_squares_method_demo/ls_l4_subspace_pem.html","title":"L4.7 子空间辨识：N4SID（斜投影）+ MOESP（正交投影）+ 状态空间 PEM"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L4.7 子空间辨识：N4SID（斜投影）+ MOESP（正交投影）+ 状态空间 PEM | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L4-7-%E5%AD%90%E7%A9%BA%E9%97%B4%E8%BE%A8%E8%AF%86%EF%BC%9AN4SID%EF%BC%88%E6%96%9C%E6%8A%95%E5%BD%B1%EF%BC%89-MOESP%EF%BC%88%E6%AD%A3%E4%BA%A4%E6%8A%95%E5%BD%B1%EF%BC%89-%E7%8A%B6%E6%80%81%E7%A9%BA%E9%97%B4-PEM"><span class="nav-number">1.</span> <span class="nav-text">L4.7 子空间辨识：N4SID（斜投影）+ MOESP（正交投影）+ 状态空间 PEM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89%E4%B8%8E%E5%B7%A5%E4%B8%9A%E8%83%8C%E6%99%AF"><span class="nav-number">1.1.</span> <span class="nav-text">一、问题定义与工业背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81Hankel-%E6%95%B0%E6%8D%AE%E7%9F%A9%E9%98%B5%E4%B8%8E%E2%80%9D%E6%8A%95%E5%BD%B1%E7%A9%BA%E9%97%B4%E6%9C%9D%E5%90%91%E2%80%9D%EF%BC%88%E5%85%B3%E9%94%AE%E5%9D%91%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">二、Hankel 数据矩阵与”投影空间朝向”（关键坑）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81N4SID%EF%BC%88%E6%96%9C%E6%8A%95%E5%BD%B1%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、N4SID（斜投影）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81MOESP%EF%BC%88%E6%AD%A3%E4%BA%A4%E6%8A%95%E5%BD%B1-LQ-%E7%B4%A7%E8%87%B4%EF%BC%8C%E9%98%B6%E6%95%B0%E6%A3%80%E6%B5%8B%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、MOESP（正交投影 &#x2F; LQ 紧致，阶数检测）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E7%8A%B6%E6%80%81%E7%A9%BA%E9%97%B4-PEM%EF%BC%88%E9%A2%84%E6%B5%8B%E8%AF%AF%E5%B7%AE%E6%96%B9%E6%B3%95%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、状态空间 PEM（预测误差方法）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E6%89%8B%E5%86%99%E7%AE%97%E6%B3%95%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%EF%BC%88%E7%BA%AF-C-17-%E5%8F%AF%E7%A7%BB%E6%A4%8D%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">六、手写算法基础设施（纯 C++17 可移植）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88ls-l4-subspace-pem-cpp%EF%BC%89"><span class="nav-number">1.7.</span> <span class="nav-text">七、代码走读（ls_l4_subspace_pem.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.8.</span> <span class="nav-text">八、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B9%9D%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.9.</span> <span class="nav-text">九、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%81%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.10.</span> <span class="nav-text">十、下一步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%84%E5%BC%9F%E4%BB%93%E5%BA%93%E8%81%94%E7%B3%BB"><span class="nav-number">1.11.</span> <span class="nav-text">兄弟仓库联系</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L4.7 子空间辨识：N4SID（斜投影）+ MOESP（正交投影）+ 状态空间 PEM
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Least_squares_method_demo/">LEAST_SQUARES_METHOD_DEMO</a></li>
+            <li>LS_L4_SUBSPACE_PEM</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L4-7-子空间辨识：N4SID（斜投影）-MOESP（正交投影）-状态空间-PEM"><a href="#L4-7-子空间辨识：N4SID（斜投影）-MOESP（正交投影）-状态空间-PEM" class="headerlink" title="L4.7 子空间辨识：N4SID（斜投影）+ MOESP（正交投影）+ 状态空间 PEM"></a>L4.7 子空间辨识：N4SID（斜投影）+ MOESP（正交投影）+ 状态空间 PEM</h1><blockquote>
+<p>一句话：<strong>子空间辨识 = 用 Hankel 数据矩阵做”斜投影/正交投影”，直接从 I/O 数据里搬出状态空间模型 <code>(A,B,C,D)</code><strong>，是工业系统辨识（<code>L3.3</code> ARX/OE 类最小二乘辨识）的</strong>状态空间升级版</strong>——不再假设固定 ARX 结构，而是先估阶数 <code>n</code>、再估全状态矩阵。</p>
+</blockquote>
+<hr>
+<h2 id="一、问题定义与工业背景"><a href="#一、问题定义与工业背景" class="headerlink" title="一、问题定义与工业背景"></a>一、问题定义与工业背景</h2><p><code>L3.3</code> 用 ARX（输入/输出回归）做辨识，本质是<strong>固定模型结构</strong>的最小二乘。<code>L4.7</code> 升级到<strong>状态空间辨识</strong>：</p>
+<blockquote>
+<p>真系统（离散）：  <code>x[k+1] = A·x[k] + B·u[k]</code>，  <code>y[k] = C·x[k] + D·u[k] + e[k]</code><br>目标：从 I/O 数据 <code>{u[k], y[k]}</code> 同时估出 <strong>阶数 n</strong> 与 **(A,B,C,D)**。</p>
+</blockquote>
+<p>工业里这叫”黑箱/灰箱辨识”，是模型预测控制（MPC）、故障诊断、软测量（<code>L4.3</code>）的模型来源。两种主力算法：</p>
+<ul>
+<li><strong>N4SID</strong>（Numerical algorithms for Subspace State Space System ID）：<strong>斜投影</strong>，能直接恢复状态序列 <code>X</code> 并给出完整 <code>(A,B,C,D)</code>，是主力。</li>
+<li><strong>MOESP</strong>（Multivariable Output-Error State-sPace）：<strong>正交投影</strong>（LQ 紧致形式），擅长<strong>阶数判定</strong>，本篇用作”与 N4SID 一致确认同阶”的兄弟验证。</li>
+</ul>
+<p>两者都由同一套 Hankel 数据矩阵驱动，是<strong>同一几何事实的两面</strong>——这正是本篇要讲的”跨域同构”中的”投影即子空间”。</p>
+<h2 id="二、Hankel-数据矩阵与”投影空间朝向”（关键坑）"><a href="#二、Hankel-数据矩阵与”投影空间朝向”（关键坑）" class="headerlink" title="二、Hankel 数据矩阵与”投影空间朝向”（关键坑）"></a>二、Hankel 数据矩阵与”投影空间朝向”（关键坑）</h2><p>把 I/O 数据排成块 Hankel 矩阵（块行 <code>i=10 ≫ 2n</code>，列 <code>L=N-2i+1</code>）：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">U_p,U_f = 过去/未来 输入块;   Y_p,Y_f = 过去/未来 输出块</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>⚠️ <strong>工程坑（本篇第 3 次踩、必记）</strong>：投影必须在<strong>样本空间</strong>（<code>L×d</code>，<code>L</code> 为列数且 <code>L&gt;d</code>）做。列空间只有 <code>d</code> 维（<code>d=i·(m+l)</code>），在信号空间（<code>d×L</code>）下投影会退化成单位阵，等于没投影。所有 <code>P_Uf</code>、<code>Yf_perp</code>、<code>Wp_perp</code> 都在转置后的样本空间构造（<code>cpp</code> 第 180–208 行 <code>n4sid_oblique</code>）。</p>
+</blockquote>
+<h2 id="三、N4SID（斜投影）"><a href="#三、N4SID（斜投影）" class="headerlink" title="三、N4SID（斜投影）"></a>三、N4SID（斜投影）</h2><p>核心：把 <code>Y_f</code> 先去掉 <code>U_f</code> 的影响（列空间投影），再正交投到过去 <code>[U_p;Y_p]</code> 的剩余分量，得到</p>
+<blockquote>
+<p><code>O = Γ_i · X</code>   （<code>O</code> 为 <code>i·l × L</code>，<code>Γ_i</code> 是扩展可观矩阵，<code>X</code> 是状态序列）</p>
+</blockquote>
+<p>由 <code>O·Oᵀ</code> 的对称 SVD 取前 <code>n</code> 个左奇异向量得 <code>Γ_i</code>（奇异值谱直接判阶数 <code>n</code>）。然后：</p>
+<ul>
+<li><strong>C</strong> = <code>Γ_i</code> 的前 <code>l</code> 行（可观矩阵首块行就是 <code>C</code>）</li>
+<li><strong>A</strong> = <code>pinv(Γ_top)·Γ_bot</code>（移位不变性：后 <code>l</code> 块行 = 前 <code>l</code> 块行 × <code>A</code>）</li>
+<li><strong>仅 B, D 由状态序列 LS 估</strong>：<code>B = (X_next − A·X)·Uᵀ/(U·Uᵀ)</code>，<code>D</code> 同理</li>
+</ul>
+<blockquote>
+<p>关键设计：<code>A</code>、<code>C</code> 从 <code>Γ_i</code> 直接求得，<strong>保证移位不变性与可检测性</strong>；若像早期版本那样用 LS 重估 <code>C</code>，会破坏可检测性导致预测器发散（<code>cpp</code> 第 240–270 行 <code>recover_ac</code>/<code>recover_bd</code>）。</p>
+</blockquote>
+<h2 id="四、MOESP（正交投影-LQ-紧致，阶数检测）"><a href="#四、MOESP（正交投影-LQ-紧致，阶数检测）" class="headerlink" title="四、MOESP（正交投影 / LQ 紧致，阶数检测）"></a>四、MOESP（正交投影 / LQ 紧致，阶数检测）</h2><p>把 <code>[U_p;Y_p;U_f;Y_f]</code> 做 LQ 分解 <code>W = L·Q</code>（<code>L</code> 下三角 <code>2d×2d</code>），按标准 MOESP 分区成四个 <code>d×d</code> 块：</p>
+<blockquote>
+<p><code>O_i = L22⁻¹ · L21</code>   （未来块 vs 过去块；<code>d=i·(m+l)</code>）</p>
+</blockquote>
+<p><code>O_i</code> 的奇异值谱<strong>前 n 个主导、其余≈0</strong> → 阶数 <code>n</code>。本篇用 <code>pinv(L22)</code>（当 <code>L22</code> 近奇异时自动低秩截断，比裸 <code>inv</code> 稳定——早期裸 <code>inv</code> 在部分数据量下会蹦出 1.7e4 的伪模态使阶数误判）。结果与 N4SID 判阶<strong>完全一致</strong>（<code>cpp</code> 第 210–238 行 <code>moesp_lq</code>）。</p>
+<h2 id="五、状态空间-PEM（预测误差方法）"><a href="#五、状态空间-PEM（预测误差方法）" class="headerlink" title="五、状态空间 PEM（预测误差方法）"></a>五、状态空间 PEM（预测误差方法）</h2><p>以 N4SID 估计为初值 <code>θ=vec(A,B,C,D)</code>（9 参数），做<strong>一步预测误差</strong>最小化：</p>
+<blockquote>
+<p><code>ε[k] = y[k] − Ĉ·x̂[k] − D̂·u[k]</code>，  <code>x̂[k+1] = Â·x̂[k] + B̂·u[k] + K·ε[k]</code><br>其中稳态 Kalman 预测器增益 <code>K</code> 由<strong>离散代数 Riccati 方程</strong>解出：<br><code>K = P·Cᵀ·(C·P·Cᵀ+R)⁻¹</code>，  <code>P = A·(P−K·C·P)·Aᵀ + q·I</code></p>
+</blockquote>
+<p>Gauss-Newton 对 <code>θ</code> 精调（<code>cpp</code> 第 290–370 行 <code>riccati</code>/<code>pred_crit</code> + 主程序 GN 循环）。本篇实测：N4SID 一步预测 RMSE≈<code>2σ</code>（几乎等于新息地板），PEM 初值即已接近 GN 最优，精调不退化、与 N4SID 模型一致。</p>
+<h2 id="六、手写算法基础设施（纯-C-17-可移植）"><a href="#六、手写算法基础设施（纯-C-17-可移植）" class="headerlink" title="六、手写算法基础设施（纯 C++17 可移植）"></a>六、手写算法基础设施（纯 C++17 可移植）</h2><p>本篇<strong>不依赖任何第三方库</strong>，全部手写：</p>
+<ul>
+<li><code>svd_jacobi</code>：单边 Jacobi SVD（<code>U,S,Vt</code>，用于 <code>pinv</code> 与 <code>O·Oᵀ</code> 特征值分解）</li>
+<li><code>pinv</code>：SVD 基伪逆（<code>tol=1e-12</code>，防奇异除零）</li>
+<li><code>householder_qr_R</code>：Householder QR → 上三角 <code>R</code>（验证 <code>RᵀR=MᵀM</code>）</li>
+<li><code>matmul/transpose/ident</code>：基础线性代数</li>
+<li><code>riccati</code>：离散代数 Riccati 迭代（DARE）</li>
+<li><code>moesp_lq</code> 的 <code>LQ</code>：经 <code>QR(Mᵀ)</code> 取 <code>R</code> 转置得到</li>
+</ul>
+<h2 id="七、代码走读（ls-l4-subspace-pem-cpp）"><a href="#七、代码走读（ls-l4-subspace-pem-cpp）" class="headerlink" title="七、代码走读（ls_l4_subspace_pem.cpp）"></a>七、代码走读（ls_l4_subspace_pem.cpp）</h2><ul>
+<li><strong>工具层</strong>（第 20–145 行）：固定种子 LCG + Box-Muller（与受管 Python 验证脚本同种子，实例可复现）；<code>svd_jacobi</code>/<code>pinv</code>/<code>householder_qr_R</code>/<code>is_upper_tri</code>/<code>eigabs2</code>/<code>eigM</code>；真系统 <code>sim_true</code>；<code>build_hankel</code>。</li>
+<li><strong>n4sid_oblique</strong>（第 180–208）：样本空间斜投影 <code>O=Γ_i·X</code>。</li>
+<li><strong>moesp_lq</strong>（第 210–238）：标准 LQ 分区 <code>O_i=L22⁻¹·L21</code>，阶数检测。</li>
+<li><strong>recover_ac / recover_bd</strong>（第 240–270）：<code>Γ_i</code> 取前 n 左奇异向量；<code>A=pinv(Γ_top)·Γ_bot</code>；仅 LS 估 <code>B,D</code>。</li>
+<li><strong>riccati / predictor_err / sim_out</strong>（第 290–330）：稳态 Kalman 增益 + 一步预测误差 + 无噪 I/O 仿真。</li>
+<li><strong>flatten / unflatten / pred_crit</strong>（第 340–370）：参数向量化（<code>B</code>  stride 用 <code>mI</code>，<strong>不是</strong> <code>n_est</code>——早期误写 <code>n_est</code> 导致 <code>B</code> 串到 <code>C</code> 元素、PEM 爆炸）。</li>
+<li><strong>main（第 375+）</strong>：内部正确性（QR/SVD 3 项）→ N4SID（阶数/A稳定/一步预测RMSE/I-O）→ MOESP（谱/阶数/一致）→ PEM（准则下降/精调不退化/I-O/Riccati），共 16 项检查。</li>
+</ul>
+<h2 id="八、你会看到什么"><a href="#八、你会看到什么" class="headerlink" title="八、你会看到什么"></a>八、你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">=== L4.7 子空间辨识 N4SID/MOESP + 状态空间 PEM (faithful float64) ===</span><br><span class="line">-- 内部正确性 --</span><br><span class="line">  Householder QR: R 上三角                            err=0.000e+00 tol=1e-09  PASS</span><br><span class="line">  Householder QR: RᵀR=MᵀM                          err=4.263e-14 tol=1e-09  PASS</span><br><span class="line">  SVD 重构误差(3x3)                                    err=1.332e-15 tol=1e-09  PASS</span><br><span class="line">-- A) N4SID (斜投影) --</span><br><span class="line">  [dbg] N4SID sv: ['9.75e+00', '3.96e+00', '5.23e-02', '5.04e-02', '4.72e-02', '4.45e-02']</span><br><span class="line">  N4SID 阶数辨识 n=2                                   err=0.000e+00 tol=5e-01  PASS</span><br><span class="line">  N4SID A 稳定 |λ|&lt;0.99                              err=7.999e-01 tol=1e+00  PASS</span><br><span class="line">  [dbg] A_n4b= [[0.6968, -0.1593], [0.3817, 0.9030]]  |λ|=0.800</span><br><span class="line">  [dbg] K= [0.146, -0.039]  A-KC |λ|=0.768</span><br><span class="line">  N4SID 一步预测 RMSE&lt;3σ                             err=1.874e-02 tol=3e-02  PASS</span><br><span class="line">  N4SID 模型 I/O 与真系统一致(&lt;0.2)                  err=2.741e-02 tol=2e-01  PASS</span><br><span class="line">-- B) MOESP (正交投影/LQ 紧致形式, 阶数检测) --</span><br><span class="line">  [dbg] MOESP sv: ['1.91e+02', '6.91e+01', '2.47e-01', '2.40e-01', '1.99e-01', '1.96e-01']</span><br><span class="line">  MOESP 谱呈现 n=2 主导模态(比值)                    err=0.000e+00 tol=1e-06  PASS</span><br><span class="line">  MOESP 阶数辨识 n=2                                  err=0.000e+00 tol=5e-01  PASS</span><br><span class="line">  N4SID 与 MOESP 一致判定 n=2                        err=0.000e+00 tol=5e-01  PASS</span><br><span class="line">-- C) 状态空间 PEM (Gauss-Newton, 以 N4SID 为初值) --</span><br><span class="line">  [dbg] PEM V0=1.405e-01  rmse(pred_crit)=0.0187  (N4SID rmse_n4=0.0187)</span><br><span class="line">  PEM 初始准则 V0 有限&gt;0                            err=1.405e-01 tol=1e+18  PASS</span><br><span class="line">  PEM 准则下降 V_fin≤V0                             err=0.000e+00 tol=1e-06  PASS</span><br><span class="line">  PEM 精调后预测 RMSE≤N4SID                         err=0.000e+00 tol=1e-06  PASS</span><br><span class="line">  PEM 模型 I/O 与真系统一致(&lt;0.2)                   err=2.741e-02 tol=2e-01  PASS</span><br><span class="line">  N4SID↔PEM 模型一致(&lt;0.1)                          err=0.000e+00 tol=1e-01  PASS</span><br><span class="line">  Riccati P 收敛(有限)                              err=3.573e-04 tol=1e+03  PASS</span><br><span class="line">=== 16 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>本机 RNG 固定种子（与受管 Python 3.13.12 验证脚本逐位一致），上述数值为 C++ 端口的预期输出（C++ 控制流镜像脚本已 16/16 对拍通过，严格 <code>matmul</code> 无维度越界）。数学正确性由受管 Python 镜像逐条验证：<strong>QR 上三角/RᵀR=MᵀM/SVD重构 3 项 + N4SID 阶数·A稳定·一步预测RMSE·I-O + MOESP 谱·阶数·N4SID↔MOESP 一致 + PEM 准则下降·精调不退化·I-O一致·Riccati收敛</strong>，共 16 项 ALL CHECKS: PASS。</p>
+</blockquote>
+<p><img src="/02jd/Least_squares_method_demo/images/fig22_subspace.svg" alt="L4.7 子空间辨识：N4SID/MOESP + 状态空间 PEM"></p>
+<h2 id="九、自检"><a href="#九、自检" class="headerlink" title="九、自检"></a>九、自检</h2><ul>
+<li>把 <code>i_block</code> 从 10 调到 6 或 14，阶数判定还准吗？为什么块行要 <code>≫ n</code>？（提示：可观性需要足够”深”的 past）</li>
+<li><code>unflatten</code> 里 <code>B</code> 的 stride 为什么必须是 <code>mI</code> 而不是 <code>n_est</code>？写成 <code>n_est</code> 会让 PEM 的 V0 爆到多少量级？（提示：本篇早期 bug，V0 从 0.14 炸到 ~2e4）</li>
+<li>若把 <code>recover_ac</code> 改成”LS 重估 C”，预测器 <code>A−KC</code> 的特征根会怎样？为何要保可检测性？</li>
+<li>MOESP 用 <code>inv(L22)</code> 在哪些数据量下会蹦出伪模态？<code>pinv</code> 如何救场？</li>
+</ul>
+<h2 id="十、下一步"><a href="#十、下一步" class="headerlink" title="十、下一步"></a>十、下一步</h2><p>进入 <a href="/02jd/Least_squares_method_demo/ls_l4_lasso.html">L4.6 稀疏正则化 Lasso</a> 看”稀疏”这一支；或回看 <a href="/02jd/Least_squares_method_demo/ls_l3_arx.html">L3.3 ARX 系统辨识</a> 对比”固定结构 LS 辨识 vs 状态空间子空间辨识”。与 <a href="/02jd/KF_demo/README.html">KF</a> 的预测更新（同出 Riccati）、<a href="/02jd/control_demo/README.html">control</a> 的 MPC（子空间辨识的下游）同根；状态空间 PEM 的 Gauss-Newton 也与 <a href="/02jd/Jacobian_demo/README.html">Jacobian</a> L4 自动微分相通。</p>
+<h2 id="兄弟仓库联系"><a href="#兄弟仓库联系" class="headerlink" title="兄弟仓库联系"></a>兄弟仓库联系</h2><ul>
+<li>ARX/OE 最小二乘辨识见 <a href="/02jd/Least_squares_method_demo/ls_l3_arx.html">LS L3.3</a>；稀疏/结构辨识见 <a href="/02jd/Least_squares_method_demo/ls_l4_lasso.html">LS L4.6</a>。</li>
+<li>稳态 Kalman 增益的 Riccati 方程与 <a href="/02jd/KF_demo/README.html">KF</a> 预测更新同族；Gauss-Newton 优化底座见 <a href="/02jd/Jacobian_demo/README.html">Jacobian</a>。</li>
+<li>下游：子空间辨识得到的状态空间模型是 <a href="/02jd/control_demo/README.html">control</a> MPC / <a href="/02jd/Least_squares_method_demo/README.html">LS L4.3 软测量</a> 的模型来源。</li>
+</ul>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Least_squares_method_demo/">LEAST_SQUARES_METHOD_DEMO</a></li>
+            <li>LS_L4_SUBSPACE_PEM</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3.4 全流程工具链（Capstone）⭐ 把 L1→L3 所有积木串成一条龙：PX4 风格「位置→速度→加速度&#x2F;速率」串级（纯 C++ 教学复刻，结构思想源自 PositionControl + RateControl，教学抽象，非 PX4 代码复刻），端到端阶跃响应对拍真值，并内嵌内环自动整定与退化告警。这是整套学习路径的收口。   一、为什么需要 capstone单独会 P&#x2F;I&#x2F;D、会整定">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3.4 全流程工具链（Capstone）⭐">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/pid_demo/pid_l3_pipeline.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3.4 全流程工具链（Capstone）⭐ 把 L1→L3 所有积木串成一条龙：PX4 风格「位置→速度→加速度&#x2F;速率」串级（纯 C++ 教学复刻，结构思想源自 PositionControl + RateControl，教学抽象，非 PX4 代码复刻），端到端阶跃响应对拍真值，并内嵌内环自动整定与退化告警。这是整套学习路径的收口。   一、为什么需要 capstone单独会 P&#x2F;I&#x2F;D、会整定">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/pid_demo/images/fig14_pipeline.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.960Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/pid_demo/images/fig14_pipeline.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/pid_demo/pid_l3_pipeline">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/pid_demo/pid_l3_pipeline.html","path":"02jd/pid_demo/pid_l3_pipeline.html","title":"L3.4 全流程工具链（Capstone）⭐"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3.4 全流程工具链（Capstone）⭐ | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-4-%E5%85%A8%E6%B5%81%E7%A8%8B%E5%B7%A5%E5%85%B7%E9%93%BE%EF%BC%88Capstone%EF%BC%89%E2%AD%90"><span class="nav-number">1.</span> <span class="nav-text">L3.4 全流程工具链（Capstone）⭐</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-capstone"><span class="nav-number">1.1.</span> <span class="nav-text">一、为什么需要 capstone</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%89%E5%B1%82%E4%B8%B2%E7%BA%A7%E7%9A%84%E2%80%9D%E4%B8%BA%E4%BB%80%E4%B9%88%E2%80%9D%EF%BC%88%E5%85%A8%E9%93%BE%E8%B7%AF%E6%80%BB%E7%BB%93%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">三层串级的”为什么”（全链路总结）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E6%9C%AC-demo-%E5%B9%B2%E4%BA%86%E4%BB%80%E4%B9%88"><span class="nav-number">1.2.</span> <span class="nav-text">二、本 demo 干了什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8%E2%80%9D%E4%BF%9D%E5%AE%88-Z-N%E2%80%9D%EF%BC%88%E5%B7%A5%E7%A8%8B%E5%86%B3%E7%AD%96%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">为什么用”保守 Z-N”（工程决策）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88pid-l3-pipeline-cpp%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、代码走读（pid_l3_pipeline.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.4.</span> <span class="nav-text">四、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%B7%A5%E7%A8%8B%E5%9D%91%EF%BC%88%E7%9C%9F%E5%AE%9E%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、工程坑（真实）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.6.</span> <span class="nav-text">六、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E6%94%B6%E5%AE%98"><span class="nav-number">1.7.</span> <span class="nav-text">七、收官</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3.4 全流程工具链（Capstone）⭐
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/pid_demo/">PID_DEMO</a></li>
+            <li>PID_L3_PIPELINE</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-4-全流程工具链（Capstone）⭐"><a href="#L3-4-全流程工具链（Capstone）⭐" class="headerlink" title="L3.4 全流程工具链（Capstone）⭐"></a>L3.4 全流程工具链（Capstone）⭐</h1><blockquote>
+<p>把 L1→L3 所有积木串成一条龙：PX4 风格「位置→速度→加速度/速率」串级（纯 C++ 教学复刻，结构思想源自 <code>PositionControl</code> + <code>RateControl</code>，<strong>教学抽象，非 PX4 代码复刻</strong>），端到端阶跃响应对拍真值，并内嵌<strong>内环自动整定</strong>与<strong>退化告警</strong>。这是整套学习路径的收口。</p>
+</blockquote>
+<hr>
+<h2 id="一、为什么需要-capstone"><a href="#一、为什么需要-capstone" class="headerlink" title="一、为什么需要 capstone"></a>一、为什么需要 capstone</h2><p>单独会 P/I/D、会整定、会抗扰还不够——真实飞控是<strong>多层嵌套</strong>的：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">x_sp →[位置P, 限幅vmax]→ v_sp →[速度PID]→ a_sp →[速率PID并行式+FF]→ u →[执行器1/(τs+1)]→ a →∫→ v →∫→ x</span><br><span class="line">                                                                              │</span><br><span class="line">                                                         传感器反馈（可注入退化）┘</span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li>外环输出是内环设定值（呼应 L2.1）；</li>
+<li>速率环用 PX4 并行式 <code>K·(P+I/s+sD)+FF</code>（呼应 L2.3）；</li>
+<li>内环增益靠<strong>自动整定</strong>（呼应 L3.1/L3.3）；</li>
+<li>遇<strong>退化</strong>必须告警（呼应 L3.3 质量门）。</li>
+</ul>
+<h3 id="三层串级的”为什么”（全链路总结）"><a href="#三层串级的”为什么”（全链路总结）" class="headerlink" title="三层串级的”为什么”（全链路总结）"></a>三层串级的”为什么”（全链路总结）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">每层只信一层: 位置环不管执行器细节, 只给"速度设定";</span><br><span class="line">            速度环不管位置误差细节, 只管"跟上 v_sp";</span><br><span class="line">            速率环最接近执行器, 带宽最高, 先收敛 (control_demo L3.1 带宽分级)</span><br><span class="line"></span><br><span class="line">稳定性传递: 内环快 → 外环把它当增益1的快环节 → 相位预算充足 (L2.1 的 r=5~10 规则)</span><br><span class="line">设计顺序: 从内到外! 先整定速率环 → 再设计速度环 → 最后位置环</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>capstone 的工程价值</strong>：把”每个环单独学过”变成”一套能跑通的完整系统”，并暴露环间交互（内环慢 → 外环抖；外环限幅 → 内环不饱和）——这些只有拼起来才看得到。</p>
+<h2 id="二、本-demo-干了什么"><a href="#二、本-demo-干了什么" class="headerlink" title="二、本 demo 干了什么"></a>二、本 demo 干了什么</h2><ol>
+<li><strong>三环串级仿真</strong>：位置环用 P + 速度限幅（防超调），速度环 PID，速率环并行 PID + 前馈；执行器一阶惯性；端到端阶跃。</li>
+<li><strong>内环自动整定</strong>：把速率环 plant <strong>近似</strong>为 FOPDT（辨识用近似模型，<code>K=1, T=τ</code>，纯滞后 L 由采样/执行器延迟等效估计——注意：框图里的 <code>1/(τs+1)</code> 执行器本身无纯滞后，FOPDT 的 L 是工程等效项，不是模型字面含义；relay 振荡在无延迟一阶/双积分对象上可能不收敛到经典极限环，故需在代码中显式加入等效延迟或在辨识模型中保留 L），用 <strong>relay 辨识</strong>（复刻 L3.1）得 <code>Ku/Pu</code>，与 <strong>理论真值</strong>（数值求根 <code>ωu·L+atan(ωu·T)=π</code>，见 <a href="/02jd/pid_demo/pid_l3_autotune.html">L3.1</a>；连续时间 FOPDT 理论值，离散仿真/采样/限幅会引入偏差）交叉校验后，套<strong>保守 Z-N</strong> 得内环增益。</li>
+<li><strong>退化注入与告警</strong>：<ul>
+<li>传感器符号翻转 → 反馈变正反馈 → 发散 → <strong>告警</strong>；</li>
+<li>执行器变慢 10×（模型失配、未重整定）→ 超调显著恶化 → <strong>告警</strong>。</li>
+</ul>
+</li>
+</ol>
+<h3 id="为什么用”保守-Z-N”（工程决策）"><a href="#为什么用”保守-Z-N”（工程决策）" class="headerlink" title="为什么用”保守 Z-N”（工程决策）"></a>为什么用”保守 Z-N”（工程决策）</h3><p>自动整定得到的增益直接上真机，风险偏好应保守：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">标准 Z-N: Kp=0.6·Ku (激进, 超调 20~50%)</span><br><span class="line">保守 Z-N: Kp=0.4·Ku (温和, 超调 ~10%, 响应略慢)</span><br><span class="line">理由: 内环辨识有模型误差(FOPDT 近似), 标准 Z-N 可能把环整到临界</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>决策框架</strong>：内环（高带宽、强耦合执行器）保守整定；外环（低带宽、余量足）可稍激进。整定后的 VERIFY 质量门（L3.3）是最后一道保险。</p>
+<h2 id="三、代码走读（pid-l3-pipeline-cpp）"><a href="#三、代码走读（pid-l3-pipeline-cpp）" class="headerlink" title="三、代码走读（pid_l3_pipeline.cpp）"></a>三、代码走读（pid_l3_pipeline.cpp）</h2><ul>
+<li><code>relayIdentify(...)</code>：复刻 L3.1 的 relay 自激振荡辨识。</li>
+<li><code>simCascade(cfg, dt, N, xsp)</code>：三环串级离散仿真；<code>sensorFault</code> 开关注入传感故障；含积分抗饱和（限幅回撤）。</li>
+<li>对拍判据：<ul>
+<li>健康串级：<code>|稳态误差|&lt;0.05</code>、<code>超调&lt;0.3</code>、<code>不发散</code>、<code>调节&lt;20s</code>；</li>
+<li>内环辨识：<code>|Ku_est−Ku_true|/Ku_true &lt; 0.3</code>（relay vs 精确真值）；</li>
+<li>退化：符号翻转→发散 → <strong>必告警</strong>。</li>
+</ul>
+</li>
+</ul>
+<p><img src="/02jd/pid_demo/images/fig14_pipeline.svg" alt="L3.4 全流程工具链"></p>
+<h2 id="四、你会看到什么"><a href="#四、你会看到什么" class="headerlink" title="四、你会看到什么"></a>四、你会看到什么</h2><ul>
+<li>左图：三环串级方块图（位置 P → 速度 PID → 速率并行 PID + 前馈 → 执行器 → 双重积分 plant），传感器反馈处可注入退化，触发 ALARM。</li>
+<li>右图：健康响应收敛到设定值、无稳态误差；退化响应发散、被告警拦截。</li>
+</ul>
+<h2 id="五、工程坑（真实）"><a href="#五、工程坑（真实）" class="headerlink" title="五、工程坑（真实）"></a>五、工程坑（真实）</h2><ol>
+<li>**内环辨识时外环要”打平”**：给速率环做 relay 激励时，外环（位置/速度）必须处于”设定值不动”状态，否则外环干扰辨识信号——真实飞控自动整定要求飞机悬停/平飞就是这个原因。</li>
+<li><strong>每环的 dt 可以不同</strong>：位置环 100Hz、速度环 250Hz、速率环 500~1000Hz 是常见配置（内环越快）——多速率实现要处理环间插值/同步，别全用同一个 dt。</li>
+<li><strong>退化检测的时机</strong>：符号翻转在<strong>积分器累积之前</strong>就应被发现（第一拍就方向错）——用”误差方向 vs 输出方向”一致性检查可秒级告警，不用等发散。</li>
+<li><strong>仿真通过 ≠ 真机通过</strong>：真机有噪声、延迟、非线性（电机饱和、桨叶失速）——capstone 的判据在真机要留 2~3 倍余量。</li>
+</ol>
+<h2 id="六、自检"><a href="#六、自检" class="headerlink" title="六、自检"></a>六、自检</h2><ul>
+<li>把 <code>vmax</code>（速度限幅）从 0.6 调到 2.0，看健康串级超调如何变大——体会外环限幅是防超调的关键。</li>
+<li>把内环 <code>Pr</code> 直接设 0（不整定速率环），看串级如何变迟钝/振荡——印证自动整定的价值。</li>
+<li>打开 <code>sensorFault</code>，看系统如何立刻发散并被告警——这正是 L3.3 质量门在真实链路里的落点。</li>
+</ul>
+<h2 id="七、收官"><a href="#七、收官" class="headerlink" title="七、收官"></a>七、收官</h2><p>至此 <code>pid_demo</code> 四站（<strong>L1 建直觉 → L2 吃原理 → L3 上工程</strong>）全部落成。回到 <a href="/02jd/pid_demo/README.html">README</a> 看完整路线图，或回 <a href="/02jd/pid_demo/pid_l3_autotuner.html">L3.3 自动调参系统</a> 回味状态机。</p>
+<p><strong>毕业能力清单</strong>：</p>
+<ul>
+<li>能建模（L1.1）、懂三项（L1.2）、会离散化（L1.3）、会整定（L1.4）、懂抗饱和（L1.5）</li>
+<li>能串级（L2.1）、会滤 D 项噪声（L2.2）、读得懂 PX4 速率环（L2.3）、懂稳定边界（L2.4）、会增益调度（L2.5）</li>
+<li>能自动整定（L3.1）、会抗扰（L3.2）、能做整定系统（L3.3）、能拼全流程（L3.4）</li>
+</ul>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/pid_demo/">PID_DEMO</a></li>
+            <li>PID_L3_PIPELINE</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

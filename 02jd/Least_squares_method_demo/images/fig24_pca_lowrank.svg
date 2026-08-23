@@ -1,0 +1,48 @@
+<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+  <rect x="0" y="0" width="680" height="300" fill="#fbfdff"/>
+  <text x="340" y="26" font-size="16" font-weight="bold" fill="#0c447c" text-anchor="middle">L4.9 PCA / 低秩：最佳低秩逼近（Eckart-Young）= 序列 LS</text>
+
+  <!-- 左：第一主方向=最大方差投影 -->
+  <rect x="20" y="48" width="320" height="230" fill="#ffffff" stroke="#cfe0f2" rx="6"/>
+  <text x="180" y="68" font-size="12" font-weight="bold" fill="#185FA5" text-anchor="middle">第一主方向 = 最大方差投影</text>
+  <!-- 散点 -->
+  <circle cx="90" cy="200" r="3" fill="#185FA5"/>
+  <circle cx="110" cy="185" r="3" fill="#185FA5"/>
+  <circle cx="130" cy="170" r="3" fill="#185FA5"/>
+  <circle cx="150" cy="160" r="3" fill="#185FA5"/>
+  <circle cx="170" cy="150" r="3" fill="#185FA5"/>
+  <circle cx="190" cy="140" r="3" fill="#185FA5"/>
+  <circle cx="210" cy="130" r="3" fill="#185FA5"/>
+  <circle cx="230" cy="115" r="3" fill="#185FA5"/>
+  <circle cx="250" cy="105" r="3" fill="#185FA5"/>
+  <circle cx="270" cy="95" r="3" fill="#185FA5"/>
+  <!-- 第一主方向线（红，穿过质心，最大方差） -->
+  <line x1="60" y1="225" x2="290" y2="80" stroke="#A32D2D" stroke-width="2.5"/>
+  <text x="232" y="78" font-size="10" fill="#A32D2D">v1（最大方差方向）</text>
+  <!-- 质心 -->
+  <circle cx="175" cy="150" r="4" fill="#3B6D11"/>
+  <text x="182" y="148" font-size="10" fill="#3B6D11">质心</text>
+  <text x="40" y="268" font-size="9" fill="#5a6b7b">Rayleigh 商 max ‖Xv‖²/‖v‖² → 幂迭代收敛到 v1</text>
+
+  <!-- 右：秩-k 重建 -->
+  <rect x="360" y="48" width="300" height="230" fill="#ffffff" stroke="#cfe0f2" rx="6"/>
+  <text x="510" y="68" font-size="12" font-weight="bold" fill="#185FA5" text-anchor="middle">秩-k 重建 X_k = X·V_k·V_kᵀ</text>
+  <!-- 满秩 X（细灰）与秩2 重建（粗蓝）对比条 -->
+  <text x="385" y="95" font-size="10" fill="#7a7a7a">‖X − X_k‖²_F = (n−1)·Σ_{i&gt;k} λ_i</text>
+  <rect x="385" y="110" width="14" height="90" fill="#cfd8e2"/>
+  <rect x="405" y="120" width="14" height="80" fill="#cfd8e2"/>
+  <rect x="425" y="100" width="14" height="100" fill="#cfd8e2"/>
+  <rect x="445" y="130" width="14" height="70" fill="#cfd8e2"/>
+  <rect x="465" y="115" width="14" height="85" fill="#cfd8e2"/>
+  <rect x="485" y="125" width="14" height="75" fill="#cfd8e2"/>
+  <text x="385" y="218" font-size="10" fill="#7a7a7a">满秩 X（5 维）</text>
+  <!-- 秩2 重建（绿，低维投影） -->
+  <rect x="535" y="160" width="14" height="40" fill="#3B6D11"/>
+  <rect x="555" y="155" width="14" height="45" fill="#3B6D11"/>
+  <rect x="575" y="165" width="14" height="35" fill="#3B6D11"/>
+  <rect x="595" y="150" width="14" height="50" fill="#3B6D11"/>
+  <rect x="615" y="158" width="14" height="42" fill="#3B6D11"/>
+  <text x="535" y="218" font-size="10" fill="#3B6D11">秩-2 重建 X_2</text>
+  <line x1="385" y1="230" x2="630" y2="230" stroke="#7a7a7a" stroke-width="1"/>
+  <text x="520" y="268" font-size="9" fill="#5a6b7b">top-k 特征向量张成子空间 = 最小重构误差投影（序列 LS）</text>
+</svg>

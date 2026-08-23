@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#ffffff"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L4 IAE/ISE/ITAE/ITSE：把整定质量压成一个可寻优的标量</text>
+
+  <!-- ① 定义 -->
+  <text x="20" y="56" font-size="12" fill="#555">① 定义（离散步长 h；k 为步序号，t=k·h）</text>
+  <g transform="translate(30,64)" font-size="10">
+    <rect x="0" y="0" width="150" height="46" rx="6" fill="#e0e7ff" stroke="#4338ca"/>
+    <text x="10" y="18" fill="#3730a3" font-weight="bold">IAE = Σ|e|·h</text>
+    <text x="10" y="34" fill="#4338ca">线性惩罚</text>
+    <rect x="166" y="0" width="150" height="46" rx="6" fill="#fef3c7" stroke="#d97706"/>
+    <text x="176" y="18" fill="#92400e" font-weight="bold">ISE = Σe²·h</text>
+    <text x="176" y="34" fill="#92400e">重罚大误差</text>
+    <rect x="332" y="0" width="150" height="46" rx="6" fill="#ede9fe" stroke="#7c3aed"/>
+    <text x="342" y="18" fill="#5b21b6" font-weight="bold">ITAE = Σt|e|·h</text>
+    <text x="342" y="34" fill="#5b21b6">惩罚拖尾</text>
+    <rect x="498" y="0" width="150" height="46" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="508" y="18" fill="#1e40af" font-weight="bold">ITSE = Σt·e²·h</text>
+    <text x="508" y="34" fill="#1e40af">拖尾+平方</text>
+  </g>
+
+  <!-- ② 自洽 -->
+  <text x="20" y="142" font-size="12" fill="#555">② 闭式自洽（定常 e=0.5 全时程）</text>
+  <g transform="translate(40,150)" font-size="11">
+    <rect x="0" y="0" width="300" height="22" rx="6" fill="#f0fdf4" stroke="#16a34a"/>
+    <text x="12" y="15" fill="#14532d">• IAE = 0.5·T（自洽 PASS）</text>
+    <rect x="320" y="0" width="300" height="22" rx="6" fill="#f0fdf4" stroke="#16a34a"/>
+    <text x="332" y="15" fill="#14532d">• ISE = 0.25·T（自洽 PASS）</text>
+  </g>
+
+  <!-- ③ 激 vs 优 条形 -->
+  <text x="20" y="206" font-size="12" fill="#555">③ 激进整定（高Kp） vs 优调整定（对象 G(s)=1/(s²+0.8s+1)）</text>
+  <g transform="translate(60,216)" font-size="10">
+    <!-- IAE -->
+    <text x="0" y="14" fill="#333">IAE</text>
+    <rect x="50" y="4" width="118" height="16" fill="#dc2626"/><text x="172" y="15" fill="#7f1d1d">2.3057</text>
+    <rect x="50" y="24" width="64" height="16" fill="#059669"/><text x="116" y="35" fill="#065f46">1.2586</text>
+    <!-- ISE -->
+    <text x="0" y="54" fill="#333">ISE</text>
+    <rect x="50" y="44" width="85" height="16" fill="#dc2626"/><text x="138" y="55" fill="#7f1d1d">0.8323</text>
+    <rect x="50" y="64" width="59" height="16" fill="#059669"/><text x="112" y="75" fill="#065f46">0.5823</text>
+    <!-- ITAE -->
+    <text x="0" y="94" fill="#333">ITAE</text>
+    <rect x="50" y="84" width="190" height="16" fill="#dc2626"/><text x="244" y="95" fill="#7f1d1d">9.46</text>
+    <rect x="50" y="104" width="55" height="16" fill="#059669"/><text x="108" y="115" fill="#065f46">2.75</text>
+    <!-- 超调 -->
+    <text x="0" y="134" fill="#333">超调</text>
+    <rect x="50" y="124" width="138" height="16" fill="#dc2626"/><text x="192" y="135" fill="#7f1d1d">0.4490</text>
+    <rect x="50" y="144" width="4" height="16" fill="#059669"/><text x="58" y="155" fill="#065f46">0.0130</text>
+    <text x="300" y="14" font-size="9" fill="#dc2626">■ 激进</text>
+    <text x="300" y="34" font-size="9" fill="#059669">■ 优调</text>
+  </g>
+
+  <!-- ④ 结论 -->
+  <text x="20" y="344" font-size="11" fill="#666">要点：优调 IAE 1.26&lt;激进 2.31、ITAE 2.75&lt;&lt;9.46；指标即整定打分函数，自动整定=最小化 IAE/ISE。指标低≠鲁棒（需叠加扰动测试）。</text>
+</svg>

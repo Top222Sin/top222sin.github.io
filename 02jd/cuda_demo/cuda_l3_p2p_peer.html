@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3 补充：GPU 直接通信 P2P + cudaMemcpyPeer 这是 L3「多 GPU &#x2F; NVLink &#x2F; NCCL 通信」收官站的最后一环。L3.4 讲了 NCCL 会「自动选 transport：NVLink &gt; PCIe P2P &gt; RDMA &gt; socket」——本篇把这条选择背后最底层的物理基础（peer access）讲透：没有它，NCCL 的 P2P 通道">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3 补充：GPU 直接通信 P2P + &#96;cudaMemcpyPeer&#96;">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_p2p_peer.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3 补充：GPU 直接通信 P2P + cudaMemcpyPeer 这是 L3「多 GPU &#x2F; NVLink &#x2F; NCCL 通信」收官站的最后一环。L3.4 讲了 NCCL 会「自动选 transport：NVLink &gt; PCIe P2P &gt; RDMA &gt; socket」——本篇把这条选择背后最底层的物理基础（peer access）讲透：没有它，NCCL 的 P2P 通道">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_p2p_peer">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cuda_demo/cuda_l3_p2p_peer.html","path":"02jd/cuda_demo/cuda_l3_p2p_peer.html","title":"L3 补充：GPU 直接通信 P2P + `cudaMemcpyPeer`"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3 补充：GPU 直接通信 P2P + `cudaMemcpyPeer` | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-%E8%A1%A5%E5%85%85%EF%BC%9AGPU-%E7%9B%B4%E6%8E%A5%E9%80%9A%E4%BF%A1-P2P-cudaMemcpyPeer"><span class="nav-number">1.</span> <span class="nav-text">L3 补充：GPU 直接通信 P2P + cudaMemcpyPeer</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A70-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E6%98%AF-L3-%E7%9A%84%E6%9C%80%E5%90%8E%E4%B8%80%E7%8E%AF"><span class="nav-number">1.1.</span> <span class="nav-text">§0 为什么这是 L3 的最后一环</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A71-P2P-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9A%E7%BB%95%E8%BF%87-host-%E7%9A%84-GPU%E2%86%94GPU-%E7%9B%B4%E8%BF%9E"><span class="nav-number">1.2.</span> <span class="nav-text">§1 P2P 是什么：绕过 host 的 GPU↔GPU 直连</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A72-CUDA-P2P-%E5%8E%9F%E7%94%9F-API-%E6%B5%81%E7%A8%8B%EF%BC%88%E5%9B%9B%E6%AD%A5%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">§2 CUDA P2P 原生 API 流程（四步）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A73-cudaMemcpyPeer-vs-cudaMemcpy-D2D"><span class="nav-number">1.4.</span> <span class="nav-text">§3 cudaMemcpyPeer vs cudaMemcpy(D2D)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A74-%E6%8B%93%E6%89%91%E5%86%B3%E5%AE%9A%E4%B8%80%E5%88%87%EF%BC%9Anvidia-smi-topo-m-%E8%AF%BB%E6%B3%95"><span class="nav-number">1.5.</span> <span class="nav-text">§4 拓扑决定一切：nvidia-smi topo -m 读法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A75-GPUDirect-%E5%AE%B6%E6%97%8F%EF%BC%88%E4%B8%8D%E5%8F%AA-P2P%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">§5 GPUDirect 家族（不只 P2P）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A76-NCCL-%E5%A6%82%E4%BD%95%E9%AA%91%E5%9C%A8-P2P-%E4%B8%8A%EF%BC%88%E4%B8%8E-L3-4-%E9%97%AD%E7%8E%AF%EF%BC%89"><span class="nav-number">1.7.</span> <span class="nav-text">§6 NCCL 如何骑在 P2P 上（与 L3.4 闭环）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A77-%E6%95%B0%E5%80%BC%E8%87%AA%E6%A3%80%EF%BC%88%E7%BA%AF-C-%E5%8F%AF%E8%B7%91%EF%BC%89"><span class="nav-number">1.8.</span> <span class="nav-text">§7 数值自检（纯 C++ 可跑）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%C2%A78-%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C"><span class="nav-number">1.9.</span> <span class="nav-text">§8 编译运行</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%94%B6%E6%9D%9F-L3"><span class="nav-number">1.9.1.</span> <span class="nav-text">一句话收束 L3</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3 补充：GPU 直接通信 P2P + `cudaMemcpyPeer`
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L3_P2P_PEER</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-补充：GPU-直接通信-P2P-cudaMemcpyPeer"><a href="#L3-补充：GPU-直接通信-P2P-cudaMemcpyPeer" class="headerlink" title="L3 补充：GPU 直接通信 P2P + cudaMemcpyPeer"></a>L3 补充：GPU 直接通信 P2P + <code>cudaMemcpyPeer</code></h1><blockquote>
+<p>这是 L3「多 GPU / NVLink / NCCL 通信」收官站的最后一环。L3.4 讲了 NCCL 会「自动选 transport：NVLink &gt; PCIe P2P &gt; RDMA &gt; socket」——<strong>本篇把这条选择背后最底层的物理基础（peer access）讲透</strong>：没有它，NCCL 的 P2P 通道根本起不来，所有流量都得 staged 绕 host。</p>
+</blockquote>
+<hr>
+<h2 id="§0-为什么这是-L3-的最后一环"><a href="#§0-为什么这是-L3-的最后一环" class="headerlink" title="§0 为什么这是 L3 的最后一环"></a>§0 为什么这是 L3 的最后一环</h2><p>L3 主线：<code>kernel fusion/pipeline</code> → <code>Tensor Core/混合精度</code> → <code>cooperative groups/dynamic parallelism/PTX</code> → <code>多 GPU/NVLink/NCCL</code>。<br>NCCL 让多卡像一台大机器，但<strong>它能在 GPU 间直接搬数据，前提是 CUDA 的 peer-to-peer（P2P）机制先就位</strong>。P2P = 一块 GPU 直接读写另一块 GPU 的显存，<strong>绕过主机内存、不经 CPU</strong>。本篇即这条「物理地板」。</p>
+<hr>
+<h2 id="§1-P2P-是什么：绕过-host-的-GPU↔GPU-直连"><a href="#§1-P2P-是什么：绕过-host-的-GPU↔GPU-直连" class="headerlink" title="§1 P2P 是什么：绕过 host 的 GPU↔GPU 直连"></a>§1 P2P 是什么：绕过 host 的 GPU↔GPU 直连</h2><p>传统跨卡搬运（无 P2P）：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GPU0 --PCIe--&gt; 主机内存(pinned) --memcpy--&gt; GPU1 --PCIe--&gt; ... 错，是：</span><br><span class="line">GPU0 显存 --PCIe读--&gt; 主机内存  →  主机内存拷贝  →  主机内存 --PCIe写--&gt; GPU1 显存</span><br></pre></td></tr></tbody></table></figure>
+<p>两次 PCIe 穿越 + 一次 CPU 内存拷贝，CPU 全程参与，**~10–20 µs、带宽受 PCIe 与 host 内存双重限制**。</p>
+<p>GPUDirect P2P：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GPU0 显存 --(NVLink 或 PCIe P2P)--&gt; GPU1 显存    一次直达，无 host 参与</span><br></pre></td></tr></tbody></table></figure>
+<ul>
+<li>延迟降到 <strong>PCIe P2P ~3–5 µs / NVLink ~1–2 µs</strong>，端到端降 30%–70%，CPU 彻底卸载。</li>
+<li>是单机多卡训练（AllReduce 梯度同步、TP 激活搬运、MoE token 路由）的物理支柱；<strong>没有 P2P 多卡训练慢一个数量级</strong>（来源：NVIDIA GPUDirect 文档 / cuda-handbook ch9.2 / 实测 <code>p2pBandwidthLatencyTest</code>）。</li>
+</ul>
+<hr>
+<h2 id="§2-CUDA-P2P-原生-API-流程（四步）"><a href="#§2-CUDA-P2P-原生-API-流程（四步）" class="headerlink" title="§2 CUDA P2P 原生 API 流程（四步）"></a>§2 CUDA P2P 原生 API 流程（四步）</h2><figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1) 查询某对卡能否直连（拓扑决定，非软件开关）</span></span><br><span class="line"><span class="type">int</span> can = <span class="number">0</span>;</span><br><span class="line"><span class="built_in">cudaDeviceCanAccessPeer</span>(&amp;can, gpu0, gpu1);     <span class="comment">// int* , device, peerDevice</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 2) 双向各自 enable（映射非对称！A→B 与 B→A 是两次独立操作）</span></span><br><span class="line"><span class="built_in">cudaSetDevice</span>(gpu0);</span><br><span class="line"><span class="built_in">cudaDeviceEnablePeerAccess</span>(gpu1, <span class="number">0</span>);           <span class="comment">// flags 必须为 0</span></span><br><span class="line"><span class="built_in">cudaSetDevice</span>(gpu1);</span><br><span class="line"><span class="built_in">cudaDeviceEnablePeerAccess</span>(gpu0, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3) 直连拷贝</span></span><br><span class="line"><span class="built_in">cudaMemcpyPeer</span>(dst_on_gpu1, gpu1, src_on_gpu0, gpu0, nbytes);</span><br><span class="line"><span class="comment">// 或异步：cudaMemcpyPeerAsync(dst,1, src,0, nbytes, stream);</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 4) 用完可关：cudaDeviceDisablePeerAccess(gpu1);</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>两个坑（实测必踩）</strong>：</p>
+<ul>
+<li><strong>坑① 映射非对称</strong>：<code>gpu0→gpu1</code> 的 enable 不自动给 <code>gpu1→gpu0</code> 开权限，要双向各调一次。</li>
+<li><strong>坑② 不与其他 op 并发</strong>：P2P memcpy 要求<strong>先把两卡在飞任务全部排干</strong>，且拷贝期间不能起别的 kernel/拷贝；普通的 <code>cudaMemToDevice</code> 异步拷贝则没有这个限制。P2P 拷贝更像一把「独占总线」的临界区。</li>
+</ul>
+<p><strong>启用硬条件</strong>（CUDA Handbook ch9.2 / NVIDIA）：</p>
+<ul>
+<li>UVA（统一虚拟地址，Fermi+/64-bit Linux 或 Win+TCC）；</li>
+<li>两卡在同一 I/O hub / 同一 PCIe Root Complex（同 NUMA 最佳）；</li>
+<li>SM 2.x+，驱动较新。<strong>跨 NUMA（SYS）拓扑默认禁用 P2P</strong>。</li>
+</ul>
+<hr>
+<h2 id="§3-cudaMemcpyPeer-vs-cudaMemcpy-D2D"><a href="#§3-cudaMemcpyPeer-vs-cudaMemcpy-D2D" class="headerlink" title="§3 cudaMemcpyPeer vs cudaMemcpy(D2D)"></a>§3 <code>cudaMemcpyPeer</code> vs <code>cudaMemcpy(D2D)</code></h2><table>
+<thead>
+<tr>
+<th></th>
+<th><code>cudaMemcpyPeer(dst,1,src,0,n)</code></th>
+<th><code>cudaMemcpy(dst,src,n,cudaMemcpyDefault)</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>设备号</td>
+<td>显式传 <code>dstDev/srcDev</code></td>
+<td><strong>不传</strong>，UVA 从指针值反推「谁家的内存」</td>
+</tr>
+<tr>
+<td>无 UVA 时</td>
+<td>✅ 可用（老/受限环境兜底）</td>
+<td>❌ 不能（指针无法定位设备）</td>
+</tr>
+<tr>
+<td>直连能力</td>
+<td>能直连就直连</td>
+<td>与 MemcpyPeer 一致（能直连就直连）</td>
+</tr>
+</tbody></table>
+<p>关键点（CUDA Handbook 9.2.1）：<strong>CUDA 能在任意两卡间拷贝，哪怕不支持直连——不行就 staged 绕 host</strong>。有直连映射时两者都走直接 P2P，不落 host。<code>cudaMemcpy3DPeer</code> 是 3D 变体。</p>
+<hr>
+<h2 id="§4-拓扑决定一切：nvidia-smi-topo-m-读法"><a href="#§4-拓扑决定一切：nvidia-smi-topo-m-读法" class="headerlink" title="§4 拓扑决定一切：nvidia-smi topo -m 读法"></a>§4 拓扑决定一切：<code>nvidia-smi topo -m</code> 读法</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">        GPU0  GPU1  GPU2  GPU3</span><br><span class="line">GPU0     X    NV12  NV12  NV12</span><br><span class="line">GPU1    NV12   X    NV12  NV12</span><br><span class="line">GPU2    NV12  NV12   X    NV12</span><br><span class="line">GPU3    NV12  NV12  NV12   X</span><br></pre></td></tr></tbody></table></figure>
+<p>图例（来源 NVIDIA + 实测）：</p>
+<ul>
+<li><strong>NV / NV12</strong> = NVLink（最佳，H100 单向 ~450 / 双向 900 GB/s）</li>
+<li><strong>PIX</strong> = 同一 PCIe switch（全速 PCIe P2P）</li>
+<li><strong>PHB</strong> = 同一 PCIe host bridge（经 CPU/系统内存，P2P 受限）</li>
+<li><strong>NODE</strong> = 同一 NUMA 节点（NVLink 或 PCIe 直连，可 P2P）</li>
+<li><strong>SYS</strong> = 跨 NUMA（默认禁用 P2P，只能 staged）</li>
+<li><strong>X</strong> = 自身</li>
+</ul>
+<p>带宽阶梯（单向聚合，教学近似）：<code>NV 450 &gt; PIX/NODE 32(PCIe Gen4) &gt; PHB 16 &gt; SYS 12 GB/s</code>。<br>→ 训练框架要做到「同节点内 TP、跨节点 DP」正是为了<strong>让最频繁的 TP 通信留在 NV/PIX 域内</strong>，避开 SYS。</p>
+<hr>
+<h2 id="§5-GPUDirect-家族（不只-P2P）"><a href="#§5-GPUDirect-家族（不只-P2P）" class="headerlink" title="§5 GPUDirect 家族（不只 P2P）"></a>§5 GPUDirect 家族（不只 P2P）</h2><table>
+<thead>
+<tr>
+<th>技术</th>
+<th>干什么</th>
+<th>绕过什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>GPUDirect P2P</strong></td>
+<td>GPU↔GPU（PCIe/NVLink）</td>
+<td>主机内存</td>
+</tr>
+<tr>
+<td><strong>GPUDirect RDMA</strong></td>
+<td>网卡 NIC ↔ GPU 直连（跨节点）</td>
+<td>主机内存 + CPU</td>
+</tr>
+<tr>
+<td><strong>GPUDirect Storage</strong></td>
+<td>NVMe SSD ↔ GPU 直连</td>
+<td>主机内存 + 文件系统</td>
+</tr>
+<tr>
+<td><strong>GPUDirect Async</strong></td>
+<td>异步控制上述全部</td>
+<td>CPU 参与</td>
+</tr>
+</tbody></table>
+<p><strong>RDMA 是 L3.4「跨节点 RDMA &gt; socket」的底层</strong>：IB 网卡直接读写 GPU 显存，MPI_Send 从 GPU 内存抓取、远端 NIC 直接写远端 GPU，数据路径零 CPU 拷贝（来源：NVIDIA GPUDirect 文档）。</p>
+<hr>
+<h2 id="§6-NCCL-如何骑在-P2P-上（与-L3-4-闭环）"><a href="#§6-NCCL-如何骑在-P2P-上（与-L3-4-闭环）" class="headerlink" title="§6 NCCL 如何骑在 P2P 上（与 L3.4 闭环）"></a>§6 NCCL 如何骑在 P2P 上（与 L3.4 闭环）</h2><ul>
+<li>NCCL 初始化时 <code>cudaDeviceCanAccessPeer</code> 探测拓扑，自动选 transport：<br><strong>同节点 NVLink &gt; PCIe P2P(PIX/NODE/PHB) &gt; SHM(共享内存兜底)；跨节点 RDMA &gt; Socket</strong>。</li>
+<li>NCCL 的 P2P transport = <strong>peer mappings（<code>cudaDeviceEnablePeerAccess</code>）+ IPC</strong>（<code>cudaIpcGetMemHandle</code> / <code>cudaIpcOpenMemHandle</code>，跨进程共享 GPU 指针）。</li>
+<li>排查环境变量：<code>NCCL_DEBUG=INFO</code> 看通道里的 <code>P2P/CUMEM</code> 或 <code>P2P/IPC</code>（P2P 生效）、<code>SHM</code>（共享内存兜底，慢）、<code>NET/Socket</code>（最差）；<code>NCCL_P2P_LEVEL=NVL</code> 强制只用 NVLink；<code>NCCL_NET_GDR_LEVEL=5</code> 跨节点开 GPUDirect RDMA。</li>
+<li><strong>闭环</strong>：L3.4 的「NCCL 自动选路」＝本篇 peer access 机制的结果；L3.4 的 ring/busbw 模型跑在 P2P 直连的物理带宽上。</li>
+</ul>
+<hr>
+<h2 id="§7-数值自检（纯-C-可跑）"><a href="#§7-数值自检（纯-C-可跑）" class="headerlink" title="§7 数值自检（纯 C++ 可跑）"></a>§7 数值自检（纯 C++ 可跑）</h2><p><code>g++ -O3 -std=c++17 cuda_l3_p2p_peer.cpp -o p2p &amp;&amp; ./p2p</code> 输出：</p>
+<ul>
+<li><code>model_topology()</code>：4 卡矩阵，标记 NV/NODE 对可 P2P、SYS 对必须 staged。</li>
+<li><code>p2p_vs_staged(1 GB)</code>：搬 1 GB——绕 host <strong>102.5 ms</strong> vs PCIe P2P <strong>31.25 ms（3.3×）</strong> vs NVLink <strong>2.22 ms（46×）</strong>。</li>
+<li><code>verify_p2p_copy()</code>：模拟 GPU0 显存 → GPU1 显存，1024 float 逐字节一致 → <strong>PASS</strong>。</li>
+<li><code>nccl_transport_select()</code>：列出 transport 优先级与排查环境变量。</li>
+</ul>
+<p>（<code>__CUDACC__</code> 守护段给真机骨架：<code>enable_peer_access</code> 双向 enable + <code>real_p2p_copy</code> 用 <code>cudaMemcpyPeerAsync</code> 排进 stream；真机需 nvcc + 多卡硬件。）</p>
+<hr>
+<h2 id="§8-编译运行"><a href="#§8-编译运行" class="headerlink" title="§8 编译运行"></a>§8 编译运行</h2><figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 纯 C++ 仿真（无 GPU 也行，看模型与 API 语义）</span></span><br><span class="line">g++ -O3 -std=c++17 cuda_l3_p2p_peer.cpp -o p2p &amp;&amp; ./p2p</span><br><span class="line"><span class="comment">#   预期：拓扑矩阵 + 直连判定 / 102.5ms vs 31.25ms(3.3x) vs 2.22ms(46x) / verify PASS</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 真机多卡（需 nvcc + 双卡 + 同 NUMA/NVLink）</span></span><br><span class="line">nvcc -O3 -std=c++17 -<span class="built_in">arch</span>=sm_80 cuda_l3_p2p_peer.cpp -o p2p_gpu &amp;&amp; ./p2p_gpu</span><br><span class="line"><span class="comment">#   真机先跑 p2pBandwidthLatencyTest 或 nvidia-smi topo -m 确认 P2P 可用</span></span><br></pre></td></tr></tbody></table></figure>
+
+<hr>
+<h3 id="一句话收束-L3"><a href="#一句话收束-L3" class="headerlink" title="一句话收束 L3"></a>一句话收束 L3</h3><p><strong>fusion 减少「搬多少」→ cp.async+pipeline 减少「搬时干等」→ Tensor Core 把算力堆密 → cooperative groups/dynamic parallelism 重组并行结构 → NCCL 把多卡织成一台机器 → P2P/peer access 是这台机器「卡间不绕 host」的物理地板。</strong> 至此 L3 架构级主线全部完成。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L3_P2P_PEER</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

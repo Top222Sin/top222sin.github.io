@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L1.5 手眼标定（眼在手上 &#x2F; 眼在手外） 手眼标定是”视觉 → 动作”的桥梁：求相机系与机械臂系之间那个固定不变的刚体变换 X。   一、两种安装方式   安装 X 的含义 典型场景    眼在手上（eye-in-hand） cam2gripper（相机装在法兰上） 装配、抓取，相机随臂动   眼在手外（eye-to-hand） cam2base（相机固定看工位） 固定工位视觉、引导机器人取放">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L1.5 手眼标定（眼在手上 &#x2F; 眼在手外）">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cali_demo/cali_l1_handeye.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L1.5 手眼标定（眼在手上 &#x2F; 眼在手外） 手眼标定是”视觉 → 动作”的桥梁：求相机系与机械臂系之间那个固定不变的刚体变换 X。   一、两种安装方式   安装 X 的含义 典型场景    眼在手上（eye-in-hand） cam2gripper（相机装在法兰上） 装配、抓取，相机随臂动   眼在手外（eye-to-hand） cam2base（相机固定看工位） 固定工位视觉、引导机器人取放">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/cali_demo/images/fig5_handeye.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.910Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/cali_demo/images/fig5_handeye.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cali_demo/cali_l1_handeye">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cali_demo/cali_l1_handeye.html","path":"02jd/cali_demo/cali_l1_handeye.html","title":"L1.5 手眼标定（眼在手上 / 眼在手外）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L1.5 手眼标定（眼在手上 / 眼在手外） | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L1-5-%E6%89%8B%E7%9C%BC%E6%A0%87%E5%AE%9A%EF%BC%88%E7%9C%BC%E5%9C%A8%E6%89%8B%E4%B8%8A-%E7%9C%BC%E5%9C%A8%E6%89%8B%E5%A4%96%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">L1.5 手眼标定（眼在手上 &#x2F; 眼在手外）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%A4%E7%A7%8D%E5%AE%89%E8%A3%85%E6%96%B9%E5%BC%8F"><span class="nav-number">1.1.</span> <span class="nav-text">一、两种安装方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A4%E7%A7%8D%E5%AE%89%E8%A3%85%E7%9A%84%E5%B7%A5%E7%A8%8B%E5%8F%96%E8%88%8D%EF%BC%88%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">两种安装的工程取舍（面试高频）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E7%BB%9F%E4%B8%80%E6%96%B9%E7%A8%8B-AX-XB"><span class="nav-number">1.2.</span> <span class="nav-text">二、统一方程 AX &#x3D; XB</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AX-XB-%E7%9A%84%E6%8E%A8%E5%AF%BC%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF%E2%80%9D%E7%9B%B8%E5%AF%B9%E8%BF%90%E5%8A%A8%E2%80%9D%E6%96%B9%E7%A8%8B%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">AX&#x3D;XB 的推导（为什么是”相对运动”方程）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E5%85%B3%E9%94%AE%EF%BC%9A%E7%9C%BC%E5%A4%96-%E7%9C%BC%E6%89%8B%E7%9A%84-A%E3%80%81B-%E6%96%B9%E5%90%91%E6%81%B0%E5%A5%BD%E7%9B%B8%E5%8F%8D"><span class="nav-number">1.3.</span> <span class="nav-text">三、关键：眼外 &#x2F; 眼手的 A、B 方向恰好相反</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%96%B9%E5%90%91%E7%9B%B8%E5%8F%8D%EF%BC%88%E7%9C%BC%E5%A4%96%E6%8E%A8%E5%AF%BC%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">为什么方向相反（眼外推导）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E6%95%B0%E6%8D%AE%E6%80%8E%E4%B9%88%E9%87%87"><span class="nav-number">1.4.</span> <span class="nav-text">四、数据怎么采</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%87%E9%9B%86%E8%B4%A8%E9%87%8F%E8%A6%81%E6%B1%82%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88-%E2%89%A510-%E4%B8%94%E5%A4%9A%E6%A0%B7%EF%BC%89"><span class="nav-number">1.4.1.</span> <span class="nav-text">采集质量要求（为什么 ≥10 且多样）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88cali-l1-handeye-cpp%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、代码走读（cali_l1_handeye.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">六、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.7.</span> <span class="nav-text">七、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.8.</span> <span class="nav-text">八、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L1.5 手眼标定（眼在手上 / 眼在手外）
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L1_HANDEYE</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L1-5-手眼标定（眼在手上-眼在手外）"><a href="#L1-5-手眼标定（眼在手上-眼在手外）" class="headerlink" title="L1.5 手眼标定（眼在手上 / 眼在手外）"></a>L1.5 手眼标定（眼在手上 / 眼在手外）</h1><blockquote>
+<p>手眼标定是”视觉 → 动作”的桥梁：求相机系与机械臂系之间那个<strong>固定不变</strong>的刚体变换 X。</p>
+</blockquote>
+<hr>
+<h2 id="一、两种安装方式"><a href="#一、两种安装方式" class="headerlink" title="一、两种安装方式"></a>一、两种安装方式</h2><table>
+<thead>
+<tr>
+<th>安装</th>
+<th>X 的含义</th>
+<th>典型场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>眼在手上</strong>（eye-in-hand）</td>
+<td><code>cam2gripper</code>（相机装在法兰上）</td>
+<td>装配、抓取，相机随臂动</td>
+</tr>
+<tr>
+<td><strong>眼在手外</strong>（eye-to-hand）</td>
+<td><code>cam2base</code>（相机固定看工位）</td>
+<td>固定工位视觉、引导机器人取放</td>
+</tr>
+</tbody></table>
+<h3 id="两种安装的工程取舍（面试高频）"><a href="#两种安装的工程取舍（面试高频）" class="headerlink" title="两种安装的工程取舍（面试高频）"></a>两种安装的工程取舍（面试高频）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">眼在手上: 相机随臂动 → 视角灵活（可以凑近目标）、但视野随臂变化</span><br><span class="line">          相机位姿 = 已知（FK 给法兰, X 给相机）→ 目标定位直接</span><br><span class="line">眼在手外: 相机固定 → 视野稳定、标定一次用很久</span><br><span class="line">          但目标被臂遮挡风险高、需要"相机→基座"外参</span><br><span class="line">选型: 高精度抓取常用 eye-in-hand（误差链短）;</span><br><span class="line">      固定工位检测常用 eye-to-hand（视野稳定）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>核心差异</strong>：X 是”相机↔法兰”还是”相机↔基座”——决定了数据配对的数学方向（第三节）。</p>
+<h2 id="二、统一方程-AX-XB"><a href="#二、统一方程-AX-XB" class="headerlink" title="二、统一方程 AX = XB"></a>二、统一方程 AX = XB</h2><p>记 <code>A</code> = 法兰在基座下的<strong>相对运动</strong>，<code>B</code> = 标定板在相机下的<strong>相对运动</strong>，X 是待求固定变换。核心方程：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A · X = X · B</span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li><strong>旋转部分</strong>：<code>R_A · R_X = R_X · R_B</code>（R_A 与 R_B 通过 R_X 共轭——不是普通交换；用单位四元数把”左乘/右乘”线性化为矩阵方程 SVD 解 <code>R_X</code>）</li>
+</ul>
+<blockquote>
+<p><strong>术语澄清</strong>：手眼标定旋转求解的常用方法——<strong>Park–Martin</strong>（旋转轴/矩阵对数 + 平移线性最小二乘）、<strong>Tsai–Lenz</strong>（两步法，轴角推导）、<strong>Daniilidis</strong>（真正的对偶四元数法）。本 demo 实现的是 <strong>Park–Martin 式单位四元数分离求解</strong>（先解旋转 qX，再线性解平移），<strong>不是对偶四元数法</strong>——文档早期误称”对偶四元数”，已修正。</p>
+</blockquote>
+<p>本 demo 自实现 <strong>Park–Martin 式单位四元数法</strong>（注意：是单位四元数分离求解，非 Daniilidis 对偶四元数——术语见下方”旋转部分”注记）：把每对相对运动的旋转写成 <code>S(qA)·qX = W(qB)·qX</code>（S/W 是四元数左乘/右乘矩阵），堆叠成 <code>(S(qA)-W(qB))·qX = 0</code>，SVD 取最小奇异向量得 <code>qX</code>；再用线性系统 <code>(R_A - I)·t_X = R_X·t_B - t_A</code> 解平移。</p>
+<h3 id="AX-XB-的推导（为什么是”相对运动”方程）"><a href="#AX-XB-的推导（为什么是”相对运动”方程）" class="headerlink" title="AX=XB 的推导（为什么是”相对运动”方程）"></a>AX=XB 的推导（为什么是”相对运动”方程）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">眼在手上: 某时刻 板在基座 = G_i · X · T_i   （法兰→基座 × 相机→法兰 × 板→相机）</span><br><span class="line">两时刻相等: G_i·X·T_i = G_{i+1}·X·T_{i+1}</span><br><span class="line">变形: (G_i⁻¹G_{i+1})·X = X·(T_i·T_{i+1}⁻¹)</span><br><span class="line">      └──── A ────┘       └──── B ────┘</span><br><span class="line">A·X = X·B —— X 在"两个相对运动之间"不变, 这就是可解性的来源</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>核心洞察</strong>：X 是固定变换，所以在任意两个时刻之间”穿过”它应自洽——<code>A·X=X·B</code> 是”相对运动在 X 下可交换”的代数表达。<strong>为什么能闭式解</strong>：旋转部分 R_A·R_X=R_X·R_B 是一个”共轭”方程，用对偶四元数把”左乘/右乘”都线性化成矩阵，SVD 一步出解（L2.2 展开）。</p>
+<h2 id="三、关键：眼外-眼手的-A、B-方向恰好相反"><a href="#三、关键：眼外-眼手的-A、B-方向恰好相反" class="headerlink" title="三、关键：眼外 / 眼手的 A、B 方向恰好相反"></a>三、关键：眼外 / 眼手的 A、B 方向恰好相反</h2><blockquote>
+<p>这是新手最容易踩的坑，也是很多代码”跑出来差一个对称”的根源。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>A（法兰相对运动）</th>
+<th>B（板相对运动）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>眼在手上</td>
+<td><code>G_i⁻¹·G_{i+1}</code></td>
+<td><code>T_i·T_{i+1}⁻¹</code></td>
+</tr>
+<tr>
+<td>眼在手外</td>
+<td><code>G_{i+1}·G_i⁻¹</code></td>
+<td><code>T_{i+1}·T_i⁻¹</code></td>
+</tr>
+</tbody></table>
+<p>代码里两个分支用完全一致的 <code>solveHandEye()</code>，只换了相对运动的”配对方向”。</p>
+<h3 id="为什么方向相反（眼外推导）"><a href="#为什么方向相反（眼外推导）" class="headerlink" title="为什么方向相反（眼外推导）"></a>为什么方向相反（眼外推导）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">眼在手外: 板在基座 = T_board2base 固定, 相机系 = 基座外固定</span><br><span class="line">  某时刻 板在相机 = (G_i·X)⁻¹ · T_board2base  （X = cam2base 时 G·X = gripper→base × cam→gripper... 展开）</span><br><span class="line">  两时刻: (G_i·X)⁻¹T = (G_{i+1}·X)⁻¹T → X·G_i⁻¹... </span><br><span class="line">整理得 A=G_{i+1}·G_i⁻¹, B=T_{i+1}·T_i⁻¹ —— 与眼在手上"配对顺序颠倒"</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>记忆口诀</strong>：”眼在手上 A 用逆前（G_i⁻¹G_{i+1}），眼在手外 A 用顺后（G_{i+1}G_i⁻¹）”——A 的方向决定 B 跟着反。写代码前先画坐标链图，别硬记。</p>
+<h2 id="四、数据怎么采"><a href="#四、数据怎么采" class="headerlink" title="四、数据怎么采"></a>四、数据怎么采</h2><p>每个采集位姿同时记录：</p>
+<ul>
+<li><code>T_gripper2base</code>：机械臂正运动学（读关节角 → FK）</li>
+<li><code>T_target2cam</code>：相机拍标定板 + 内参 + <code>solvePnP</code></li>
+</ul>
+<p>多组（≥10，姿态多样）喂给求解器。</p>
+<h3 id="采集质量要求（为什么-≥10-且多样）"><a href="#采集质量要求（为什么-≥10-且多样）" class="headerlink" title="采集质量要求（为什么 ≥10 且多样）"></a>采集质量要求（为什么 ≥10 且多样）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">每个姿态差给 1 个 AX=XB 约束（6 自由度 X 需要 ≥6 个独立约束）</span><br><span class="line">但"独立"是关键: 姿态差旋转轴要多样（L2.3 退化）</span><br><span class="line">实际推荐 ≥10~15 组, 覆盖不同俯仰/横滚/偏航 + 不同平移位置</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程铁律</strong>：手眼标定的成败 70% 在采集——运动多样、板可见、帧干净（L2.3/L3.2 分别讲退化与坏帧处理）。</p>
+<h2 id="五、代码走读（cali-l1-handeye-cpp）"><a href="#五、代码走读（cali-l1-handeye-cpp）" class="headerlink" title="五、代码走读（cali_l1_handeye.cpp）"></a>五、代码走读（cali_l1_handeye.cpp）</h2><ul>
+<li>合成真值 X，反推各 <code>T</code>（无需真机），分别造眼外/眼手两套数据。</li>
+<li><code>solveHandEye()</code> 自实现 Park–Martin；与 OpenCV <code>calibrateHandEye(TSAI)</code> 交叉验证（眼在手分支）。</li>
+<li>用 <code>X_gt⁻¹·X_est</code> 应≈单位阵，报告**旋转误差(°) + 平移误差(mm)**；均 &lt; 阈值 → PASS。</li>
+</ul>
+<p><img src="/02jd/cali_demo/images/fig5_handeye.svg" alt="L1.5 眼在手上 vs 眼在手外"></p>
+<h2 id="六、工程落点（真实项目）"><a href="#六、工程落点（真实项目）" class="headerlink" title="六、工程落点（真实项目）"></a>六、工程落点（真实项目）</h2><ul>
+<li><strong>OpenCV</strong> <code>cv::calibrateHandEye</code>：支持 TSAI/PARK/HORAUD/ANDREFF 四种方法——本 demo 自实现 Park–Martin 与它交叉对拍。</li>
+<li><strong>easy_handeye（ROS）</strong>：工业级手眼标定包——采集 + 求解 + 发布 tf 全自动，内置退化检查（L2.3 的工程化）。</li>
+<li><strong>Halcon</strong> <code>calibrate_hand_eye</code>：机器视觉行业标准工具。</li>
+<li><strong>与 08robot</strong>：UR5e + 末端相机的”视觉引导抓取”必须先做 eye-in-hand 标定——<code>T_cam2gripper</code> 就是这里的 X。</li>
+</ul>
+<h2 id="七、自检"><a href="#七、自检" class="headerlink" title="七、自检"></a>七、自检</h2><ul>
+<li>把位姿数 N 从 14 降到 3，看误差是否暴涨（体会”样本要多”）。</li>
+<li>把运动改成”只平移不旋转”，看求解是否退化（预告 L2.3 退化主题）。</li>
+<li>挑战：AX=XB 的解为什么”不唯一”？（X 的整体任意性来自相对运动方程——固定第一个姿态的坐标即可；这解释了为什么标定结果依赖参考系选择）</li>
+</ul>
+<h2 id="八、下一步"><a href="#八、下一步" class="headerlink" title="八、下一步"></a>八、下一步</h2><p>进入 L2 进阶：</p>
+<ul>
+<li><a href="/02jd/cali_demo/cali_l2_intrinsics_deep.html">L2.1 内参深入</a> · <a href="/02jd/cali_demo/cali_l2_handeye_math.html">L2.2 手眼数学</a> · <a href="/02jd/cali_demo/cali_l2_degeneracy.html">L2.3 退化 ⭐</a></li>
+<li><a href="/02jd/cali_demo/cali_l2_tcp_deep.html">L2.4 TCP 深入</a> · <a href="/02jd/cali_demo/cali_l2_error_check.html">L2.5 误差校验 ⭐</a></li>
+</ul>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L1_HANDEYE</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

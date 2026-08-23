@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3.2 鲁棒估计与退化自适应 ⭐ L2.5 告诉你”误差多大”。L3.2 解决一个更现实的问题：采集数据里混了坏帧&#x2F;坏角点，怎么还标得稳？ 并顺带给出”退化自动告警”的入口。   一、坏数据从哪来 角点检测抖动 &#x2F; 运动模糊 &#x2F; 反光 → 单帧角点整体偏移。 板被手指&#x2F;线缆遮挡一部分 → 角点漏检、错配。 机器人某次到位超差 → 该帧外参异常。 这些”离群帧”会让最小二乘的 calibrateC">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3.2 鲁棒估计与退化自适应 ⭐">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cali_demo/cali_l3_robust.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3.2 鲁棒估计与退化自适应 ⭐ L2.5 告诉你”误差多大”。L3.2 解决一个更现实的问题：采集数据里混了坏帧&#x2F;坏角点，怎么还标得稳？ 并顺带给出”退化自动告警”的入口。   一、坏数据从哪来 角点检测抖动 &#x2F; 运动模糊 &#x2F; 反光 → 单帧角点整体偏移。 板被手指&#x2F;线缆遮挡一部分 → 角点漏检、错配。 机器人某次到位超差 → 该帧外参异常。 这些”离群帧”会让最小二乘的 calibrateC">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.910Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cali_demo/cali_l3_robust">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cali_demo/cali_l3_robust.html","path":"02jd/cali_demo/cali_l3_robust.html","title":"L3.2 鲁棒估计与退化自适应 ⭐"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3.2 鲁棒估计与退化自适应 ⭐ | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-2-%E9%B2%81%E6%A3%92%E4%BC%B0%E8%AE%A1%E4%B8%8E%E9%80%80%E5%8C%96%E8%87%AA%E9%80%82%E5%BA%94-%E2%AD%90"><span class="nav-number">1.</span> <span class="nav-text">L3.2 鲁棒估计与退化自适应 ⭐</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%9D%8F%E6%95%B0%E6%8D%AE%E4%BB%8E%E5%93%AA%E6%9D%A5"><span class="nav-number">1.1.</span> <span class="nav-text">一、坏数据从哪来</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98%E6%80%95%E7%A6%BB%E7%BE%A4%EF%BC%88%E6%95%B0%E5%AD%A6%E6%9C%BA%E7%90%86%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">为什么最小二乘怕离群（数学机理）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81RANSAC-%E5%BC%8F%E9%B2%81%E6%A3%92%E6%A0%87%E5%AE%9A%EF%BC%88%E6%9C%AC%E7%AF%87%E5%AE%9E%E7%8E%B0%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">二、RANSAC 式鲁棒标定（本篇实现）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%AD%E4%BD%8D%E6%95%B0-vs-%E5%9D%87%E5%80%BC%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%AD%E4%BD%8D%E6%95%B0%E5%AF%B9%E7%A6%BB%E7%BE%A4%E7%A8%B3%E5%81%A5%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">中位数 vs 均值（为什么中位数对离群稳健）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%B8%8E-M-%E4%BC%B0%E8%AE%A1-%E4%BF%A1%E6%81%AF%E5%8A%A0%E6%9D%83%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.3.</span> <span class="nav-text">三、与 M 估计 &#x2F; 信息加权的关系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%89%E5%9E%8B%E5%86%B3%E7%AD%96%EF%BC%88RANSAC-%E7%B1%BB-vs-Huber%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">选型决策（RANSAC 类 vs Huber）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E9%80%80%E5%8C%96%E8%87%AA%E5%8A%A8%E5%91%8A%E8%AD%A6%EF%BC%88%E6%8E%A5-L2-3%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、退化自动告警（接 L2.3）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%8A%E8%AD%A6%E7%9A%84%E4%B8%A4%E7%A7%8D%E8%AF%AD%E4%B9%89%EF%BC%88%E5%88%AB%E6%B7%B7%E6%B7%86%EF%BC%89"><span class="nav-number">1.4.1.</span> <span class="nav-text">告警的两种语义（别混淆）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88cali-l3-robust-cpp%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、代码走读（cali_l3_robust.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">六、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.7.</span> <span class="nav-text">七、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3.2 鲁棒估计与退化自适应 ⭐
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L3_ROBUST</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-2-鲁棒估计与退化自适应-⭐"><a href="#L3-2-鲁棒估计与退化自适应-⭐" class="headerlink" title="L3.2 鲁棒估计与退化自适应 ⭐"></a>L3.2 鲁棒估计与退化自适应 ⭐</h1><blockquote>
+<p>L2.5 告诉你”误差多大”。L3.2 解决一个更现实的问题：<strong>采集数据里混了坏帧/坏角点，怎么还标得稳？</strong> 并顺带给出”退化自动告警”的入口。</p>
+</blockquote>
+<hr>
+<h2 id="一、坏数据从哪来"><a href="#一、坏数据从哪来" class="headerlink" title="一、坏数据从哪来"></a>一、坏数据从哪来</h2><ul>
+<li>角点检测抖动 / 运动模糊 / 反光 → 单帧角点整体偏移。</li>
+<li>板被手指/线缆遮挡一部分 → 角点漏检、错配。</li>
+<li>机器人某次到位超差 → 该帧外参异常。</li>
+<li>这些”离群帧”会让最小二乘的 <code>calibrateCamera</code> 被<strong>系统性带偏</strong>（尤其系统性偏移）。</li>
+</ul>
+<h3 id="为什么最小二乘怕离群（数学机理）"><a href="#为什么最小二乘怕离群（数学机理）" class="headerlink" title="为什么最小二乘怕离群（数学机理）"></a>为什么最小二乘怕离群（数学机理）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">最小二乘目标: min Σ rᵢ² —— 残差平方!</span><br><span class="line">离群帧残差大 → rᵢ² 巨大 → 主导损失函数 → 最优解被"拉向离群帧"</span><br><span class="line">单个坏帧 r=6px → r²=36 —— 顶 36 个 1px 的好帧!</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>核心认知</strong>：最小二乘对离群点的敏感度是<strong>平方级</strong>的——一个坏帧就能把标定结果带偏。这就是鲁棒估计存在的原因（RANSAC/M 估计把”平方损失”换成”对离群不敏感的损失”）。</p>
+<h2 id="二、RANSAC-式鲁棒标定（本篇实现）"><a href="#二、RANSAC-式鲁棒标定（本篇实现）" class="headerlink" title="二、RANSAC 式鲁棒标定（本篇实现）"></a>二、RANSAC 式鲁棒标定（本篇实现）</h2><p>思路：<strong>子采样 + 中位数评分</strong>（自定义 robust consensus 方案，与标准 RANSAC 同族但评分用中位数而非内点数）：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">for 多次迭代:</span><br><span class="line">    随机采样一个子集(约一半帧) → calibrateCamera 得候选 K</span><br><span class="line">    用候选 K 算全部帧的逐帧重投影 RMS → 取中位数</span><br><span class="line">    保留"中位数最低"的候选 + 其 inlier(残差&lt;阈值)</span><br><span class="line">在 inlier 上精修 → 最终 K_robust</span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li><strong>为什么中位数稳</strong>：N 帧里只有少数是坏帧，中位数大概率落在不好的帧域外，坏帧拉不动它。</li>
+<li><strong>inlier 阈值</strong>：<code>残差 &lt; 2×中位数 + 0.5px</code>，把明显坏的帧排除。</li>
+<li><strong>成功率依据</strong>（本 demo 4/30 坏帧、子集 15 帧）：单次子集全为内点概率 ≈ (26/30)^15 ≈ 0.12，60 次迭代至少一次命中 ≈ 99.9%——<strong>采样策略必须按内点率算成功率</strong>，不能拍脑袋定迭代次数。</li>
+<li>本 demo 注入 4/30 帧系统性 +6px 偏移，验证 <code>K_robust</code> 焦距误差 &lt;5% 且明显优于含坏帧的基线。</li>
+</ul>
+<blockquote>
+<p><strong>RANSAC 定义澄清</strong>：标准 RANSAC 是”最小样本集采样 + 一致性集计数 + 内点重估计”；本 demo 的”半帧子采样 + 中位数评分”是<strong>自定义鲁棒共识方案</strong>（同族但非标准定义）。选型：内点率足够（&lt;50% 坏帧）时 RANSAC 类方法可行；坏帧比例接近/超过 50% 时中位数也失效——“坏帧占比 &gt;30% 用 RANSAC”不是正确选型规则，应按内点率与采样成功率计算。</p>
+</blockquote>
+<h3 id="中位数-vs-均值（为什么中位数对离群稳健）"><a href="#中位数-vs-均值（为什么中位数对离群稳健）" class="headerlink" title="中位数 vs 均值（为什么中位数对离群稳健）"></a>中位数 vs 均值（为什么中位数对离群稳健）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">均值: 被离群值拉偏（1 个 6px 坏帧把均值抬高 0.2px）</span><br><span class="line">中位数: 排序取中 —— 50% 内的离群完全不影响</span><br><span class="line">RANSAC 评分用中位数: 坏帧占比 &lt;50% 时, 中位数反映"多数好帧"的水平</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程结论</strong>：RANSAC 的稳健性来自”<strong>子采样 + 中位数评分</strong>“的组合——子采样降低坏帧混入概率，中位数评分让候选评估不受少数坏帧干扰。这是”稳健统计”在标定里的标准配方。</p>
+<h2 id="三、与-M-估计-信息加权的关系"><a href="#三、与-M-估计-信息加权的关系" class="headerlink" title="三、与 M 估计 / 信息加权的关系"></a>三、与 M 估计 / 信息加权的关系</h2><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>思想</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RANSAC 类（子采样+一致性）</td>
+<td>子采样 + 内点计数/中位数评分，硬剔离群</td>
+<td>内点率足够（坏帧 &lt;50%）、可多次采样</td>
+</tr>
+<tr>
+<td>M 估计（Tukey / Huber 鲁棒核）</td>
+<td>给残差大的帧降权，软抑制</td>
+<td>离群少、需一次收敛</td>
+</tr>
+<tr>
+<td>信息矩阵加权</td>
+<td>按测量噪声协方差/单位归一化加权（<strong>不能人为放大自由度</strong>，缺失信息靠加权补不回来）</td>
+<td>联合优化、在线标定</td>
+</tr>
+<tr>
+<td>退化自适应</td>
+<td>见 L2.3，采样设计避开退化</td>
+<td>预防而非补救</td>
+</tr>
+</tbody></table>
+<h3 id="选型决策（RANSAC-类-vs-Huber）"><a href="#选型决策（RANSAC-类-vs-Huber）" class="headerlink" title="选型决策（RANSAC 类 vs Huber）"></a>选型决策（RANSAC 类 vs Huber）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">坏帧比例中等（&lt;50%）→ RANSAC 类（硬剔, 子采样天然免疫）</span><br><span class="line">坏帧少（&lt;10%）+ 要一次收敛 → Huber/Tukey（软降权, 迭代快）</span><br><span class="line">混合: RANSAC 剔粗离群 → 鲁棒核精修（工业标准两步法）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程结论</strong>：生产标定普遍”RANSAC 粗剔 + 鲁棒核精修”两步——本 demo 实现 RANSAC 类骨架，精修段可换 Huber。<strong>注意</strong>：OpenCV <code>solvePnPRansac</code> 是”RANSAC 选 PnP 内点并重估姿态”，<strong>不承诺内部使用 Huber/Tukey 鲁棒核</strong>——两者不要混为一谈。</p>
+<h2 id="四、退化自动告警（接-L2-3）"><a href="#四、退化自动告警（接-L2-3）" class="headerlink" title="四、退化自动告警（接 L2.3）"></a>四、退化自动告警（接 L2.3）</h2><p>把 L2.3 的”系数矩阵条件数 / 奇异值比”塞进标定流程：</p>
+<ul>
+<li>条件数 &gt; 阈值 → 告警”当前采样近退化，请补姿态”。</li>
+<li>中位数残差突然翻倍 → 告警”疑似坏帧 / 温漂，建议重标”。<br>这就是 L3.3 自动系统的质量闸门。</li>
+</ul>
+<h3 id="告警的两种语义（别混淆）"><a href="#告警的两种语义（别混淆）" class="headerlink" title="告警的两种语义（别混淆）"></a>告警的两种语义（别混淆）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">条件数告警 = "采样几何不够"（信息不足）→ 补姿态（L2.3）</span><br><span class="line">残差翻倍告警 = "数据质量下降"（坏帧/漂移）→ 重采/剔帧（本篇）</span><br><span class="line">两者都指向"数据有问题", 但修复动作不同——先判断哪种</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>工程细节</strong>：告警不应该是”事后看”，要<strong>实时</strong>——采集过程中就监控条件数和残差，当场提示”这组姿态不够/这帧废了”。L3.3 的自动系统把这两道闸门串进采集循环。</p>
+<h2 id="五、代码走读（cali-l3-robust-cpp）"><a href="#五、代码走读（cali-l3-robust-cpp）" class="headerlink" title="五、代码走读（cali_l3_robust.cpp）"></a>五、代码走读（cali_l3_robust.cpp）</h2><ul>
+<li>生成 30 帧，4 帧注入 +6px 系统性平移（坏帧）。</li>
+<li>基线：<code>calibrateCamera</code> 全帧 → <code>Kb</code>（被带偏）。</li>
+<li>鲁棒：60 次随机采样（每子集 15 帧），<code>solvePnP</code> 逐帧算残差、取中位数评分；保留最优 inlier 集，再精修 → <code>Kr</code>。</li>
+<li>断言：<code>fErrRob &lt; 5%</code>、且 <code>fErrBase &gt; fErrRob</code>、inlier 数 ≈ 26。</li>
+</ul>
+<h2 id="六、工程落点（真实项目）"><a href="#六、工程落点（真实项目）" class="headerlink" title="六、工程落点（真实项目）"></a>六、工程落点（真实项目）</h2><ul>
+<li><strong>OpenCV</strong> <code>cv::solvePnPRansac</code>：PnP 的 RANSAC 版——手眼标定前先用它对每帧求 <code>T_target2cam</code>（剔坏帧）。</li>
+<li><strong>easy_handeye</strong>：采集时提示”该帧检测质量差，请重拍”——实时质量监控的工程化。</li>
+<li><strong>Halcon</strong> <code>caltab</code> 标定：自带”坏图剔除”（残差超阈的图自动排除）。</li>
+<li><strong>产线数据清洗</strong>：任何”自动采集标定数据”的系统都要过鲁棒剔除——否则偶发反光/遮挡就毁一次标定。</li>
+</ul>
+<h2 id="七、下一步"><a href="#七、下一步" class="headerlink" title="七、下一步"></a>七、下一步</h2><p>进 <a href="/02jd/cali_demo/cali_l3_auto_system.html">L3.3 自动/在线标定系统</a>：把上面所有环节包成一个会自检、会报警、会出报告的系统。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cali_demo/">CALI_DEMO</a></li>
+            <li>CALI_L3_ROBUST</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

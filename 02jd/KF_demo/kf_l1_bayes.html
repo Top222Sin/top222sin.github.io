@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L1.2 贝叶斯视角：高斯的乘积（更新）与卷积（预测） 一句话：预测 &#x3D; 两个独立高斯相加 → 卷积（方差相加）；更新 &#x3D; 先验 × 似然 → 乘积（精度相加）。KF 五公式不过是这两条高斯代数的矩阵版。   一、更新 &#x3D; 高斯乘积先验 N(μ₁, σ₁²) × 似然 N(μ₂, σ₂²) 的归一化乘积仍是高斯：  μ &#x3D; (μ₁σ₂² + μ₂σ₁²)&#x2F;(σ₁²+σ₂²)，σ² &#x3D; σ₁²σ₂²">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L1.2 贝叶斯视角：高斯的乘积（更新）与卷积（预测）">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/KF_demo/kf_l1_bayes.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L1.2 贝叶斯视角：高斯的乘积（更新）与卷积（预测） 一句话：预测 &#x3D; 两个独立高斯相加 → 卷积（方差相加）；更新 &#x3D; 先验 × 似然 → 乘积（精度相加）。KF 五公式不过是这两条高斯代数的矩阵版。   一、更新 &#x3D; 高斯乘积先验 N(μ₁, σ₁²) × 似然 N(μ₂, σ₂²) 的归一化乘积仍是高斯：  μ &#x3D; (μ₁σ₂² + μ₂σ₁²)&#x2F;(σ₁²+σ₂²)，σ² &#x3D; σ₁²σ₂²">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/KF_demo/images/fig2_bayes.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.940Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/KF_demo/images/fig2_bayes.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/KF_demo/kf_l1_bayes">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/KF_demo/kf_l1_bayes.html","path":"02jd/KF_demo/kf_l1_bayes.html","title":"L1.2 贝叶斯视角：高斯的乘积（更新）与卷积（预测）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L1.2 贝叶斯视角：高斯的乘积（更新）与卷积（预测） | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L1-2-%E8%B4%9D%E5%8F%B6%E6%96%AF%E8%A7%86%E8%A7%92%EF%BC%9A%E9%AB%98%E6%96%AF%E7%9A%84%E4%B9%98%E7%A7%AF%EF%BC%88%E6%9B%B4%E6%96%B0%EF%BC%89%E4%B8%8E%E5%8D%B7%E7%A7%AF%EF%BC%88%E9%A2%84%E6%B5%8B%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">L1.2 贝叶斯视角：高斯的乘积（更新）与卷积（预测）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E6%9B%B4%E6%96%B0-%E9%AB%98%E6%96%AF%E4%B9%98%E7%A7%AF"><span class="nav-number">1.1.</span> <span class="nav-text">一、更新 &#x3D; 高斯乘积</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B9%98%E7%A7%AF%E5%85%AC%E5%BC%8F%E6%8E%A8%E5%AF%BC%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF%E8%BF%99%E7%A7%8D%E5%BD%A2%E5%BC%8F%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">乘积公式推导（为什么是这种形式）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E9%A2%84%E6%B5%8B-%E5%8D%B7%E7%A7%AF%EF%BC%88%E6%96%B9%E5%B7%AE%E7%9B%B8%E5%8A%A0%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">二、预测 &#x3D; 卷积（方差相加）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%B7%E7%A7%AF%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF%E2%80%9D%E6%96%B9%E5%B7%AE%E7%9B%B8%E5%8A%A0%E2%80%9D%EF%BC%88%E7%9B%B4%E8%A7%89-%E6%8E%A8%E5%AF%BC%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">卷积为什么是”方差相加”（直觉+推导）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BF%A1%E6%81%AF%E5%BD%A2%E5%BC%8F%EF%BC%88information-form%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、信息形式（information form）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88kf-l1-bayes-cpp%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、代码走读（kf_l1_bayes.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.5.</span> <span class="nav-text">五、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%B7%A5%E7%A8%8B%E8%90%BD%E7%82%B9%EF%BC%88%E7%9C%9F%E5%AE%9E%E9%A1%B9%E7%9B%AE%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">六、工程落点（真实项目）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.7.</span> <span class="nav-text">七、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.8.</span> <span class="nav-text">八、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L1.2 贝叶斯视角：高斯的乘积（更新）与卷积（预测）
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L1_BAYES</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L1-2-贝叶斯视角：高斯的乘积（更新）与卷积（预测）"><a href="#L1-2-贝叶斯视角：高斯的乘积（更新）与卷积（预测）" class="headerlink" title="L1.2 贝叶斯视角：高斯的乘积（更新）与卷积（预测）"></a>L1.2 贝叶斯视角：高斯的乘积（更新）与卷积（预测）</h1><blockquote>
+<p>一句话：<strong>预测 = 两个独立高斯相加 → 卷积（方差相加）；更新 = 先验 × 似然 → 乘积（精度相加）</strong>。KF 五公式不过是这两条高斯代数的矩阵版。</p>
+</blockquote>
+<hr>
+<h2 id="一、更新-高斯乘积"><a href="#一、更新-高斯乘积" class="headerlink" title="一、更新 = 高斯乘积"></a>一、更新 = 高斯乘积</h2><p>先验 N(μ₁, σ₁²) × 似然 N(μ₂, σ₂²) 的归一化乘积仍是高斯：</p>
+<blockquote>
+<p>μ = (μ₁σ₂² + μ₂σ₁²)/(σ₁²+σ₂²)，σ² = σ₁²σ₂²/(σ₁²+σ₂²)</p>
+</blockquote>
+<p>把 K = σ₁²/(σ₁²+σ₂²) 代入，正好得到 KF 更新：</p>
+<blockquote>
+<p>μ = μ₁ + K(μ₂−μ₁)，σ² = (1−K)σ₁²</p>
+</blockquote>
+<p>demo 验证两组公式<strong>逐位一致</strong>（差 &lt; 1e-16）。直觉：<strong>均值按精度加权平均，方差一定变小</strong>——这就是”融合让信息变多”。</p>
+<h3 id="乘积公式推导（为什么是这种形式）"><a href="#乘积公式推导（为什么是这种形式）" class="headerlink" title="乘积公式推导（为什么是这种形式）"></a>乘积公式推导（为什么是这种形式）</h3><p>两个高斯相乘：<code>N(μ₁,σ₁²)·N(μ₂,σ₂²) ∝ exp(−½[(x−μ₁)²/σ₁² + (x−μ₂)²/σ₂²])</code>。指数里的二次项：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">系数: 1/σ₁² + 1/σ₂² = 1/σ²    →  σ² = σ₁²σ₂²/(σ₁²+σ₂²)</span><br><span class="line">一次项: μ₁/σ₁² + μ₂/σ₂² = μ/σ²  →  μ = σ²(μ₁/σ₁² + μ₂/σ₂²)</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>洞察</strong>：精度（1/σ²）相加，均值按精度加权——“谁准听谁的”。这就是贝叶斯更新的本质：<strong>后验精度 = 先验精度 + 似然精度</strong>（L1.1 的 Ω 视角在矩阵版的推广）。</p>
+<h2 id="二、预测-卷积（方差相加）"><a href="#二、预测-卷积（方差相加）" class="headerlink" title="二、预测 = 卷积（方差相加）"></a>二、预测 = 卷积（方差相加）</h2><p>x_next = x + w（w 为过程噪声）时，独立随机变量相加 → 方差相加：</p>
+<blockquote>
+<p>Var(x+w) = Var(x) + Var(w)（对应 p⁻ = p + q）</p>
+</blockquote>
+<p>demo 用 2 万样本蒙特卡洛验证经验方差 ≈ σ₁² + 0.3（差 &lt; 0.01）。<strong>预测永远不会让不确定性变小</strong>——没有新信息。</p>
+<h3 id="卷积为什么是”方差相加”（直觉-推导）"><a href="#卷积为什么是”方差相加”（直觉-推导）" class="headerlink" title="卷积为什么是”方差相加”（直觉+推导）"></a>卷积为什么是”方差相加”（直觉+推导）</h3><p>两个独立随机变量和的方差：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Var(X+W) = E[(X+W−μX−μW)²] = E[(X−μX)²] + E[(W−μW)²] + 2·E[(X−μX)(W−μW)]</span><br><span class="line">         = Var(X) + Var(W) + 0      （独立性 → 协方差项为 0）</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>核心对比</strong>（背下来）：</p>
+<ul>
+<li><strong>乘积</strong>（更新）：精度相加 → <strong>信息变多 → 方差变小</strong></li>
+<li><strong>卷积</strong>（预测）：方差相加 → <strong>噪声叠加 → 方差变大</strong></li>
+<li>一个”融合知识”，一个”走过时间”——方向相反，这是 KF 全部行为的根源。</li>
+</ul>
+<h2 id="三、信息形式（information-form）"><a href="#三、信息形式（information-form）" class="headerlink" title="三、信息形式（information form）"></a>三、信息形式（information form）</h2><p>把协方差倒过来定义信息矩阵 Ω = P⁻¹，更新公式惊人地简单：</p>
+<blockquote>
+<p>Ω = Ω⁻ + HᵀR⁻¹H（精度相加！），ξ = ξ⁻ + HᵀR⁻¹z</p>
+</blockquote>
+<p>demo 验证 Ω = 1/σ² 与乘积公式一致。这是 L2.2 信息滤波器的伏笔——SLAM 里更新只做加法的秘密就在这。</p>
+<h2 id="四、代码走读（kf-l1-bayes-cpp）"><a href="#四、代码走读（kf-l1-bayes-cpp）" class="headerlink" title="四、代码走读（kf_l1_bayes.cpp）"></a>四、代码走读（kf_l1_bayes.cpp）</h2><ul>
+<li>① 解析乘积公式 vs KF 更新代数对拍；② 蒙特卡洛验证卷积；③ 信息形式数值检查。</li>
+</ul>
+<h2 id="五、你会看到什么"><a href="#五、你会看到什么" class="headerlink" title="五、你会看到什么"></a>五、你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">=== L1.2 贝叶斯视角：高斯的积与卷积 ===</span><br><span class="line">  高斯乘积=KF更新 均值                 err=0.0e+00 tol=1e-12  PASS</span><br><span class="line">  高斯乘积=KF更新 方差                 err=1.1e-16 tol=1e-12  PASS</span><br><span class="line">  卷积均值=预测均值(均值不变)          err=1.2e-02 tol=5e-02  PASS</span><br><span class="line">  卷积方差=方差相加(预测)              err=7.0e-04 tol=1e-01  PASS</span><br><span class="line">  信息形式 Ω=Σ⁻¹                    err=0.0e+00 tol=1e-12  PASS</span><br><span class="line">=== 5 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<p><img src="/02jd/KF_demo/images/fig2_bayes.svg" alt="L1.2 高斯的积与卷积"></p>
+<h2 id="六、工程落点（真实项目）"><a href="#六、工程落点（真实项目）" class="headerlink" title="六、工程落点（真实项目）"></a>六、工程落点（真实项目）</h2><ul>
+<li><strong>信息形式在 SLAM</strong>：路标长时间无观测时，KF 的 P 中对应块”不动”但要维护；信息滤波器里它只是”没被加过”——<strong>更新 = 累加稀疏块</strong>，这就是 g2o/因子图的增量性质（L2.2 展开）。</li>
+<li><strong>概率机器人学（Probabilistic Robotics, Thrun）</strong>：全书 KF 部分就是这个”贝叶斯滤波 + 高斯假设”的框架，<code>belief</code> 就是高斯（μ, Σ）。</li>
+<li><strong>传感器融合的”信任度”语言</strong>：产品经理说的”这个传感器准”在数学上就是 R⁻¹（信息量）；多传感器融合 = 信息相加。</li>
+</ul>
+<h2 id="七、自检"><a href="#七、自检" class="headerlink" title="七、自检"></a>七、自检</h2><ul>
+<li>改变 σ₁²/σ₂² 比值，观察 K 如何在 (0,1) 间滑动——谁精度高信谁。</li>
+<li>思考：为什么”乘积”使方差变小而”卷积”使方差变大？（提示：一个是融合信息，一个是叠加噪声）</li>
+<li>挑战：三个高斯相乘，μ 和 σ² 的通式？（精度相加 + 按精度加权平均——递归两次乘积即可，KF 多传感器更新就是这样）</li>
+</ul>
+<h2 id="八、下一步"><a href="#八、下一步" class="headerlink" title="八、下一步"></a>八、下一步</h2><p>进入 <a href="/02jd/KF_demo/kf_l1_gain.html">L1.3 增益 K 的物理意义</a>——K 的边界行为与稳态。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/KF_demo/">KF_DEMO</a></li>
+            <li>KF_L1_BAYES</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

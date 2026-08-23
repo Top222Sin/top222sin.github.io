@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L1.3 会调用 cuBLAS &#x2F; cuDNN 等上层库 对应笔记：01CUDA基础学习.docx → L1 能跑（入门）→ 3、会调用 cuBLAS&#x2F;cuDNN 等上层库配套代码：cuda_l1_blas_cudnn.cpp（cuBLAS SAXPY + SGEMM + cuDNN 卷积，均带可验证数值）图示：images&#x2F;fig3_blas_cudnn.svg（浏览器完整预览见 cuda_l1">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L1.3 会调用 cuBLAS &#x2F; cuDNN 等上层库">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l1_blas_cudnn.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L1.3 会调用 cuBLAS &#x2F; cuDNN 等上层库 对应笔记：01CUDA基础学习.docx → L1 能跑（入门）→ 3、会调用 cuBLAS&#x2F;cuDNN 等上层库配套代码：cuda_l1_blas_cudnn.cpp（cuBLAS SAXPY + SGEMM + cuDNN 卷积，均带可验证数值）图示：images&#x2F;fig3_blas_cudnn.svg（浏览器完整预览见 cuda_l1">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/cuda_demo/images/fig3_blas_cudnn.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/cuda_demo/images/fig3_blas_cudnn.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l1_blas_cudnn">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cuda_demo/cuda_l1_blas_cudnn.html","path":"02jd/cuda_demo/cuda_l1_blas_cudnn.html","title":"L1.3 会调用 cuBLAS / cuDNN 等上层库"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L1.3 会调用 cuBLAS / cuDNN 等上层库 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L1-3-%E4%BC%9A%E8%B0%83%E7%94%A8-cuBLAS-cuDNN-%E7%AD%89%E4%B8%8A%E5%B1%82%E5%BA%93"><span class="nav-number">1.</span> <span class="nav-text">L1.3 会调用 cuBLAS &#x2F; cuDNN 等上层库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%85%88%E6%83%B3%E6%B8%85%E6%A5%9A%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88-L1-%E5%B0%B1%E8%A6%81%E5%AD%A6%E2%80%9D%E8%B0%83%E5%BA%93%E2%80%9D"><span class="nav-number">1.1.</span> <span class="nav-text">一、先想清楚：为什么 L1 就要学”调库”</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81cuBLAS-%E2%80%94%E2%80%94-%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0%E5%BA%93%EF%BC%88BLAS-%E7%9A%84-GPU-%E7%89%88%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">二、cuBLAS —— 线性代数库（BLAS 的 GPU 版）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E9%80%9A%E7%94%A8%E4%B8%89%E6%AD%A5%EF%BC%88%E6%AF%8F%E4%B8%AA-cuBLAS-%E7%A8%8B%E5%BA%8F%E9%83%BD%E6%9C%89%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 通用三步（每个 cuBLAS 程序都有）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E7%A4%BA%E4%BE%8B%E4%B8%80%EF%BC%9ASAXPY%EF%BC%88z-a-x-y%EF%BC%89"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 示例一：SAXPY（z &#x3D; a*x + y）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E7%A4%BA%E4%BE%8B%E4%BA%8C%EF%BC%9ASGEMM-%E7%9F%A9%E9%98%B5%E4%B9%98-C-A%C2%B7B%EF%BC%88%E9%87%8D%E7%82%B9%E9%99%B7%E9%98%B1%EF%BC%89"><span class="nav-number">1.2.3.</span> <span class="nav-text">2.3 示例二：SGEMM 矩阵乘 C &#x3D; A·B（重点陷阱）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81cuDNN-%E2%80%94%E2%80%94-%E6%B7%B1%E5%BA%A6%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%BA%93"><span class="nav-number">1.3.</span> <span class="nav-text">三、cuDNN —— 深度神经网络库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%8D%B7%E7%A7%AF%E5%89%8D%E5%90%91%E4%B8%83%E6%AD%A5%EF%BC%88%E5%AF%B9%E5%BA%94-demo-cudnn-conv%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">3.1 卷积前向七步（对应 demo_cudnn_conv）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E9%AA%8C%E8%AF%81%EF%BC%88%E5%85%A8-1%EF%BC%8C%E6%9C%80%E6%98%93%E6%A0%B8%E5%AF%B9%EF%BC%89"><span class="nav-number">1.3.2.</span> <span class="nav-text">3.2 验证（全 1，最易核对）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BD%95%E6%97%B6%E7%94%A8%E5%BA%93%E3%80%81%E4%BD%95%E6%97%B6%E8%87%AA%E5%B7%B1%E5%86%99-kernel%EF%BC%88%E5%86%B3%E7%AD%96%E8%A1%A8%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、何时用库、何时自己写 kernel（决策表）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81OpenCL-%E5%AF%B9%E7%85%A7%EF%BC%88%E5%8F%8C%E8%BD%A8%E5%AD%A6%E4%B9%A0%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、OpenCL 对照（双轨学习）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80%EF%BC%88%E5%90%88%E4%B8%8A%E6%96%87%E6%A1%A3%E8%83%BD%E7%AD%94%E5%87%BA%E6%9D%A5%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">六、自检（合上文档能答出来）</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L1.3 会调用 cuBLAS / cuDNN 等上层库
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L1_BLAS_CUDNN</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L1-3-会调用-cuBLAS-cuDNN-等上层库"><a href="#L1-3-会调用-cuBLAS-cuDNN-等上层库" class="headerlink" title="L1.3 会调用 cuBLAS / cuDNN 等上层库"></a>L1.3 会调用 cuBLAS / cuDNN 等上层库</h1><blockquote>
+<p>对应笔记：<code>01CUDA基础学习.docx</code> → L1 能跑（入门）→ <strong>3、会调用 cuBLAS/cuDNN 等上层库</strong><br>配套代码：<a href="cuda_l1_blas_cudnn.cpp"><code>cuda_l1_blas_cudnn.cpp</code></a>（cuBLAS SAXPY + SGEMM + cuDNN 卷积，均带可验证数值）<br>图示：<a href="/02jd/cuda_demo/images/fig3_blas_cudnn.svg"><code>images/fig3_blas_cudnn.svg</code></a>（浏览器完整预览见 <a href="cuda_l1_blas_cudnn_diagrams.html"><code>cuda_l1_blas_cudnn_diagrams.html</code></a>）</p>
+</blockquote>
+<hr>
+<h2 id="一、先想清楚：为什么-L1-就要学”调库”"><a href="#一、先想清楚：为什么-L1-就要学”调库”" class="headerlink" title="一、先想清楚：为什么 L1 就要学”调库”"></a>一、先想清楚：为什么 L1 就要学”调库”</h2><p>前面 L1.1/L1.2 你亲手写了 SAXPY、向量平方、配了 launch_bounds。但<strong>工业级 CUDA 程序 80% 的工作量在调库，不是写 kernel</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>你想做的事</th>
+<th>手写 kernel</th>
+<th>调上层库</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>矩阵乘 <code>C=A·B</code></td>
+<td>要管分块、shared mem、合并访问、寄存器（L2/L3 才到）</td>
+<td><code>cublasSgemm</code> 一行，NVIDIA 工程师已调到极致</td>
+</tr>
+<tr>
+<td>卷积</td>
+<td>要管 im2col / Winograd / 直接卷积（超复杂）</td>
+<td><code>cudnnConvolutionForward</code> 一行，算法自动挑</td>
+</tr>
+<tr>
+<td>激活/BN/池化</td>
+<td>自己写 + 调参</td>
+<td>cuDNN 内置</td>
+</tr>
+</tbody></table>
+<p><strong>结论</strong>：L1 必须会”把库当积木拼”——这是能跑通一个真实 DNN 推理/训练的最短路。手写 kernel 是 L2/L3 的进阶武器，用来补库没有的自定义算子。</p>
+<p><img src="/02jd/cuda_demo/images/fig3_blas_cudnn.svg" alt="cuda_l1_blas_cudnn"></p>
+<hr>
+<h2 id="二、cuBLAS-——-线性代数库（BLAS-的-GPU-版）"><a href="#二、cuBLAS-——-线性代数库（BLAS-的-GPU-版）" class="headerlink" title="二、cuBLAS —— 线性代数库（BLAS 的 GPU 版）"></a>二、cuBLAS —— 线性代数库（BLAS 的 GPU 版）</h2><p>cuBLAS 是”列主序（column-major）”的，这点贯穿所有调用，后面 SGEMM 会专门讲陷阱。</p>
+<h3 id="2-1-通用三步（每个-cuBLAS-程序都有）"><a href="#2-1-通用三步（每个-cuBLAS-程序都有）" class="headerlink" title="2.1 通用三步（每个 cuBLAS 程序都有）"></a>2.1 通用三步（每个 cuBLAS 程序都有）</h3><figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cublasHandle_t handle;</span><br><span class="line">cublasCreate(&amp;handle);                              <span class="comment">// 1) 建上下文（开"计算会话"）</span></span><br><span class="line">cublasSetPointerMode(handle, CUBLAS_POINTER_MODE_HOST); <span class="comment">// 2) 让标量 alpha/beta 从 host 取</span></span><br><span class="line"><span class="comment">// ... 调各种 cublasXxx ...</span></span><br><span class="line">cublasDestroy(handle);                             <span class="comment">// 3) 释放</span></span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p><strong>为什么有 POINTER_MODE？</strong> cuBLAS 默认 <code>POINTER_MODE_DEVICE</code>：像 <code>alpha</code> 这种标量也要放在 device 上。你若在 host 写 <code>float a=2; cublasSaxpy(...,&amp;a,...)</code> 而不切 HOST 模式，会读野指针崩。教学/快速代码直接切 HOST 最省心。</p>
+</blockquote>
+<h3 id="2-2-示例一：SAXPY（z-a-x-y）"><a href="#2-2-示例一：SAXPY（z-a-x-y）" class="headerlink" title="2.2 示例一：SAXPY（z = a*x + y）"></a>2.2 示例一：SAXPY（<code>z = a*x + y</code>）</h3><p>对应 <code>cuda_l1_blas_cudnn.cpp::demo_cublas_saxpy</code>：</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">float</span> a = <span class="number">2.0f</span>;</span><br><span class="line">CUBLAS_CHECK(cublasSetPointerMode(handle, CUBLAS_POINTER_MODE_HOST));</span><br><span class="line">CUBLAS_CHECK(cublasSaxpy(handle, n, &amp;a, d_x, <span class="number">1</span>, d_y, <span class="number">1</span>));  <span class="comment">// y = a*x + y（覆写 y）</span></span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li>参数顺序：<code>(handle, n, &amp;alpha, x, incx, y, incy)</code>，<code>incx/incy=1</code> 表示”相邻元素步长 1”。</li>
+<li>SAXPY 是纯向量顺序扫，<strong>与列主序/行主序无关</strong>，所以直接用即可。</li>
+<li>验证：<code>x[i]=i, y[i]=2i, a=2</code> → <code>y[i]=2i+2i=4i</code>，检查 <code>y[5]==20</code>。</li>
+</ul>
+<h3 id="2-3-示例二：SGEMM-矩阵乘-C-A·B（重点陷阱）"><a href="#2-3-示例二：SGEMM-矩阵乘-C-A·B（重点陷阱）" class="headerlink" title="2.3 示例二：SGEMM 矩阵乘 C = A·B（重点陷阱）"></a>2.3 示例二：SGEMM 矩阵乘 <code>C = A·B</code>（<strong>重点陷阱</strong>）</h3><p>对应 <code>cuda_l1_blas_cudnn.cpp::demo_cublas_sgemm</code>，手算验证：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">A(2×3)=[[1,2,3],[4,5,6]]   B(3×2)=[[7,8],[9,10],[11,12]]</span><br><span class="line">C=A·B(2×2)=[[58,64],[139,154]]</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>陷阱</strong>：cuBLAS 是列主序，而 C/C++ 数组是行主序。直接把行主序矩阵塞进去会得到转置结果。</p>
+<p><strong>经典解法（不动数据、只动调用）</strong>：<strong>交换 A、B 的位置，并交换 M、N</strong>：</p>
+<figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A(M×K) 行主序, B(K×N) 行主序, 想算 C(M×N)=A·B 行主序</span></span><br><span class="line">CUBLAS_CHECK(cublasSgemm(handle,</span><br><span class="line">        CUBLAS_OP_N, CUBLAS_OP_N,</span><br><span class="line">        N, M, K,                 <span class="comment">// m=N(列数), n=M(行数), k=K  ← 注意 M/N 交换</span></span><br><span class="line">        &amp;alpha,</span><br><span class="line">        d_B, N,                 <span class="comment">// 第一个操作数放 d_B, ldb=N  ← A/B 交换</span></span><br><span class="line">        d_A, K,                 <span class="comment">// 第二个操作数放 d_A, lda=K</span></span><br><span class="line">        &amp;beta,</span><br><span class="line">        d_C, N));               <span class="comment">// ldc=N</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>为什么这样是对的（直觉版）</strong>：cuBLAS 在”列主序视角”下算 <code>C_col = (我们的B)·(我们的A)</code>；经过列主序↔行主序的重新解读，恰好等价于行主序的 <code>C_row = A_row·B_row</code>。文件里用 2×3 × 3×2 的整数手算逐元素验证了 <code>C=[58,64,139,154]</code>。</p>
+<blockquote>
+<p>想彻底避免这个坑？<strong>全程用列主序</strong>（存储时转置），那就能按直觉 <code>cublasSgemm(..., d_A, M, d_B, K, d_C, M)</code> 写。但 C 生态默认行主序，所以”swap 法”是实战最常用的写法。</p>
+</blockquote>
+<hr>
+<h2 id="三、cuDNN-——-深度神经网络库"><a href="#三、cuDNN-——-深度神经网络库" class="headerlink" title="三、cuDNN —— 深度神经网络库"></a>三、cuDNN —— 深度神经网络库</h2><p>cuDNN 用 <strong>“描述符（descriptor）”模型</strong>：先声明张量/核/卷积的形状与精度，再让库去算。比 cuBLAS 啰嗦，但把”形状、算法、精度”全显式化了。</p>
+<h3 id="3-1-卷积前向七步（对应-demo-cudnn-conv）"><a href="#3-1-卷积前向七步（对应-demo-cudnn-conv）" class="headerlink" title="3.1 卷积前向七步（对应 demo_cudnn_conv）"></a>3.1 卷积前向七步（对应 <code>demo_cudnn_conv</code>）</h3><figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">cudnnHandle_t cudnn;  cudnnCreate(&amp;cudnn);                       <span class="comment">// 0) 上下文</span></span><br><span class="line"></span><br><span class="line">cudnnTensorDescriptor_t  x_desc, y_desc;</span><br><span class="line">cudnnFilterDescriptor_t  w_desc;</span><br><span class="line">cudnnConvolutionDescriptor_t conv_desc;</span><br><span class="line"></span><br><span class="line">cudnnCreateTensorDescriptor(&amp;x_desc);</span><br><span class="line">cudnnSetTensor4dDescriptor(x_desc, CUDNN_TENSOR_NCHW,            <span class="comment">// 1) 输入: N,C,H,W</span></span><br><span class="line">                           CUDNN_DATA_FLOAT, N,C,H,W);</span><br><span class="line">cudnnCreateFilterDescriptor(&amp;w_desc);</span><br><span class="line">cudnnSetFilter4dDescriptor(w_desc, CUDNN_DATA_FLOAT,             <span class="comment">// 2) 核: K,C,R,S</span></span><br><span class="line">                           CUDNN_TENSOR_NCHW, K,C,R,S);</span><br><span class="line">cudnnCreateConvolutionDescriptor(&amp;conv_desc);</span><br><span class="line">cudnnSetConvolution2dDescriptor(conv_desc,                      <span class="comment">// 3) 卷积: pad/stride/dilation</span></span><br><span class="line">        pad,pad, stride,stride, dilation,dilation,</span><br><span class="line">        CUDNN_CONVOLUTION, CUDNN_DATA_FLOAT);</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> n_,c_,h_,w_;</span><br><span class="line">cudnnGetConvolution2dForwardOutputDim(conv_desc,x_desc,w_desc,   <span class="comment">// 4) 算输出维度</span></span><br><span class="line">        &amp;n_,&amp;c_,&amp;h_,&amp;w_);</span><br><span class="line">cudnnCreateTensorDescriptor(&amp;y_desc);</span><br><span class="line">cudnnSetTensor4dDescriptor(y_desc, CUDNN_TENSOR_NCHW,            <span class="comment">// 5) 输出张量</span></span><br><span class="line">        CUDNN_DATA_FLOAT, n_,c_,h_,w_);</span><br><span class="line"></span><br><span class="line">cudnnConvolutionFwdAlgo_t algo = CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM; <span class="comment">// 6) 选算法</span></span><br><span class="line"><span class="type">size_t</span> ws_size=<span class="number">0</span>;</span><br><span class="line">cudnnGetConvolutionForwardWorkspaceSize(cudnn,x_desc,w_desc,     <span class="comment">// 7) 开 workspace</span></span><br><span class="line">        conv_desc,y_desc,algo,&amp;ws_size);</span><br><span class="line">cudaMalloc(&amp;d_workspace, ws_size);</span><br><span class="line"></span><br><span class="line">cudnnConvolutionForward(cudnn, &amp;alpha, x_desc,d_in,             <span class="comment">// 8) 真正算</span></span><br><span class="line">        w_desc?? <span class="comment">/* w_desc here is filter */</span> w_desc,d_wt,</span><br><span class="line">        conv_desc, algo, d_workspace, ws_size, &amp;beta, y_desc, d_out);</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p><strong>关于算法选择</strong>：上面直接指定 <code>IMPLICIT_GEMM</code>（最简单稳定）。cuDNN 8+ 推荐用 <strong>启发式 API</strong> <code>cudnnGetConvolutionForwardAlgorithm_v7</code> + <code>cudnnFindConvolutionForwardAlgorithm</code> 在真实硬件上挑最快算法（不同 GPU/形状最优算法不同）。教学阶段用固定算法即可跑通。</p>
+</blockquote>
+<h3 id="3-2-验证（全-1，最易核对）"><a href="#3-2-验证（全-1，最易核对）" class="headerlink" title="3.2 验证（全 1，最易核对）"></a>3.2 验证（全 1，最易核对）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入 1×1×4×4 全 1，核 1×1×3×3 全 1，pad=0,stride=1</span><br><span class="line">→ 输出 1×1×2×2，每点 = 3×3=9 个 1 的和 = 9</span><br></pre></td></tr></tbody></table></figure>
+<p>代码检查 <code>h_out</code> 四个元素都 ≈ 9 → PASS。</p>
+<hr>
+<h2 id="四、何时用库、何时自己写-kernel（决策表）"><a href="#四、何时用库、何时自己写-kernel（决策表）" class="headerlink" title="四、何时用库、何时自己写 kernel（决策表）"></a>四、何时用库、何时自己写 kernel（决策表）</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>用</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>标准矩阵乘 / 卷积 / 激活 / BN / 池化</td>
+<td>cuBLAS / cuDNN</td>
+<td>官方已极致调优，自己写难超越</td>
+</tr>
+<tr>
+<td>自定义算子（特殊激活、稀疏、量化）</td>
+<td>自己写 kernel（L2/L3）</td>
+<td>库没有，或库路径太绕</td>
+</tr>
+<tr>
+<td>想控制内存布局 / 融合多个算子</td>
+<td>自己写 + 库混合</td>
+<td>kernel fusion 省往返（L3）</td>
+</tr>
+<tr>
+<td>跨平台（AMD/Intel）</td>
+<td>clBLAS / 手写 OpenCL</td>
+<td>cuBLAS/cuDNN 是 NVIDIA 专属</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="五、OpenCL-对照（双轨学习）"><a href="#五、OpenCL-对照（双轨学习）" class="headerlink" title="五、OpenCL 对照（双轨学习）"></a>五、OpenCL 对照（双轨学习）</h2><ul>
+<li><strong>cuBLAS ↔ clBLAS</strong>：AMD 主导的 OpenCL BLAS，API 几乎一一对应（<code>clblasSaxpy</code> / <code>clblasSgemm</code>）。</li>
+<li><strong>cuDNN ↔ 无官方孪生</strong>：OpenCL 世界没有统一 DNN 库。常见做法：ROCm 的 MIOpen（HIP，非纯 OpenCL）、clDNN（旧 Intel）、或直接手写 OpenCL kernel。</li>
+<li><strong>核心认知</strong>：调库的本质是”复用别人调好的 kernel + 他家的 launch 配置 + 他家的内存约定（如 cuBLAS 列主序）”。换平台要重新对齐这些约定——所以 NCNN/MNN 把”算法”和”后端适配层”分开：同一份算法，在 NEON / SVE2 / CUDA / OpenCL 各写一份后端，前端算子不变（你之前在 <code>neon_demo</code> 里深挖的就是这层）。</li>
+</ul>
+<hr>
+<h2 id="六、自检（合上文档能答出来）"><a href="#六、自检（合上文档能答出来）" class="headerlink" title="六、自检（合上文档能答出来）"></a>六、自检（合上文档能答出来）</h2><ol>
+<li>cuBLAS 为什么默认 <code>POINTER_MODE_DEVICE</code>？传 host 标量要做什么？</li>
+<li>行主序矩阵 <code>C=A·B</code> 用 <code>cublasSgemm</code> 怎么调？（提示：swap）</li>
+<li>直接 <code>cublasSgemm(...,d_A,M,d_B,K,d_C,M)</code> 会得到什么（相比期望）？</li>
+<li>cuDNN 卷积前向最少要建哪几类描述符？</li>
+<li><code>cudnnConvolutionForward</code> 的 workspace 是干嘛的？为什么要单独开？</li>
+<li>cuDNN 8+ 推荐用什么 API 选卷积算法，而不是手写固定 <code>algo</code>？</li>
+</ol>
+<hr>
+<blockquote>
+<p>下一步（L2 能写高效 kernel）：内存层次 global/shared/register/constant + 合并访问 / bank conflict / 双缓冲——真正开始自己写高性能 kernel。</p>
+</blockquote>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L1_BLAS_CUDNN</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

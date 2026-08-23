@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L2.5 增益调度与自适应（Gain Scheduling）⭐ 线性 PID 在”增益随工况变化”的非线性系统上，固定增益只能顾一头。解法：按工况（operating point）调度增益——这正是 PX4 按推力&#x2F;空速调度姿态·速率增益的思路。   一、为什么需要增益调度之前所有 demo 都暗含一个假设：plant 增益是常数。但现实里很多系统不满足：  电机在低速&#x2F;高速段推力增益不同； 飞机">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L2.5 增益调度与自适应（Gain Scheduling）⭐">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/pid_demo/pid_l2_gain_sched.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L2.5 增益调度与自适应（Gain Scheduling）⭐ 线性 PID 在”增益随工况变化”的非线性系统上，固定增益只能顾一头。解法：按工况（operating point）调度增益——这正是 PX4 按推力&#x2F;空速调度姿态·速率增益的思路。   一、为什么需要增益调度之前所有 demo 都暗含一个假设：plant 增益是常数。但现实里很多系统不满足：  电机在低速&#x2F;高速段推力增益不同； 飞机">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/pid_demo/images/fig10_gain_sched.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.960Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/pid_demo/images/fig10_gain_sched.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/pid_demo/pid_l2_gain_sched">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/pid_demo/pid_l2_gain_sched.html","path":"02jd/pid_demo/pid_l2_gain_sched.html","title":"L2.5 增益调度与自适应（Gain Scheduling）⭐"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L2.5 增益调度与自适应（Gain Scheduling）⭐ | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L2-5-%E5%A2%9E%E7%9B%8A%E8%B0%83%E5%BA%A6%E4%B8%8E%E8%87%AA%E9%80%82%E5%BA%94%EF%BC%88Gain-Scheduling%EF%BC%89%E2%AD%90"><span class="nav-number">1.</span> <span class="nav-text">L2.5 增益调度与自适应（Gain Scheduling）⭐</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%A2%9E%E7%9B%8A%E8%B0%83%E5%BA%A6"><span class="nav-number">1.1.</span> <span class="nav-text">一、为什么需要增益调度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A2%9E%E7%9B%8A%E8%B0%83%E5%BA%A6-vs-%E8%87%AA%E9%80%82%E5%BA%94%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%88%E9%87%8D%E8%A6%81%E6%A6%82%E5%BF%B5%E8%BE%A8%E6%9E%90%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">增益调度 vs 自适应的区别（重要概念辨析）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81demo-%E6%A8%A1%E5%9E%8B%E4%B8%8E%E8%B0%83%E5%BA%A6%E5%BE%8B"><span class="nav-number">1.2.</span> <span class="nav-text">二、demo 模型与调度律</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E5%BA%A6%E5%BE%8B%E6%8E%A8%E5%AF%BC%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E9%99%A4%E4%BB%A5-K-op-%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">调度律推导（为什么除以 K(op)）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88pid-l2-gain-sched-cpp%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、代码走读（pid_l2_gain_sched.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.4.</span> <span class="nav-text">四、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%B7%A5%E7%A8%8B%E5%9D%91%EF%BC%88%E7%9C%9F%E5%AE%9E%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、工程坑（真实）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.6.</span> <span class="nav-text">六、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.7.</span> <span class="nav-text">七、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L2.5 增益调度与自适应（Gain Scheduling）⭐
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/pid_demo/">PID_DEMO</a></li>
+            <li>PID_L2_GAIN_SCHED</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L2-5-增益调度与自适应（Gain-Scheduling）⭐"><a href="#L2-5-增益调度与自适应（Gain-Scheduling）⭐" class="headerlink" title="L2.5 增益调度与自适应（Gain Scheduling）⭐"></a>L2.5 增益调度与自适应（Gain Scheduling）⭐</h1><blockquote>
+<p>线性 PID 在”增益随工况变化”的非线性系统上，固定增益只能顾一头。解法：按工况（operating point）调度增益——这正是 PX4 按推力/空速调度姿态·速率增益的思路。</p>
+</blockquote>
+<hr>
+<h2 id="一、为什么需要增益调度"><a href="#一、为什么需要增益调度" class="headerlink" title="一、为什么需要增益调度"></a>一、为什么需要增益调度</h2><p>之前所有 demo 都暗含一个假设：<strong>plant 增益是常数</strong>。但现实里很多系统不满足：</p>
+<ul>
+<li>电机在低速/高速段推力增益不同；</li>
+<li>飞机空速变了，单位舵偏产生的角加速度变了；</li>
+<li>机械臂靠近奇异点时，单位力矩产生的关节角速度剧变。</li>
+</ul>
+<p>若 plant 增益 <code>K(op)</code> 随工况 <code>op</code> 变化，固定 <code>Kp</code> 意味着 <strong>有效回路增益 <code>Kp·K(op)</code> 随 op 大幅波动</strong>——<code>op</code> 一端增益太小（迟钝、余差大），另一端增益太大（超调、振荡）。这正好解释 L1.4 里”增益调大就抖”。</p>
+<h3 id="增益调度-vs-自适应的区别（重要概念辨析）"><a href="#增益调度-vs-自适应的区别（重要概念辨析）" class="headerlink" title="增益调度 vs 自适应的区别（重要概念辨析）"></a>增益调度 vs 自适应的区别（重要概念辨析）</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>原理</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>增益调度（GS）</strong></td>
+<td>预先按工况查表/插值增益 <code>Kp(op)</code></td>
+<td>离线设计、确定性、无需在线辨识——“开环补偿非线性”</td>
+</tr>
+<tr>
+<td><strong>自适应控制</strong></td>
+<td>在线辨识 plant 参数并更新增益</td>
+<td>在线、能应对未预见的漂移——“闭环补偿不确定性”</td>
+</tr>
+<tr>
+<td>自整定（一次）</td>
+<td>启动时自动辨识一次（L3.1/L3.3）</td>
+<td>出厂后固定，不跟踪工况</td>
+</tr>
+</tbody></table>
+<p><strong>工程经验</strong>：能预先建模的非线性 → 增益调度（简单可靠）；不可预见的参数漂移 → 自适应（复杂，需激励持续、有发散风险）。PX4 用<strong>调度</strong>（按推力/空速查表），不用连续自适应——飞控对确定性优先于最优性。</p>
+<h2 id="二、demo-模型与调度律"><a href="#二、demo-模型与调度律" class="headerlink" title="二、demo 模型与调度律"></a>二、demo 模型与调度律</h2><p>本 demo 用一个二阶 plant，其增益随工况 <code>op</code> 变化：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">K(op) = 0.3 + 3·op           // plant 增益随工况线性上升, K0=K(0.5)=1.8</span><br><span class="line">v' = -2ζωv - ω²x + K(op)·u   // 二阶动力学</span><br><span class="line">u  = Kp·e + Ki·∫e + Kd·(-dx/dt)   // D 作用在测量值（消 setpoint kick）</span><br></pre></td></tr></tbody></table></figure>
+
+<ul>
+<li><strong>固定增益</strong>：用名义工况 <code>op=0.5</code> 整定的 <code>Kp0</code>，全工况都套同一组 <code>Kp0/Ki/Kd</code>。</li>
+<li><strong>调度增益</strong>：按 <code>Kp(op) = Kp0·K0 / K(op)</code>（K0=K(op0)）补偿 plant 增益变化，让比例通道 <code>Kp(op)·K(op) ≈ 常数</code>。</li>
+</ul>
+<h3 id="调度律推导（为什么除以-K-op-）"><a href="#调度律推导（为什么除以-K-op-）" class="headerlink" title="调度律推导（为什么除以 K(op)）"></a>调度律推导（为什么除以 K(op)）</h3><p>闭环有效增益 = <code>Kp·K(op)</code>（控制器增益 × plant 增益）。希望比例通道对所有 op 恒定：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">要求: Kp(op)·K(op) = Kp0·K(op0) = 常数</span><br><span class="line">→ Kp(op) = Kp0·K0/K(op),  K0 = K(op0)     ✓ 与代码一致</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>关键</strong>：K(op) 是”plant 增益随工况的模型”，必须离线辨识（阶跃测试各工况点）或由物理规律给出（如 √ 流量、气动系数随空速）。调度律 = 模型反函数——<strong>增益调度本质上是用 plant 模型做开环补偿</strong>。注意：<code>Kp·K(op)</code> 恒定只保证比例通道；完整闭环特征还含 <code>K·Kd</code>（阻尼）与 <code>K·Ki</code>（积分）项，严格保持闭环响应需三增益同比例调度（见下方”工程坑”）。本 demo 的”调节时间方差/最大超调”断言是<strong>当前参数下的验收指标</strong>，不是调度律的普遍数学推论。</p>
+<h2 id="三、代码走读（pid-l2-gain-sched-cpp）"><a href="#三、代码走读（pid-l2-gain-sched-cpp）" class="headerlink" title="三、代码走读（pid_l2_gain_sched.cpp）"></a>三、代码走读（pid_l2_gain_sched.cpp）</h2><ul>
+<li><code>simGS(op, Kp, Ki, Kd, dt, N)</code>：给定工况与增益，跑出一个阶跃响应序列。</li>
+<li>指标：<code>steadyErr</code>（末值偏差）、<code>overshoot</code>（峰值超出末值）、<code>settling</code>（±2% 调节时间）。</li>
+<li>对拍断言：<ul>
+<li>两种策略稳态误差都 <code>&lt; 0.05</code>（二阶系统 I 项消余差）；</li>
+<li><strong>调节时间方差</strong>：<code>var(调度) &lt; 0.5 · var(固定)</code> —— 调度让全工况”手感”一致（当前参数下的验收指标）；</li>
+<li><strong>最大超调</strong>：<code>maxOv(调度) ≤ maxOv(固定)</code> —— 调度不引入更坏表现。</li>
+</ul>
+</li>
+</ul>
+<p><img src="/02jd/pid_demo/images/fig10_gain_sched.svg" alt="L2.5 增益调度与自适应"></p>
+<h2 id="四、你会看到什么"><a href="#四、你会看到什么" class="headerlink" title="四、你会看到什么"></a>四、你会看到什么</h2><ul>
+<li>左图：plant 增益 <code>K(op)</code> 上升（红），调度 <code>Kp(op)</code> 同步下降（绿），二者乘积≈常数。</li>
+<li>右图：固定增益下，超调随工况剧烈波动（红折线）；调度增益下各工况超调几乎齐平（绿线）。</li>
+</ul>
+<h2 id="五、工程坑（真实）"><a href="#五、工程坑（真实）" class="headerlink" title="五、工程坑（真实）"></a>五、工程坑（真实）</h2><ol>
+<li><strong>调度律要同比例缩放 Ki/Kd 才保闭环</strong>：只调 Kp 时 <code>K·Kd</code>、<code>K·Ki</code> 仍随工况变化（阻尼/积分作用漂移）。完整做法 <code>Kp/Ki/Kd</code> 同乘 <code>K0/K(op)</code>；工程中受滤波器/执行器/噪声限制，不可能精确保持闭环，按”主要失效模式”调度即可。</li>
+<li><strong>调度的”切换抖动”<strong>：工况快速穿越调度区间时增益突变 → 输出跳变。工程处理：</strong>插值</strong>（线性/样条查表）而非分段常量，或对增益做低通（注意：增益低通会给调度引入滞后——截止频率需与工况变化速度、闭环带宽共同设计）。</li>
+<li><strong>调度变量本身要可测且平滑</strong>：如果调度变量（空速/推力）本身噪声大，增益会抖——先滤波调度变量。</li>
+<li><strong>调度 + 积分的交互</strong>：工况切换时积分器状态对应旧增益，直接换增益可能跳变——切换时对积分器做 bumpless 转移（按新增益重新标定积分）。</li>
+<li><strong>PX4 的推力调度</strong>：PX4 多旋翼控制存在按工况调度增益的实践（参数随版本变化，如 <code>MC_ROLLRATE_K</code> 等与推力相关的缩放，<code>src/lib/rate_control/gain_compression.cpp</code> 是大机动时的增益压缩实现）；固定翼则按空速调度。<strong>不同机型/版本实现不同，引用需固定版本</strong>。</li>
+</ol>
+<h2 id="六、自检"><a href="#六、自检" class="headerlink" title="六、自检"></a>六、自检</h2><ul>
+<li>把 <code>Kof(op)</code> 的斜率从 <code>3</code> 调到 <code>8</code>（增益变化更剧烈），看固定增益的超调波动如何更夸张、调度增益依旧齐平。</li>
+<li>把调度律改成 <code>Kp(op)=Kp0</code>（即”不调度”），核对两条线重合、方差判据失败——确认调度确实在起作用。</li>
+<li>把 <code>Kp0</code> 整体调大，看固定增益在 <code>op</code> 高端如何率先发散（effective gain 过大）。</li>
+</ul>
+<h2 id="七、下一步"><a href="#七、下一步" class="headerlink" title="七、下一步"></a>七、下一步</h2><p>进入 <a href="/02jd/pid_demo/pid_l3_autotune.html">L3.1 自动整定（系统辨识 + relay/Z-N）⭐</a>：增益到底该怎么自动求出来？</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/pid_demo/">PID_DEMO</a></li>
+            <li>PID_L2_GAIN_SCHED</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

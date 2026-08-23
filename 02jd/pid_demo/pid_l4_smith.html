@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L4 Smith 预估器（Smith Predictor）——大纯滞后的标配补偿 温度、流量、液位这些过程对象，信号从阀门到传感器常常要”走好几秒”（死区时间 L）。普通 PID 一看到滞后，反馈就慢半拍，增益稍大就振荡甚至发散。Smith 预估器是产线对付大纯滞后的标准解法：在反馈环里把滞后减掉、加回无滞后模型，把死区时间 L 移出反馈环。   一、问题：死区时间为什么这么难一阶加纯滞后（FOP">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L4 Smith 预估器（Smith Predictor）——大纯滞后的标配补偿">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/pid_demo/pid_l4_smith.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L4 Smith 预估器（Smith Predictor）——大纯滞后的标配补偿 温度、流量、液位这些过程对象，信号从阀门到传感器常常要”走好几秒”（死区时间 L）。普通 PID 一看到滞后，反馈就慢半拍，增益稍大就振荡甚至发散。Smith 预估器是产线对付大纯滞后的标准解法：在反馈环里把滞后减掉、加回无滞后模型，把死区时间 L 移出反馈环。   一、问题：死区时间为什么这么难一阶加纯滞后（FOP">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/pid_demo/images/fig16_smith.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.970Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/pid_demo/images/fig16_smith.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/pid_demo/pid_l4_smith">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/pid_demo/pid_l4_smith.html","path":"02jd/pid_demo/pid_l4_smith.html","title":"L4 Smith 预估器（Smith Predictor）——大纯滞后的标配补偿"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L4 Smith 预估器（Smith Predictor）——大纯滞后的标配补偿 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L4-Smith-%E9%A2%84%E4%BC%B0%E5%99%A8%EF%BC%88Smith-Predictor%EF%BC%89%E2%80%94%E2%80%94%E5%A4%A7%E7%BA%AF%E6%BB%9E%E5%90%8E%E7%9A%84%E6%A0%87%E9%85%8D%E8%A1%A5%E5%81%BF"><span class="nav-number">1.</span> <span class="nav-text">L4 Smith 预估器（Smith Predictor）——大纯滞后的标配补偿</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E9%97%AE%E9%A2%98%EF%BC%9A%E6%AD%BB%E5%8C%BA%E6%97%B6%E9%97%B4%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E9%9A%BE"><span class="nav-number">1.1.</span> <span class="nav-text">一、问题：死区时间为什么这么难</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81Smith-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%8A%80%E5%B7%A7%EF%BC%9A%E4%BB%8E%E5%8F%8D%E9%A6%88%E9%87%8C%E2%80%9D%E5%87%8F%E5%8E%BB%E6%BB%9E%E5%90%8E%E2%80%9D"><span class="nav-number">1.2.</span> <span class="nav-text">二、Smith 的核心技巧：从反馈里”减去滞后”</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88pid-l4-smith-cpp%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、代码走读（pid_l4_smith.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88%EF%BC%88%E5%B7%B2%E7%94%A8%E5%8F%97%E7%AE%A1-Python-3-13-12-%E9%AA%8C%E8%AF%81%EF%BC%8C%E5%85%A8%E9%83%A8-PASS%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、你会看到什么（已用受管 Python 3.13.12 验证，全部 PASS）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%B8%8E-PID-%E5%AE%B6%E6%97%8F%E7%9A%84%E8%A1%94%E6%8E%A5"><span class="nav-number">1.5.</span> <span class="nav-text">五、与 PID 家族的衔接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%B7%A5%E7%A8%8B%E5%9D%91%EF%BC%88%E7%9C%9F%E5%AE%9E%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">六、工程坑（真实）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.7.</span> <span class="nav-text">七、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.8.</span> <span class="nav-text">八、下一步</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L4 Smith 预估器（Smith Predictor）——大纯滞后的标配补偿
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/pid_demo/">PID_DEMO</a></li>
+            <li>PID_L4_SMITH</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L4-Smith-预估器（Smith-Predictor）——大纯滞后的标配补偿"><a href="#L4-Smith-预估器（Smith-Predictor）——大纯滞后的标配补偿" class="headerlink" title="L4 Smith 预估器（Smith Predictor）——大纯滞后的标配补偿"></a>L4 Smith 预估器（Smith Predictor）——大纯滞后的标配补偿</h1><blockquote>
+<p>温度、流量、液位这些过程对象，信号从阀门到传感器常常要”走好几秒”（死区时间 L）。普通 PID 一看到滞后，反馈就慢半拍，增益稍大就振荡甚至发散。Smith 预估器是产线对付大纯滞后的标准解法：<strong>在反馈环里把滞后减掉、加回无滞后模型，把死区时间 L 移出反馈环</strong>。</p>
+</blockquote>
+<hr>
+<h2 id="一、问题：死区时间为什么这么难"><a href="#一、问题：死区时间为什么这么难" class="headerlink" title="一、问题：死区时间为什么这么难"></a>一、问题：死区时间为什么这么难</h2><p>一阶加纯滞后（FOPDT）对象：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dy/dt = (−y + K·u(t−L)) / T</span><br></pre></td></tr></tbody></table></figure>
+
+<p><code>u(t−L)</code> 表示”现在施加的控制，要 L 秒后才体现在输出上”。对反馈控制器来说，它发出的 <code>u</code> 要等 L 秒才看到效果——这 L 秒的”盲期”会带来相位滞后。相位滞后越大，能保证稳定的增益上限越低 → 只能用小增益 → 响应巨慢。</p>
+<p><strong>核心矛盾</strong>：你想快（大增益），但滞后逼你慢（小增益）。</p>
+<h2 id="二、Smith-的核心技巧：从反馈里”减去滞后”"><a href="#二、Smith-的核心技巧：从反馈里”减去滞后”" class="headerlink" title="二、Smith 的核心技巧：从反馈里”减去滞后”"></a>二、Smith 的核心技巧：从反馈里”减去滞后”</h2><p>控制器本来看到的是 <code>y(t)</code>（带滞后）。Smith 在内部放一个<strong>对象的无滞后模型</strong>，构造一个”预测的无滞后输出”喂给控制器：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ym        = 无滞后模型输出（模型立刻响应 u）</span><br><span class="line">ym_delayed= 模型输出再延迟 L（= 模型以为的"真实滞后输出"）</span><br><span class="line">yf        = y − ym_delayed + ym        ← 这就是"无滞后反馈量"</span><br></pre></td></tr></tbody></table></figure>
+
+<p>直觉：真实输出 <code>y</code> 比无滞后模型 <code>ym</code> 慢了 L，<code>y − ym_delayed</code> 把这段滞后”扣掉”，再加回 <code>ym</code> 就得到<strong>若没有滞后时本该有的输出</strong>。</p>
+<p>于是控制器 <code>C</code> 作用在 <code>yf</code> 上，等价于<strong>面对一个没有滞后的对象</strong>。滞后 L 退化为纯粹的”传输延迟”（只让响应整体平移 L，不影响稳定性/超调）。</p>
+<h2 id="三、代码走读（pid-l4-smith-cpp）"><a href="#三、代码走读（pid-l4-smith-cpp）" class="headerlink" title="三、代码走读（pid_l4_smith.cpp）"></a>三、代码走读（pid_l4_smith.cpp）</h2><ul>
+<li><code>piPlain(r,...)</code>：普通 PI 直接作用于 <code>u(t−L)</code> 的真实 FOPDT 对象。</li>
+<li><code>piSmith(r,...)</code>：PI 作用在 <code>yf = y − ym_delayed + ym</code>，模型 <code>ym</code> 用当前 <code>u</code> 立即更新。</li>
+<li>两者用<strong>完全相同的增益</strong>，只差”反馈量有没有经过 Smith 预测”。</li>
+</ul>
+<p><img src="/02jd/pid_demo/images/fig16_smith.svg" alt="L2 Smith 预估器"></p>
+<h2 id="四、你会看到什么（已用受管-Python-3-13-12-验证，全部-PASS）"><a href="#四、你会看到什么（已用受管-Python-3-13-12-验证，全部-PASS）" class="headerlink" title="四、你会看到什么（已用受管 Python 3.13.12 验证，全部 PASS）"></a>四、你会看到什么（已用受管 Python 3.13.12 验证，全部 PASS）</h2><p>对象 <code>K=1, T=2, L=4</code>（死区时间比对象时间常数还长），PI 增益取<strong>对带滞后对象很激进</strong>的 <code>Kp=1.6, Ki=0.8</code>，<code>dt=0.05, T=60s</code>：</p>
+<table>
+<thead>
+<tr>
+<th>检查</th>
+<th>结果</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>普通 PI（同增益）末值 / 超调</td>
+<td><strong>637.1 / 63614%</strong></td>
+<td>死区在环内 → 直接发散失稳</td>
+</tr>
+<tr>
+<td>Smith（同增益）末值 / 超调</td>
+<td><strong>1.000 / 0%</strong></td>
+<td>滞后移出环 → 稳且零超调</td>
+</tr>
+<tr>
+<td>Smith 调节时间</td>
+<td><strong>24.55 s</strong></td>
+<td>收敛</td>
+</tr>
+<tr>
+<td>Smith &lt; 0.8×普通PI 调节时间</td>
+<td>24.55 &lt; 48.0 ✓</td>
+<td>明显更快</td>
+</tr>
+<tr>
+<td>模型略失配 Lm=3.5（真实 4.0）</td>
+<td>22.05 s，末值 1.00</td>
+<td>模型不精确仍稳且快</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>关键结论：<strong>同样的增益，普通 PI 在带滞后对象上发散，Smith 却稳又快</strong>。这就是 Smith 存在的理由——它把”死区时间”这个稳定性的头号杀手请出了反馈环。</p>
+</blockquote>
+<h2 id="五、与-PID-家族的衔接"><a href="#五、与-PID-家族的衔接" class="headerlink" title="五、与 PID 家族的衔接"></a>五、与 PID 家族的衔接</h2><ul>
+<li>对比 <a href="/02jd/pid_demo/pid_l1_tuning.html">L1.4 整定直觉</a>：Z-N 在带滞后对象上求出的增益被迫很小（因为滞后压低了稳定裕度）；Smith 让你能用”无滞后模型”对应的更激进增益。</li>
+<li>对比 <a href="/02jd/pid_demo/pid_l4_adrc.html">L4 ADRC</a>：ADRC 对付”模型不准+快变扰动”，Smith 专门对付”大纯滞后”，二者互补，都是工业伺服/过程控制的标配。</li>
+<li>对比 <a href="/02jd/pid_demo/pid_l4_imc.html">L4 IMC/λ 整定</a>：IMC 也是”基于模型”的整定，且 IMC 结构里天然能嵌入 Smith 预估（IMC 处理延时对象时就是把延迟放进反馈支路）。</li>
+</ul>
+<h2 id="六、工程坑（真实）"><a href="#六、工程坑（真实）" class="headerlink" title="六、工程坑（真实）"></a>六、工程坑（真实）</h2><ol>
+<li><strong>Smith 极度依赖模型精度</strong>：它内部用 <code>ym</code> 去”抵消”真实滞后。若模型 <code>Lm/Tm/Km</code> 与真实差太多，抵消就不干净，残余滞后还在环里 → 反而可能比不用 Smith 更糟。<strong>模型失配是 Smith 的头号天敌</strong>（本 demo 用 Lm=3.5 vs 真实 4.0 验证”略失配仍 OK”，但大失配会翻车）。</li>
+<li>**只补偿”纯滞后”**：若滞后是”分布式的”（如高阶对象的多阶滞后混在一起），单纯的死区时间模型不够，需要更高阶模型。</li>
+<li><strong>不解决执行器饱和</strong>：Smith 不改变对象的幅值限制；大设定值阶跃下饱和仍会让预估失真，需配合抗饱和。</li>
+<li><strong>和 PID 不是二选一</strong>：Smith 预估器里<strong>包着一个 PI</strong>（本 demo 用 PI 作内环控制器），它增强的是”反馈环对滞后的免疫”，不是替代 PID。</li>
+</ol>
+<h2 id="七、自检"><a href="#七、自检" class="headerlink" title="七、自检"></a>七、自检</h2><ul>
+<li>把模型死区 <code>Lm</code> 从 4.0 故意错配成 2.0（差一倍），看 Smith 是否开始振荡、甚至比普通 PI 还差。</li>
+<li>把 <code>L</code> 从 4.0 调到 1.0（滞后变小），看普通 PI 也能稳住——Smith 的优势在”大滞后”时才显著。</li>
+<li>把增益 <code>Kp/Ki</code> 调小到普通 PI 也能稳的范围，确认两种情况都收敛，但 Smith 仍更快/更平。</li>
+</ul>
+<h2 id="八、下一步"><a href="#八、下一步" class="headerlink" title="八、下一步"></a>八、下一步</h2><p>进入 <a href="/02jd/pid_demo/pid_l4_imc.html">L4 IMC / λ 整定</a>：另一种”基于模型”的整定法，但这次的卖点是<strong>一个旋钮 λ 直接设定闭环带宽</strong>，比 Z-N 更可解释。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/pid_demo/">PID_DEMO</a></li>
+            <li>PID_L4_SMITH</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

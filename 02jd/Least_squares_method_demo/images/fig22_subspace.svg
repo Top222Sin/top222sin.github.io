@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 430" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="430" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L4.7 子空间辨识: N4SID(斜投影) + MOESP(正交投影) + 状态空间 PEM</text>
+
+  <!-- Panel 1: 真系统 + Hankel -->
+  <rect x="30" y="48" width="300" height="150" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="180" y="72" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">真系统 + Hankel 数据矩阵</text>
+  <text x="45" y="96" font-size="12" fill="#1e3a8a">x[k+1]=A·x[k]+B·u[k]</text>
+  <text x="45" y="114" font-size="12" fill="#1e3a8a">y[k]=C·x[k]+D·u[k]+e[k]</text>
+  <text x="45" y="138" font-size="12" fill="#1e3a8a">Hankel: U_p,U_f,Y_p,Y_f (块行 i=10)</text>
+  <text x="45" y="160" font-size="12" fill="#1e3a8a">⚠ 投影在样本空间 L×d (L&gt;d)</text>
+  <text x="45" y="182" font-size="11" fill="#1e3a8a">信号空间(d×L)投影会退化成单位阵</text>
+
+  <!-- Panel 2: N4SID -->
+  <rect x="350" y="48" width="300" height="150" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="500" y="72" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">N4SID 斜投影 → (A,B,C,D)</text>
+  <text x="365" y="96" font-size="12" fill="#14532d">O = Γ_i·X (去 U_f 投到 W_p^⊥)</text>
+  <text x="365" y="114" font-size="12" fill="#14532d">C = Γ_i 首行; A = pinv(Γ_top)·Γ_bot</text>
+  <text x="365" y="132" font-size="12" fill="#14532d">仅 LS 估 B,D (保可检测性)</text>
+  <text x="365" y="154" font-size="12" fill="#14532d">由 O·Oᵀ 谱判阶数 n=2</text>
+  <text x="365" y="176" font-size="11" fill="#14532d">A 稳定 |λ|=0.80; 一步预测≈2σ</text>
+
+  <!-- Panel 3: MOESP -->
+  <rect x="30" y="215" width="300" height="150" rx="9" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="180" y="239" font-size="13" font-weight="bold" fill="#78350f" text-anchor="middle">MOESP 正交投影 / LQ 阶数检测</text>
+  <text x="45" y="263" font-size="12" fill="#78350f">W=[U_p;Y_p;U_f;Y_f] → LQ</text>
+  <text x="45" y="281" font-size="12" fill="#78350f">分区 O_i = L22⁻¹·L21 (d×d)</text>
+  <text x="45" y="299" font-size="12" fill="#78350f">奇异值谱: 前 n 主导, 余≈0</text>
+  <text x="45" y="321" font-size="12" fill="#78350f">→ 阶数 n (与 N4SID 一致)</text>
+  <text x="45" y="343" font-size="11" fill="#78350f">用 pinv(L22) 防近奇异伪模态</text>
+
+  <!-- Panel 4: PEM -->
+  <rect x="350" y="215" width="300" height="150" rx="9" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="500" y="239" font-size="13" font-weight="bold" fill="#4c1d95" text-anchor="middle">状态空间 PEM (Riccati + GN)</text>
+  <text x="365" y="263" font-size="12" fill="#4c1d95">K = P·Cᵀ(CPCᵀ+R)⁻¹ (Riccati)</text>
+  <text x="365" y="281" font-size="12" fill="#4c1d95">Gauss-Newton 精调 θ=vec(A,B,C,D)</text>
+  <text x="365" y="299" font-size="12" fill="#4c1d95">以 N4SID 为初值 (9 参数)</text>
+  <text x="365" y="321" font-size="12" fill="#4c1d95">一步预测 RMSE≈2σ; 精调不退化</text>
+  <text x="365" y="343" font-size="11" fill="#4c1d95">N4SID↔PEM 模型一致 &lt;0.1</text>
+
+  <rect x="30" y="382" width="620" height="34" rx="8" fill="#e2e8f0" stroke="#475569" stroke-width="1"/>
+  <text x="340" y="404" font-size="12.5" font-weight="bold" fill="#1e293b" text-anchor="middle">子空间辨识主线: Hankel→投影(N4SID斜/MOESP正)→阶数n→(A,B,C,D)→PEM精调 · 16项检查 ALL PASS · 纯C++17手写SVD/QR/pinv/Riccati/LQ</text>
+</svg>

@@ -1,0 +1,40 @@
+<svg viewBox="0 0 680 300" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,'Microsoft YaHei',sans-serif">
+  <text x="340" y="26" text-anchor="middle" font-size="15" font-weight="500" fill="#1a202c">立体校正：极线拉平为水平 + 视差→深度</text>
+
+  <!-- 左图 -->
+  <g transform="translate(30,50)">
+    <rect x="0" y="0" width="240" height="150" rx="8" fill="#f8fafc" stroke="#185FA5" stroke-width="1.2"/>
+    <text x="120" y="-8" text-anchor="middle" font-size="12" font-weight="500" fill="#0c447c">校正后 左图</text>
+    <line x1="0" y1="100" x2="240" y2="100" stroke="#639922" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="120" y="116" text-anchor="middle" font-size="9" fill="#27500a">水平极线（同一行）</text>
+    <circle cx="150" cy="100" r="4" fill="#E24B4A"/>
+    <text x="150" y="92" text-anchor="middle" font-size="10" fill="#a32d2d">x_L(u_L,y)</text>
+  </g>
+
+  <!-- 右图 -->
+  <g transform="translate(410,50)">
+    <rect x="0" y="0" width="240" height="150" rx="8" fill="#f8fafc" stroke="#185FA5" stroke-width="1.2"/>
+    <text x="120" y="-8" text-anchor="middle" font-size="12" font-weight="500" fill="#0c447c">校正后 右图</text>
+    <line x1="0" y1="100" x2="240" y2="100" stroke="#639922" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="120" y="116" text-anchor="middle" font-size="9" fill="#27500a">同行对齐（极线水平）</text>
+    <circle cx="90" cy="100" r="4" fill="#E24B4A"/>
+    <text x="90" y="92" text-anchor="middle" font-size="10" fill="#a32d2d">x_R(u_R,y)</text>
+  </g>
+
+  <!-- 视差 d -->
+  <text x="430" y="100" font-size="11" fill="#1a202c">d = u_L − u_R</text>
+  <line x1="180" y1="150" x2="500" y2="150" stroke="#999" stroke-width="0.5"/>
+
+  <!-- 3D 点 与投影 -->
+  <circle cx="340" cy="20" r="4" fill="#E24B4A"/>
+  <text x="350" cy="20" x="350" y="16" font-size="11" fill="#a32d2d">空间点 X (深度 Z)</text>
+  <line x1="340" y1="24" x2="180" y2="150" stroke="#E24B4A" stroke-width="1" stroke-dasharray="3 3"/>
+  <line x1="340" y1="24" x2="500" y2="150" stroke="#E24B4A" stroke-width="1" stroke-dasharray="3 3"/>
+
+  <!-- 公式 -->
+  <g transform="translate(30,225)">
+    <rect x="0" y="0" width="620" height="60" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1"/>
+    <text x="14" y="26" font-size="14" font-weight="500" fill="#27500a">深度公式：  Z = f · B / d      （d = u_L − u_R）</text>
+    <text x="14" y="48" font-size="11" fill="#444441">基线 B 越小 → 相同 σ_d 下深度误差越大； 标定 R,T 有误差 → 垂直视差↑、极线不再行对齐 → 匹配崩溃</text>
+  </g>
+</svg>

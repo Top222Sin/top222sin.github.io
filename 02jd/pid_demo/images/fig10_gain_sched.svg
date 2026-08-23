@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 330" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="330" fill="#ffffff"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L2.5 增益调度与自适应（Gain Scheduling）⭐</text>
+
+  <!-- 左：Kp 随工况补偿 plant 增益 -->
+  <text x="20" y="56" font-size="12" fill="#555">① 调度：Kp(op)·K(op) ≈ 常数</text>
+  <g transform="translate(30,80)">
+    <line x1="0" y1="0" x2="280" y2="0" stroke="#ccc"/>
+    <line x1="0" y1="140" x2="280" y2="140" stroke="#888"/>
+    <line x1="0" y1="0" x2="0" y2="140" stroke="#888"/>
+    <line x1="280" y1="0" x2="280" y2="140" stroke="#888"/>
+    <!-- plant 增益 K(op) 上升 -->
+    <polyline fill="none" stroke="#dc2626" stroke-width="2.4" points="0,128 280,12"/>
+    <text x="200" y="20" font-size="10" fill="#991b1b">plant 增益 K(op) ↑</text>
+    <!-- 调度 Kp(op) 下降 -->
+    <polyline fill="none" stroke="#059669" stroke-width="2.4" points="0,0 280,127"/>
+    <text x="20" y="158" font-size="10" fill="#065f46">调度 Kp(op) ↓（补偿）</text>
+    <text x="120" y="158" font-size="10" fill="#555">op→</text>
+    <text x="120" y="14" font-size="10" fill="#555">乘积≈常数</text>
+  </g>
+
+  <!-- 右：各工况超调对比 -->
+  <text x="360" y="56" font-size="12" fill="#555">② 超调随工况：固定增益波动大，调度增益平直</text>
+  <g transform="translate(360,80)">
+    <line x1="0" y1="0" x2="280" y2="0" stroke="#ccc"/>
+    <line x1="0" y1="140" x2="280" y2="140" stroke="#888"/>
+    <line x1="0" y1="0" x2="0" y2="140" stroke="#888"/>
+    <line x1="280" y1="0" x2="280" y2="140" stroke="#888"/>
+    <!-- 固定 -->
+    <polyline fill="none" stroke="#dc2626" stroke-width="2.4"
+      points="28,126 84,112 140,98 196,56 252,14"/>
+    <circle cx="28" cy="126" r="3" fill="#dc2626"/>
+    <circle cx="84" cy="112" r="3" fill="#dc2626"/>
+    <circle cx="140" cy="98" r="3" fill="#dc2626"/>
+    <circle cx="196" cy="56" r="3" fill="#dc2626"/>
+    <circle cx="252" cy="14" r="3" fill="#dc2626"/>
+    <!-- 调度 -->
+    <polyline fill="none" stroke="#059669" stroke-width="2.4"
+      points="28,106 84,106 140,106 196,106 252,106"/>
+    <circle cx="28" cy="106" r="3" fill="#059669"/>
+    <circle cx="84" cy="106" r="3" fill="#059669"/>
+    <circle cx="140" cy="106" r="3" fill="#059669"/>
+    <circle cx="196" cy="106" r="3" fill="#059669"/>
+    <circle cx="252" cy="106" r="3" fill="#059669"/>
+    <text x="6" y="158" font-size="10" fill="#dc2626">■ 固定增益</text>
+    <text x="150" y="158" font-size="10" fill="#059669">■ 调度增益(一致)</text>
+  </g>
+
+  <text x="20" y="320" font-size="11" fill="#666">要点：线性 PID 在增益随工况变化的系统上，固定增益只能顾一头。按工况调度 Kp（如 PX4 依推力/空速调姿态·速率增益），可让全工况表现一致。</text>
+</svg>

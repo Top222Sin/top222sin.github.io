@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L4：事件触发控制 ETC（网络带宽受限的按需控制）⭐ 一句话：网络控制里”每步都传”浪费带宽。ETC 只在状态偏离上次采样足够大时才重算并发送控制：‖x(k)−x(t_k)‖ &gt; σ·‖x(t_k)‖。 本篇补齐”周期采样”到”异步事件驱动”的跨越——无线传感器网络、车联网、云边协同控制都靠它省通信。  为什么需要 ETC（与 L1&#x2F;L2 的关系）经典控制假设连续或等周期获取状态、更新控制">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L4：事件触发控制 ETC（网络带宽受限的按需控制）⭐">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/control_demo/ctrl_l4_etc.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L4：事件触发控制 ETC（网络带宽受限的按需控制）⭐ 一句话：网络控制里”每步都传”浪费带宽。ETC 只在状态偏离上次采样足够大时才重算并发送控制：‖x(k)−x(t_k)‖ &gt; σ·‖x(t_k)‖。 本篇补齐”周期采样”到”异步事件驱动”的跨越——无线传感器网络、车联网、云边协同控制都靠它省通信。  为什么需要 ETC（与 L1&#x2F;L2 的关系）经典控制假设连续或等周期获取状态、更新控制">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.920Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/control_demo/ctrl_l4_etc">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/control_demo/ctrl_l4_etc.html","path":"02jd/control_demo/ctrl_l4_etc.html","title":"L4：事件触发控制 ETC（网络带宽受限的按需控制）⭐"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L4：事件触发控制 ETC（网络带宽受限的按需控制）⭐ | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L4%EF%BC%9A%E4%BA%8B%E4%BB%B6%E8%A7%A6%E5%8F%91%E6%8E%A7%E5%88%B6-ETC%EF%BC%88%E7%BD%91%E7%BB%9C%E5%B8%A6%E5%AE%BD%E5%8F%97%E9%99%90%E7%9A%84%E6%8C%89%E9%9C%80%E6%8E%A7%E5%88%B6%EF%BC%89%E2%AD%90"><span class="nav-number">1.</span> <span class="nav-text">L4：事件触发控制 ETC（网络带宽受限的按需控制）⭐</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-ETC%EF%BC%88%E4%B8%8E-L1-L2-%E7%9A%84%E5%85%B3%E7%B3%BB%EF%BC%89"><span class="nav-number">1.1.</span> <span class="nav-text">为什么需要 ETC（与 L1&#x2F;L2 的关系）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E5%AD%A6%EF%BC%9A%E8%A7%A6%E5%8F%91%E6%9D%A1%E4%BB%B6%E4%B8%8E%E7%A8%B3%E5%AE%9A%E6%80%A7"><span class="nav-number">1.2.</span> <span class="nav-text">数学：触发条件与稳定性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E9%87%8C%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88%EF%BC%88%E8%AF%9A%E5%AE%9E%E8%B4%B4%E5%87%BA%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">程序里你会看到什么（诚实贴出）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%9A%E5%AE%9E%E7%9A%84%E8%BE%B9%E7%95%8C%E6%9D%A1%E4%BB%B6"><span class="nav-number">1.4.</span> <span class="nav-text">诚实的边界条件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8E%E5%85%84%E5%BC%9F%E4%BB%93%E5%BA%93%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.5.</span> <span class="nav-text">与兄弟仓库的关系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E6%A3%80%EF%BC%88%E6%9C%AC%E6%96%87%E7%BB%93%E8%AE%BA%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">自检（本文结论）</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L4：事件触发控制 ETC（网络带宽受限的按需控制）⭐
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/control_demo/">CONTROL_DEMO</a></li>
+            <li>CTRL_L4_ETC</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L4：事件触发控制-ETC（网络带宽受限的按需控制）⭐"><a href="#L4：事件触发控制-ETC（网络带宽受限的按需控制）⭐" class="headerlink" title="L4：事件触发控制 ETC（网络带宽受限的按需控制）⭐"></a>L4：事件触发控制 ETC（网络带宽受限的按需控制）⭐</h1><blockquote>
+<p>一句话：<strong>网络控制里”每步都传”浪费带宽。ETC 只在状态偏离上次采样足够大时才重算并发送控制：<code>‖x(k)−x(t_k)‖ &gt; σ·‖x(t_k)‖</code>。</strong> 本篇补齐”周期采样”到”异步事件驱动”的跨越——无线传感器网络、车联网、云边协同控制都靠它省通信。</p>
+</blockquote>
+<h2 id="为什么需要-ETC（与-L1-L2-的关系）"><a href="#为什么需要-ETC（与-L1-L2-的关系）" class="headerlink" title="为什么需要 ETC（与 L1/L2 的关系）"></a>为什么需要 ETC（与 L1/L2 的关系）</h2><p>经典控制假设<strong>连续或等周期</strong>获取状态、更新控制。但网络化控制里：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">每步通信：N 步 = N 次传输 + N 次控制计算   （浪费，大多数时刻状态几乎没动）</span><br><span class="line">事件触发：只在"状态动了够多"时才传输/计算    （省带宽、省算力）</span><br></pre></td></tr></tbody></table></figure>
+<p>代价：控制量在两次事件间<strong>保持恒定</strong>（零阶保持），可能引入额外误差——需保证仍稳定。</p>
+<h2 id="数学：触发条件与稳定性"><a href="#数学：触发条件与稳定性" class="headerlink" title="数学：触发条件与稳定性"></a>数学：触发条件与稳定性</h2><p>离散对象 <code>x(k+1)=Ax(k)+Bu(k)</code>，周期控制 <code>u=−Kx</code> 使 <code>A−BK</code> 稳定。ETC：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">保持 u(k) = −K·x(t_k)  （t_k 为最近一次事件时刻）</span><br><span class="line">触发： ‖x(k) − x(t_k)‖ &gt; σ·‖x(t_k)‖   → 发生事件，t_{k+1}=k，重算 u</span><br></pre></td></tr></tbody></table></figure>
+<p><strong>稳定性取决于两点</strong>：</p>
+<ol>
+<li>周期闭环 <code>A−BK</code> 本就稳定（|λ|&lt;1）；</li>
+<li>触发阈值 <code>σ</code> 不超过”最大允许阈值” <code>σ*</code>（保证保持控制期间状态不发散）。</li>
+</ol>
+<p>本 demo 特意把闭环设计成<strong>严格收缩映射</strong> <code>A−BK = D = diag(0.9, 0.85)</code>（通过 <code>K=B⁻¹(A−D)</code>，要求 <code>B</code> 可逆），使保持控制期间 <code>‖x‖</code> 单调下降——<code>σ</code> 有足够裕度：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">A−BK 与 D 残差 = 6.94e-18      （== 严格收缩）</span><br><span class="line">σ=0.3, N=400:  事件数 61 / 401，节省 85%</span><br><span class="line">终态 ‖x‖ = 4.43e-10            （稳定收敛）</span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="程序里你会看到什么（诚实贴出）"><a href="#程序里你会看到什么（诚实贴出）" class="headerlink" title="程序里你会看到什么（诚实贴出）"></a>程序里你会看到什么（诚实贴出）</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">=== L4：事件触发控制 ETC（网络带宽受限）===</span><br><span class="line">  [demo] A-BK 与对角收缩 D 残差=6.94e-18 (应≈0)</span><br><span class="line">  [demo] 周期终态‖x‖=4.98e-19, ETC(σ=0.3)终态‖x‖=4.43e-10, 事件=61/401 (节省85%)</span><br><span class="line">  [PASS] 闭环=严格收缩映射                  err=6.94e-18  tol=1e-12  PASS</span><br><span class="line">  [PASS] ETC 稳定(终态小)                  err=4.43e-10  tol=5e-2   PASS</span><br><span class="line">  [PASS] ETC 通信/计算次数 &lt; 周期          err=-2.60e+2  tol=1e-9   PASS</span><br><span class="line">  [PASS] ETC 节省 &gt;70% 传输(事件稀疏)      err=-5.93e+1  tol=1e-9   PASS</span><br><span class="line">=== 4 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="诚实的边界条件"><a href="#诚实的边界条件" class="headerlink" title="诚实的边界条件"></a>诚实的边界条件</h2><ul>
+<li>本 demo 的 <code>A−BK=D</code> 是<strong>故意设计成收缩</strong>的，所以 ETC 稳得很轻松。真实对象若周期闭环只是”临界稳定”或 <code>σ</code> 过大，ETC 会震荡甚至发散——此时需收紧 <code>σ</code> 或改用<strong>依赖状态的更紧触发</strong>（如 <code>‖e‖&gt;σ‖x‖+δ</code> 加小常数 <code>δ</code> 排除原点附近持续微抖）。</li>
+<li><strong>σ 的折中</strong>：<code>σ</code> 越大越省带宽，但收敛越慢、终态残差越大。工程上在”节省率”与”性能”间调。</li>
+</ul>
+<h2 id="与兄弟仓库的关系"><a href="#与兄弟仓库的关系" class="headerlink" title="与兄弟仓库的关系"></a>与兄弟仓库的关系</h2><ul>
+<li>**<a href="/02jd/control_demo/ctrl_l4_mpc.html">ctrl_l4_mpc</a>**（MPC）：MPC 通常周期求解；可改为事件触发 MPC（只在事件时解 QP），与本文同思路。</li>
+<li>**[[kf_l4_*]]**（卡尔曼）：事件触发估计（事件触发卡尔曼）与事件触发控制对称——都是”按需通信”。</li>
+<li><strong>Jacobian_demo / Least_squares_method_demo</strong>：触发判定里的范数、阈值即基础线性代数。</li>
+</ul>
+<h2 id="自检（本文结论）"><a href="#自检（本文结论）" class="headerlink" title="自检（本文结论）"></a>自检（本文结论）</h2><ul>
+<li>ETC 把控制更新/传输从”每步”降为”按需”，本 demo 节省 85% 通信。</li>
+<li>稳定性由周期闭环稳定 + 触发阈值共同保证；本 demo 用严格收缩闭环 <code>A−BK=D</code> 留足裕度。</li>
+<li><code>σ</code> 越大越省带宽但收敛越慢，需折中。</li>
+</ul>
+<blockquote>
+<p>本机无 C++ 编译器，<code>.cpp</code> 为经受管 Python 3.13.12 对拍（4/4）+ C++ 控制流镜像复核后的确定性重现。</p>
+</blockquote>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/control_demo/">CONTROL_DEMO</a></li>
+            <li>CTRL_L4_ETC</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

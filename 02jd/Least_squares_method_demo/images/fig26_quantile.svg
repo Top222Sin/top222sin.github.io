@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 300" font-family="Segoe UI, Arial, sans-serif">
+  <rect x="0" y="0" width="680" height="300" fill="#f7f9fc"/>
+  <text x="340" y="22" text-anchor="middle" font-size="15" font-weight="bold" fill="#0c447c">L4.11 分位数回归（作为 LS）：非对称 check loss = 加权 LS</text>
+
+  <!-- ===== 左：数据 + 分位回归线 ===== -->
+  <rect x="12" y="34" width="336" height="252" rx="8" fill="#ffffff" stroke="#185FA5" stroke-width="1.2"/>
+  <text x="180" y="52" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#185FA5">分位数回归线（异方差数据）</text>
+  <line x1="50" y1="280" x2="320" y2="280" stroke="#999" stroke-width="0.8"/>
+  <line x1="50" y1="280" x2="50" y2="40" stroke="#999" stroke-width="0.8"/>
+  <text x="300" y="294" font-size="9" fill="#666">x</text>
+  <text x="40" y="48" font-size="9" fill="#666">y</text>
+  <!-- 散点 -->
+  <g fill="#9aa7b5">
+    <circle cx="63.5" cy="235.2" r="2.4"/><circle cx="77" cy="194.5" r="2.4"/><circle cx="90.5" cy="210.8" r="2.4"/>
+    <circle cx="104" cy="174.2" r="2.4"/><circle cx="117.5" cy="206.7" r="2.4"/><circle cx="131" cy="162" r="2.4"/>
+    <circle cx="144.5" cy="186.4" r="2.4"/><circle cx="158" cy="149.8" r="2.4"/><circle cx="171.5" cy="170.1" r="2.4"/>
+    <circle cx="185" cy="145.7" r="2.4"/><circle cx="198.5" cy="174.2" r="2.4"/><circle cx="212" cy="129.4" r="2.4"/>
+    <circle cx="225.5" cy="153.8" r="2.4"/><circle cx="239" cy="117.2" r="2.4"/><circle cx="252.5" cy="141.6" r="2.4"/>
+    <circle cx="266" cy="105" r="2.4"/><circle cx="279.5" cy="125.3" r="2.4"/><circle cx="293" cy="80.6" r="2.4"/>
+    <circle cx="306.5" cy="109.1" r="2.4"/><circle cx="320" cy="72.4" r="2.4"/>
+  </g>
+  <!-- 分位线 τ=0.1..0.9 -->
+  <line x1="50" y1="260" x2="320" y2="105" stroke="#9bc4e8" stroke-width="1.6"/>
+  <line x1="50" y1="251.6" x2="320" y2="91.1" stroke="#5b9bd5" stroke-width="1.6"/>
+  <line x1="50" y1="239.4" x2="320" y2="81.3" stroke="#2f6fb0" stroke-width="1.6"/>
+  <line x1="50" y1="229.5" x2="320" y2="67.5" stroke="#185FA5" stroke-width="1.6"/>
+  <line x1="50" y1="203.5" x2="320" y2="53" stroke="#0c447c" stroke-width="1.6"/>
+  <!-- OLS 均值线（红虚） -->
+  <line x1="50" y1="239.3" x2="320" y2="76.5" stroke="#A32D2D" stroke-width="1.4" stroke-dasharray="5,3"/>
+  <text x="60" y="270" font-size="8.5" fill="#0c447c">τ: 0.1 / 0.3 / 0.5 / 0.7 / 0.9（蓝→深蓝）</text>
+  <text x="60" y="280" font-size="8.5" fill="#A32D2D">— — OLS 均值线（τ=0.5 附近，对称误差时）</text>
+
+  <!-- ===== 右：check loss vs r² ===== -->
+  <rect x="352" y="34" width="316" height="252" rx="8" fill="#ffffff" stroke="#185FA5" stroke-width="1.2"/>
+  <text x="510" y="52" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#185FA5">损失函数：非对称 vs 对称</text>
+  <line x1="382" y1="160" x2="642" y2="160" stroke="#999" stroke-width="0.8"/>
+  <line x1="512" y1="240" x2="512" y2="60" stroke="#999" stroke-width="0.8"/>
+  <text x="630" y="174" font-size="9" fill="#666">r</text>
+  <text x="500" y="72" font-size="9" fill="#666">ρ</text>
+  <!-- OLS r²（对称，红虚 抛物线） -->
+  <path d="M382,96 Q512,160 642,96" fill="none" stroke="#A32D2D" stroke-width="1.6" stroke-dasharray="5,3"/>
+  <text x="392" y="92" font-size="9" fill="#A32D2D">OLS: r²（对称）</text>
+  <!-- pinball ρ_τ for τ=0.7（蓝 V） -->
+  <polyline points="382,128 512,160 642,85.4" fill="none" stroke="#185FA5" stroke-width="2"/>
+  <text x="430" y="150" font-size="9" fill="#185FA5">ρ_τ(r) τ=0.7</text>
+  <text x="540" y="100" font-size="9" fill="#185FA5">斜率 τ=0.7</text>
+  <text x="396" y="138" font-size="9" fill="#185FA5">斜率 τ−1=−0.3</text>
+  <rect x="372" y="208" width="276" height="62" rx="5" fill="#eef4fb" stroke="#0c447c" stroke-width="1"/>
+  <text x="510" y="224" text-anchor="middle" font-size="9.5" fill="#0c447c">OLS:  min Σ rᵢ²   （对称 L2）</text>
+  <text x="510" y="238" text-anchor="middle" font-size="9.5" fill="#0c447c">分位数: min Σ ρ_τ(rᵢ) （非对称 Lτ）</text>
+  <text x="510" y="252" text-anchor="middle" font-size="9" fill="#3B6D11">同骨架：IRLS 重加权 / 平滑梯度下降</text>
+  <text x="510" y="270" text-anchor="middle" font-size="9" fill="#5b6770">正残差权重 τ、负残差权重 τ−1 → 不同分位</text>
+</svg>

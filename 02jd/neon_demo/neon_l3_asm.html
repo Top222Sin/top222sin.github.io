@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L3 深度优化（库开发者 &#x2F; 移动端推理引擎）· 第一部分手写 NEON 汇编 · 指令调度 · 寄存器分配 配套文件：neon_l3_asm.cpp（结构化代码参考，含 aarch64 可运行最小内核）图示文件：images&#x2F;fig1_register_budget.svg &#x2F; fig2_scheduling.svg &#x2F; fig3_control.svg（可直接嵌入 markdown）浏览器预览">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L3 深度优化（库开发者 &#x2F; 移动端推理引擎）· 第一部分">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/neon_demo/neon_l3_asm.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L3 深度优化（库开发者 &#x2F; 移动端推理引擎）· 第一部分手写 NEON 汇编 · 指令调度 · 寄存器分配 配套文件：neon_l3_asm.cpp（结构化代码参考，含 aarch64 可运行最小内核）图示文件：images&#x2F;fig1_register_budget.svg &#x2F; fig2_scheduling.svg &#x2F; fig3_control.svg（可直接嵌入 markdown）浏览器预览">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.960Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/neon_demo/neon_l3_asm">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/neon_demo/neon_l3_asm.html","path":"02jd/neon_demo/neon_l3_asm.html","title":"L3 深度优化（库开发者 / 移动端推理引擎）· 第一部分"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L3 深度优化（库开发者 / 移动端推理引擎）· 第一部分 | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L3-%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%8C%96%EF%BC%88%E5%BA%93%E5%BC%80%E5%8F%91%E8%80%85-%E7%A7%BB%E5%8A%A8%E7%AB%AF%E6%8E%A8%E7%90%86%E5%BC%95%E6%93%8E%EF%BC%89%C2%B7-%E7%AC%AC%E4%B8%80%E9%83%A8%E5%88%86"><span class="nav-number">1.</span> <span class="nav-text">L3 深度优化（库开发者 &#x2F; 移动端推理引擎）· 第一部分</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%8B%E5%86%99-NEON-%E6%B1%87%E7%BC%96-%C2%B7-%E6%8C%87%E4%BB%A4%E8%B0%83%E5%BA%A6-%C2%B7-%E5%AF%84%E5%AD%98%E5%99%A8%E5%88%86%E9%85%8D"><span class="nav-number">1.1.</span> <span class="nav-text">手写 NEON 汇编 · 指令调度 · 寄存器分配</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E5%9C%A8-intrinsics-%E2%80%94%E2%80%94-%E5%88%86%E6%B0%B4%E5%B2%AD%E5%9C%A8%E5%93%AA"><span class="nav-number">1.2.</span> <span class="nav-text">一、为什么不在 intrinsics —— 分水岭在哪</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%AF%84%E5%AD%98%E5%99%A8%E5%88%86%E9%85%8D%EF%BC%88Register-Allocation%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">二、寄存器分配（Register Allocation）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E6%A3%8B%E7%9B%98%E6%9C%89%E5%A4%9A%E5%A4%A7"><span class="nav-number">1.3.1.</span> <span class="nav-text">2.1 棋盘有多大</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-AAPCS64-%E8%B0%83%E7%94%A8%E7%BA%A6%E5%AE%9A%E5%86%B3%E5%AE%9A%E7%9A%84%E3%80%8C%E5%85%8D%E4%BF%9D%E5%AD%98%E5%8C%BA%E3%80%8D"><span class="nav-number">1.3.2.</span> <span class="nav-text">2.2 AAPCS64 调用约定决定的「免保存区」</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-ncnn-%E7%9A%84%E5%88%86%E9%85%8D%E8%B4%A6%E6%9C%AC%EF%BC%88%E8%A7%81%E5%9B%BE%E4%B8%80%EF%BC%89"><span class="nav-number">1.3.3.</span> <span class="nav-text">2.3 ncnn 的分配账本（见图一）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E8%BE%93%E5%87%BA%E5%9D%97%E5%B0%BA%E5%AF%B8-%E5%AF%84%E5%AD%98%E5%99%A8%E8%B4%A6%E5%8D%95%E9%80%BC%E5%87%BA%E6%9D%A5%E7%9A%84"><span class="nav-number">1.3.4.</span> <span class="nav-text">2.4 输出块尺寸 &#x3D; 寄存器账单逼出来的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-%E5%86%85%E8%81%94%E6%B1%87%E7%BC%96%E9%87%8C%E3%80%8C%E9%92%89%E3%80%8D%E5%AF%84%E5%AD%98%E5%99%A8%EF%BC%88%E8%A7%81-gemm-arm-cpp-2455-%E7%BA%A6%E6%9D%9F%E8%A1%A8%EF%BC%89"><span class="nav-number">1.3.5.</span> <span class="nav-text">2.5 内联汇编里「钉」寄存器（见 gemm_arm.cpp:2455 约束表）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%8C%87%E4%BB%A4%E8%B0%83%E5%BA%A6%EF%BC%88Instruction-Scheduling%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">三、指令调度（Instruction Scheduling）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E4%B8%A4%E4%B8%AA%E7%8B%AC%E7%AB%8B%E6%8C%87%E6%A0%87"><span class="nav-number">1.4.1.</span> <span class="nav-text">3.1 两个独立指标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E8%A7%A3%E6%B3%95-%E6%9B%B4%E5%A4%9A%E7%B4%AF%E5%8A%A0%E5%99%A8%EF%BC%88ILP-%E6%B7%B1%E5%BA%A6%EF%BC%89"><span class="nav-number">1.4.2.</span> <span class="nav-text">3.2 解法 &#x3D; 更多累加器（ILP 深度）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E9%A2%84%E5%8F%96%E8%B0%83%E5%BA%A6%EF%BC%9A%E6%8A%8A%E8%AE%BF%E5%AD%98%E8%97%8F%E5%88%B0%E8%AE%A1%E7%AE%97%E5%90%8E%E9%9D%A2"><span class="nav-number">1.4.3.</span> <span class="nav-text">3.3 预取调度：把访存藏到计算后面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-%E5%BE%AA%E7%8E%AF%E5%B0%BE%E8%B0%83%E5%BA%A6%E6%8A%80%E5%B7%A7%EF%BC%88%E6%9C%80%E5%AE%B9%E6%98%93%E8%A2%AB%E5%BF%BD%E7%95%A5%EF%BC%89"><span class="nav-number">1.4.4.</span> <span class="nav-text">3.4 循环尾调度技巧（最容易被忽略）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-%E6%89%8B%E5%86%99%E6%B1%87%E7%BC%96%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%BD%A2%E6%80%81%EF%BC%88%E5%AF%B9%E7%85%A7-CUDA-%E7%9A%84-PTX-SASS%EF%BC%89"><span class="nav-number">1.4.5.</span> <span class="nav-text">3.5 手写汇编的两种形态（对照 CUDA 的 PTX&#x2F;SASS）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E9%AA%8C%E8%AF%81%E6%96%B9%E6%B3%95%EF%BC%88%E8%90%BD%E5%9B%9E%E4%BD%A0%E7%9A%84%E5%B7%A5%E5%85%B7%E9%93%BE%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">四、验证方法（落回你的工具链）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%A8%E6%96%87%E4%B8%B2%E8%81%94%EF%BC%88%E6%8E%A5%E5%9B%9E%E4%BD%A0%E5%89%8D%E9%9D%A2%E7%9A%84%E6%89%80%E6%9C%89%E7%9F%A5%E8%AF%86%E7%82%B9%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">全文串联（接回你前面的所有知识点）</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L3 深度优化（库开发者 / 移动端推理引擎）· 第一部分
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/neon_demo/">NEON_DEMO</a></li>
+            <li>NEON_L3_ASM</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L3-深度优化（库开发者-移动端推理引擎）·-第一部分"><a href="#L3-深度优化（库开发者-移动端推理引擎）·-第一部分" class="headerlink" title="L3 深度优化（库开发者 / 移动端推理引擎）· 第一部分"></a>L3 深度优化（库开发者 / 移动端推理引擎）· 第一部分</h1><h2 id="手写-NEON-汇编-·-指令调度-·-寄存器分配"><a href="#手写-NEON-汇编-·-指令调度-·-寄存器分配" class="headerlink" title="手写 NEON 汇编 · 指令调度 · 寄存器分配"></a>手写 NEON 汇编 · 指令调度 · 寄存器分配</h2><blockquote>
+<p>配套文件：<code>neon_l3_asm.cpp</code>（结构化代码参考，含 aarch64 可运行最小内核）<br>图示文件：<code>images/fig1_register_budget.svg</code> / <code>fig2_scheduling.svg</code> / <code>fig3_control.svg</code>（可直接嵌入 markdown）<br>浏览器预览：<code>neon_l3_asm_diagrams.html</code>（独立页面，自动引用 images/ 下的 SVG）<br>真代码出处：<code>ncnn/src/layer/arm/gemm_arm.cpp</code>（fp32 微内核 ~2455 行）、<br><code>ncnn/src/layer/arm/gemm_int8.h</code>（int8 SDOT 微内核 ~10018 行）</p>
+</blockquote>
+<hr>
+<h2 id="一、为什么不在-intrinsics-——-分水岭在哪"><a href="#一、为什么不在-intrinsics-——-分水岭在哪" class="headerlink" title="一、为什么不在 intrinsics —— 分水岭在哪"></a>一、为什么不在 intrinsics —— 分水岭在哪</h2><p>L2 用 <code>&lt;arm_neon.h&gt;</code> intrinsics：你<strong>告诉编译器「我想干什么」</strong>，寄存器分配、指令顺序、是否 spill（溢出到栈）全由编译器决定。对绝大多数热点这已经足够，且安全。</p>
+<p>L3 手写汇编：你<strong>自己决定每条指令、每个寄存器、每个周期</strong>。分水岭只有一个——<strong>微内核被调用的频率</strong>。</p>
+<p>一个 GEMM / Conv 微内核（比如 <code>gemm_transB_packed_tile_int8_asimddp</code>）在跑一个 ResNet 时会被调用<strong>上亿次</strong>。编译器在保守分配下带来的任何一处浪费：</p>
+<ul>
+<li>一次 spill（寄存器不够、被迫存栈再取回）→ 多一次内存往返；</li>
+<li>一条多余的 <code>vst</code> / 重排指令；</li>
+<li>一个没排好的依赖停顿（后一条指令干等前一条的结果）；</li>
+</ul>
+<p>在「上亿次/秒」的放大下，都会变成肉眼可见的慢。而这些<strong>靠 <code>-O3</code> 消除不了</strong>——因为编译器不敢假设你愿意牺牲可读性与可移植性去钉死寄存器。</p>
+<p><strong>ncnn 的实锤</strong>：同一份 GEMM 同时保留 intrinsics 版与手写汇编版，用宏切换：</p>
+<figure class="highlight cpp"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ncnn/src/layer/arm/gemm_int8.h 风格（示意）</span></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> NCNN_GNU_INLINE_ASM</span></span><br><span class="line">    <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">"sdot v16.4s, v0.16b, v4.4b[0] ..."</span>)</span></span>;   <span class="comment">// ← L3 手写汇编</span></span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">    _sum0 = <span class="built_in">vdotq_lane_s32</span>(_sum0, va, vb, <span class="number">0</span>);             <span class="comment">// ← L2 intrinsics</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>结论</strong>：先 intrinsics 跑通正确性，再对「真·热」的微内核下沉到汇编微调。这是工程取舍，不是炫技。</p>
+<hr>
+<h2 id="二、寄存器分配（Register-Allocation）"><a href="#二、寄存器分配（Register-Allocation）" class="headerlink" title="二、寄存器分配（Register Allocation）"></a>二、寄存器分配（Register Allocation）</h2><h3 id="2-1-棋盘有多大"><a href="#2-1-棋盘有多大" class="headerlink" title="2.1 棋盘有多大"></a>2.1 棋盘有多大</h3><ul>
+<li><strong>AArch64</strong>：32 个 128-bit V 寄存器（V0–V31）。</li>
+<li><strong>AArch32</strong>：只有 32 个 64-bit D（或 16 个 128-bit Q0–Q15）——这正是 <code>gemm_arm.cpp</code> 里那份 aarch32 内联汇编用 <code>q0–q2 / d0–d7</code> 的原因，架构不同、棋盘更小。</li>
+</ul>
+<h3 id="2-2-AAPCS64-调用约定决定的「免保存区」"><a href="#2-2-AAPCS64-调用约定决定的「免保存区」" class="headerlink" title="2.2 AAPCS64 调用约定决定的「免保存区」"></a>2.2 AAPCS64 调用约定决定的「免保存区」</h3><p>这是 ncnn 故意利用的关键：</p>
+<table>
+<thead>
+<tr>
+<th>区间</th>
+<th>保存责任</th>
+<th>叶子函数里</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>V0–V7</td>
+<td>调用方保存（参数/返回值）</td>
+<td>随便用</td>
+</tr>
+<tr>
+<td>V8–V15</td>
+<td><strong>被调方保存</strong></td>
+<td>用了就得 <code>stp</code>/<code>ldp</code> 压栈恢复（有开销）</td>
+</tr>
+<tr>
+<td>V16–V31</td>
+<td>调用方保存</td>
+<td>随便用</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-ncnn-的分配账本（见图一）"><a href="#2-3-ncnn-的分配账本（见图一）" class="headerlink" title="2.3 ncnn 的分配账本（见图一）"></a>2.3 ncnn 的分配账本（见图一）</h3><ul>
+<li><strong>累加器</strong> → 全用 <strong>v16–v31</strong>（16 个 <code>int32x4</code> = 64 个部分和 → 8×8 输出块的一个切分）；</li>
+<li><strong>数据块 A/B</strong> → 用 <strong>v0–v7</strong>（载入 tile）；</li>
+<li><strong>v8–v15</strong> → <strong>故意留空</strong>！不是忘了，是为「不付保存代价」主动让出的 8 个槽。</li>
+</ul>
+<p>效果：整个微内核<strong>零寄存器保存/恢复</strong>，纯叶子效率。那 8 个 free 槽不是闲置浪费，而是「为了不付 <code>stp</code>/<code>ldp</code> 代价而主动放弃」——这是库开发者才会抠的细节。</p>
+<div align="center">
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 490" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <rect width="680" height="490" fill="#ffffff"></rect>
+  <text x="20" y="30" font-size="19" font-weight="700" fill="#111">图一 · AArch64 寄存器预算 — V0–V31（32 × 128-bit）</text>
+  <text x="20" y="52" font-size="12.5" fill="#666">ncnn int8 GEMM 内核（gemm_int8.h:10018）的分配账本</text>
+
+</svg><p>  <rect x="20" y="68" width="14" height="14" rx="2" fill="#cfe9cf"><text x="40" y="80" font-size="12" fill="#333">V0–V7 调用方保存（自由）</text><br>  <rect x="220" y="68" width="14" height="14" rx="2" fill="#f6c98f"><text x="240" y="80" font-size="12" fill="#333">V8–V15 被调方保存（要 stp/ldp → 躲开）</text><br>  <rect x="470" y="68" width="14" height="14" rx="2" fill="#a9dcb0"><text x="490" y="80" font-size="12" fill="#333">V16–V31 调用方保存（自由）</text></rect></rect></rect></p>
+  <!-- row1 V0-V15 -->
+  <g font-size="10" fill="#222" text-anchor="middle">
+    <rect x="20" y="120" width="36" height="54" rx="3" fill="#cfe9cf"><text x="38" y="150">V0</text>
+    <rect x="60" y="120" width="36" height="54" rx="3" fill="#cfe9cf"><text x="78" y="150">V1</text>
+    <rect x="100" y="120" width="36" height="54" rx="3" fill="#cfe9cf"><text x="118" y="150">V2</text>
+    <rect x="140" y="120" width="36" height="54" rx="3" fill="#cfe9cf"><text x="158" y="150">V3</text>
+    <rect x="180" y="120" width="36" height="54" rx="3" fill="#cfe9cf"><text x="198" y="150">V4</text>
+    <rect x="220" y="120" width="36" height="54" rx="3" fill="#cfe9cf"><text x="238" y="150">V5</text>
+    <rect x="260" y="120" width="36" height="54" rx="3" fill="#cfe9cf"><text x="278" y="150">V6</text>
+    <rect x="300" y="120" width="36" height="54" rx="3" fill="#cfe9cf"><text x="318" y="150">V7</text>
+    <rect x="340" y="120" width="36" height="54" rx="3" fill="#f6c98f"><text x="358" y="150">V8</text>
+    <rect x="380" y="120" width="36" height="54" rx="3" fill="#f6c98f"><text x="398" y="150">V9</text>
+    <rect x="420" y="120" width="36" height="54" rx="3" fill="#f6c98f"><text x="438" y="150">V10</text>
+    <rect x="460" y="120" width="36" height="54" rx="3" fill="#f6c98f"><text x="478" y="150">V11</text>
+    <rect x="500" y="120" width="36" height="54" rx="3" fill="#f6c98f"><text x="518" y="150">V12</text>
+    <rect x="540" y="120" width="36" height="54" rx="3" fill="#f6c98f"><text x="558" y="150">V13</text>
+    <rect x="580" y="120" width="36" height="54" rx="3" fill="#f6c98f"><text x="598" y="150">V14</text>
+    <rect x="620" y="120" width="36" height="54" rx="3" fill="#f6c98f"><text x="638" y="150">V15</text>
+  </rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></g>
+  <!-- row2 V16-V31 -->
+  <g font-size="10" fill="#222" text-anchor="middle">
+    <rect x="20" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="38" y="230">V16</text>
+    <rect x="60" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="78" y="230">V17</text>
+    <rect x="100" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="118" y="230">V18</text>
+    <rect x="140" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="158" y="230">V19</text>
+    <rect x="180" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="198" y="230">V20</text>
+    <rect x="220" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="238" y="230">V21</text>
+    <rect x="260" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="278" y="230">V22</text>
+    <rect x="300" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="318" y="230">V23</text>
+    <rect x="340" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="358" y="230">V24</text>
+    <rect x="380" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="398" y="230">V25</text>
+    <rect x="420" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="438" y="230">V26</text>
+    <rect x="460" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="478" y="230">V27</text>
+    <rect x="500" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="518" y="230">V28</text>
+    <rect x="540" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="558" y="230">V29</text>
+    <rect x="580" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="598" y="230">V30</text>
+    <rect x="620" y="200" width="36" height="54" rx="3" fill="#a9dcb0"><text x="638" y="230">V31</text>
+  </rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></g>
+
+<p>  <text x="20" y="290" font-size="12.5" fill="#1a1a1a" font-weight="600">ncnn int8 内核的实际用法</text><br>  <text x="20" y="310" font-size="12" fill="#333">· 累加器 v16–v31（16 个 int32x4 → 8×8 输出块的 64 个部分和）</text><br>  <text x="20" y="328" font-size="12" fill="#333">· 数据块 A/B 用 v0–v7（载入 tile）</text><br>  <text x="20" y="346" font-size="12" fill="#b3541e" font-weight="600">· V8–V15 故意留空：用了就得保存/恢复，付代价 → 主动让出</text></p>
+  <rect x="20" y="364" width="640" height="86" rx="8" fill="#fff6ee" stroke="#f0b080">
+  <text x="34" y="388" font-size="12.5" fill="#7a3d12" font-weight="700">★ 输出块尺寸 = 寄存器账单逼出来的</text>
+  <text x="34" y="408" font-size="12" fill="#7a3d12">块再大 → 累加器数 &gt; 32 → 溢出(spill)到栈 → 直接慢一个数量级。</text>
+  <text x="34" y="428" font-size="12" fill="#7a3d12">所以「这个 GEMM 算 8×几的块」不是数学选择，是预算决策。</text>
+
+
+</rect></div>
+
+
+<h3 id="2-4-输出块尺寸-寄存器账单逼出来的"><a href="#2-4-输出块尺寸-寄存器账单逼出来的" class="headerlink" title="2.4 输出块尺寸 = 寄存器账单逼出来的"></a>2.4 输出块尺寸 = 寄存器账单逼出来的</h3><p>块再大 → 需要的累加器数 <strong>&gt; 32</strong> → 溢出(spill)到栈 → <strong>直接慢一个数量级</strong>。所以「这个 GEMM 算 8×几的块」不是数学选择，是<strong>寄存器预算决策</strong>。ncnn int8 选 16 个累加器（8×8 切分）、fp32 选 8 个累加器，正是这个权衡的落点。</p>
+<h3 id="2-5-内联汇编里「钉」寄存器（见-gemm-arm-cpp-2455-约束表）"><a href="#2-5-内联汇编里「钉」寄存器（见-gemm-arm-cpp-2455-约束表）" class="headerlink" title="2.5 内联汇编里「钉」寄存器（见 gemm_arm.cpp:2455 约束表）"></a>2.5 内联汇编里「钉」寄存器（见 <code>gemm_arm.cpp:2455</code> 约束表）</h3><figure class="highlight c"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">: <span class="string">"=w"</span>(_sum0), ...<span class="string">"=w"</span>(_sum7)        <span class="comment">// 输出: 钉到某 w(向量)寄存器</span></span><br><span class="line">: <span class="string">"0"</span>(pA), <span class="string">"1"</span>(pB), <span class="string">"2"</span>(_sum0), ...<span class="string">"9"</span>(_sum7)</span><br><span class="line">                                    <span class="comment">// "2"(_sum0) = 该输入复用输出操作数 #2 的同寄存器</span></span><br><span class="line">: <span class="string">"memory"</span>, <span class="string">"v0"</span>, <span class="string">"v1"</span>, <span class="string">"v2"</span>, <span class="string">"v3"</span>   <span class="comment">// 破坏列表: 内存被改 / 这些寄存器被踩</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p><code>"2"(_sum0)</code> 的含义：让这个输入操作数使用<strong>和输出操作数 #2 相同的物理寄存器</strong>，从而跨 asm 块把累加器钉死、不挪窝。配合 <code>"memory"</code> 告诉编译器内存被改、<code>"v0".."v3"</code> 声明这些寄存器被踩了。</p>
+<hr>
+<h2 id="三、指令调度（Instruction-Scheduling）"><a href="#三、指令调度（Instruction-Scheduling）" class="headerlink" title="三、指令调度（Instruction Scheduling）"></a>三、指令调度（Instruction Scheduling）</h2><h3 id="3-1-两个独立指标"><a href="#3-1-两个独立指标" class="headerlink" title="3.1 两个独立指标"></a>3.1 两个独立指标</h3><p>Cortex-A 系列是<strong>超标量、乱序</strong>内核（A72 双发射，A76 每周期可发 2 条 ASIMD + 1 条 load）。每条指令有两个独立指标：</p>
+<ul>
+<li><strong>延迟 latency</strong>：结果多久后能被下一条指令使用（FMLA 约 4 周期）；</li>
+<li><strong>吞吐 throughput</strong>：每周期最多能发几条同类指令（FMLA 约 2/周期）。</li>
+</ul>
+<p><strong>陷阱</strong>：如果你写的是<strong>依赖链</strong>——<code>fmla</code> 的结果直接喂给下一条 <code>fmla</code>——那下一条必须等 4 周期，<strong>吞吐被压到 0.25×</strong>（见图二左）。</p>
+<h3 id="3-2-解法-更多累加器（ILP-深度）"><a href="#3-2-解法-更多累加器（ILP-深度）" class="headerlink" title="3.2 解法 = 更多累加器（ILP 深度）"></a>3.2 解法 = 更多累加器（ILP 深度）</h3><p>这就是为什么 int8 内核要 <strong>16 个累加器</strong>（v16–v31）、fp32 内核要 <strong>8 个累加器</strong>（%2–%9）。看 <code>gemm_int8.h:10021</code> 那一串：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sdot  v16.4s, v0.16b, v4.4b[0]    ; 累加到 v16</span><br><span class="line">sdot  v17.4s, v0.16b, v4.4b[1]    ; 累加到 v17  ← 与上一行无关！</span><br><span class="line">...</span><br><span class="line">sdot  v31.4s, v1.16b, v7.4b+?    ; 累加到 v31</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这 16 条 <code>sdot</code> <strong>彼此互不依赖</strong>——v16 的结果还在「飞行」中（等它的 4 周期），后面 15 条已经排队发射出去了，流水线被填满（见图二右）。<strong>累加器的数量 = ILP 深度 = 你能重叠多少条独立指令来掩盖延迟</strong>。</p>
+<div align="center">
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 380" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <rect width="680" height="380" fill="#ffffff"></rect>
+  <text x="20" y="28" font-size="17" font-weight="700" fill="#111">延迟 4 周期 · 吞吐 2/周期 下的调度对比</text>
+
+  <!-- left panel -->
+</svg><p>  <text x="20" y="62" font-size="13" font-weight="700" fill="#b3242b">左：只有 1 个累加器 → 依赖链空转</text><br>  <line x1="20" y1="92" x2="320" y2="92" stroke="#bbb" stroke-width="1"><br>  <text x="20" y="86" font-size="10" fill="#888">时间 →  每格 1 周期</text><br>  <!-- sdot boxes with gaps --><br>  <rect x="20" y="100" width="34" height="26" rx="3" fill="#e0585e"><text x="37" y="117" font-size="10" fill="#fff" text-anchor="middle">s0</text><br>  <rect x="170" y="100" width="34" height="26" rx="3" fill="#e0585e"><text x="187" y="117" font-size="10" fill="#fff" text-anchor="middle">s1</text><br>  <rect x="320" y="100" width="34" height="26" rx="3" fill="#e0585e"><text x="337" y="117" font-size="10" fill="#fff" text-anchor="middle">s2</text><br>  <!-- stall marks --><br>  <rect x="54" y="100" width="116" height="26" rx="3" fill="#fbe3e4" stroke="#f0b6b8" stroke-dasharray="3 3"><br>  <rect x="204" y="100" width="116" height="26" rx="3" fill="#fbe3e4" stroke="#f0b6b8" stroke-dasharray="3 3"><br>  <text x="112" y="117" font-size="9" fill="#c0434a" text-anchor="middle">停顿 ×4</text><br>  <text x="262" y="117" font-size="9" fill="#c0434a" text-anchor="middle">停顿 ×4</text><br>  <text x="20" y="150" font-size="11.5" fill="#7a1f24">每条 sdot 必须等前一条结果（4 周期）→ 吞吐压到 0.25×</text></rect></rect></rect></rect></rect></line></p>
+  <!-- right panel -->
+<p>  <text x="360" y="62" font-size="13" font-weight="700" fill="#1d7a3a">右：16 个累加器 → 流水填满</text><br>  <line x1="360" y1="92" x2="660" y2="92" stroke="#bbb" stroke-width="1"><br>  <text x="360" y="86" font-size="10" fill="#888">时间 →  每 0.5 周期发一条</text><br>  <!-- dense stream of 16 sdot, two rows to show overlap --><br>  <g font-size="9" fill="#fff" text-anchor="middle"><br>    <rect x="360" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="370" y="115">s0</text><br>    <rect x="372" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="382" y="115">s1</text><br>    <rect x="384" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="394" y="115">s2</text><br>    <rect x="396" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="406" y="115">s3</text><br>    <rect x="408" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="418" y="115">s4</text><br>    <rect x="420" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="430" y="115">s5</text><br>    <rect x="432" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="442" y="115">s6</text><br>    <rect x="444" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="454" y="115">s7</text><br>    <rect x="456" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="466" y="115">s8</text><br>    <rect x="468" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="478" y="115">s9</text><br>    <rect x="480" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="490" y="115">s10</text><br>    <rect x="492" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="502" y="115">s11</text><br>    <rect x="504" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="514" y="115">s12</text><br>    <rect x="516" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="526" y="115">s13</text><br>    <rect x="528" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="538" y="115">s14</text><br>    <rect x="540" y="100" width="20" height="22" rx="3" fill="#34a853"><text x="550" y="115">s15</text><br>  </rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></rect></g><br>  <text x="360" y="150" font-size="11.5" fill="#155f2c">16 条 sdot 互不依赖，v16 结果还在飞行中，后面 15 条已排队发射 → 吞吐拉满</text></line></p>
+  <rect x="20" y="300" width="640" height="58" rx="8" fill="#eef7f0" stroke="#9fd3ad">
+  <text x="34" y="322" font-size="12.5" fill="#155f2c" font-weight="700">累加器的数量 = ILP 深度 = 你能重叠多少条独立指令来掩盖延迟</text>
+  <text x="34" y="342" font-size="12" fill="#155f2c">低于这个数，内核就在空转等数据。ncnn int8 用 16 个、fp32 用 8 个，正是这个权衡。</text>
+
+
+</rect></div>
+
+
+<h3 id="3-3-预取调度：把访存藏到计算后面"><a href="#3-3-预取调度：把访存藏到计算后面" class="headerlink" title="3.3 预取调度：把访存藏到计算后面"></a>3.3 预取调度：把访存藏到计算后面</h3><p>看 fp32 内核 <code>gemm_arm.cpp:2456</code> 开头的顺序：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">prfm  pldl1keep, [%0, #128]      ; 预取 A，提前 128 字节</span><br><span class="line">ld1   {v2.4s},   [%0], #16       ; 真正载入 A（此时数据已在 L1）</span><br><span class="line">prfm  pldl1keep, [%1, #256]      ; 预取 B，提前 256 字节</span><br><span class="line">ld1   {v0.4s,v1.4s}, [%1], #32   ; 真正载入 B</span><br><span class="line">fmla  ...</span><br></pre></td></tr></tbody></table></figure>
+
+<p><code>prfm</code> 在 <code>ld1</code> <strong>之前</strong>就发出，且地址提前了 #128/#256 字节——目的是等 <code>ld1</code> 执行时，数据早已在 L1 里了。这是<strong>手工调度才能精确控制的</strong>（编译器自动 <code>prfm</code> 往往距离/时机不够准），直接接回你 profiling 篇的「memory-bound 就查对齐/预取」。</p>
+<h3 id="3-4-循环尾调度技巧（最容易被忽略）"><a href="#3-4-循环尾调度技巧（最容易被忽略）" class="headerlink" title="3.4 循环尾调度技巧（最容易被忽略）"></a>3.4 循环尾调度技巧（最容易被忽略）</h3><p>注意 <code>gemm_int8.h:10037</code> 这段：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sdot  v31.4s, v1.16b, v7.4b[3]   ; ← 第一批 sdot 末尾</span><br><span class="line">subs  w4, w4, #1                 ; K 计数器减 1，置条件标志（1 周期就绪）</span><br><span class="line">sdot  v16.4s, v2.16b, v6.4b[0]   ; ← 第二批 sdot 在 subs 之后继续发射！</span><br><span class="line">...</span><br><span class="line">sdot  v31.4s, v3.16b, v7.4b[3]</span><br><span class="line">bne   2b                         ; 才消费标志、跳回</span><br></pre></td></tr></tbody></table></figure>
+
+<p><code>subs</code>（设分支标志）和 <code>bne</code>（吃标志）本可紧挨着，但作者<strong>故意把 <code>subs</code> 插在 sdot 流中间、让一批独立 sdot 在它之后继续发射</strong>。因为 <code>subs</code> 的结果（标志位）1 周期就就绪，<code>bne</code> 可以「在途」等待，而此时流水线继续发后续 <code>sdot</code>——<strong>避免了循环尾部流水线排空</strong>。这是教科书级的依赖调度，编译器几乎不会自动为你做。</p>
+<h3 id="3-5-手写汇编的两种形态（对照-CUDA-的-PTX-SASS）"><a href="#3-5-手写汇编的两种形态（对照-CUDA-的-PTX-SASS）" class="headerlink" title="3.5 手写汇编的两种形态（对照 CUDA 的 PTX/SASS）"></a>3.5 手写汇编的两种形态（对照 CUDA 的 PTX/SASS）</h3><ul>
+<li><strong>内联汇编（ncnn 选的）</strong>：<code>asm volatile(...)</code> 嵌在 C++ 里，编译器管外围函数/ABI，你只控热块。代价是约束（<code>"=w"</code>/<code>"=r"</code>/<code>"memory"</code>/<code>"v0"</code>）繁琐，且编译器仍可能在周围做点你意料之外的事。</li>
+<li><strong>纯 <code>.S</code> 文件</strong>：整个函数用汇编写，ABI/栈/保存全自控。本目录 <code>ncnn/src/layer/arm/</code> 下无 <code>.S</code>，说明 ncnn 偏好内联汇编就近写。</li>
+</ul>
+<p>CUDA 侧对应物就是 <strong>PTX（可移植汇编）/ SASS（反汇编）</strong>——你 L3 CUDA 分级里「PTX/SASS 反汇编调优」那条，思路完全同构：手写/微调最接近硬件的那一层。</p>
+<div align="center">
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <rect width="680" height="360" fill="#ffffff"></rect>
+  <!-- header -->
+  <rect x="20" y="20" width="310" height="40" rx="6" fill="#3a6ea5"></rect><text x="175" y="45" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">Intrinsics（L2）</text>
+  <rect x="350" y="20" width="310" height="40" rx="6" fill="#a5503a"></rect><text x="505" y="45" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">手写汇编（L3）</text>
+
+  <!-- rows -->
+  <g font-size="12.5" fill="#222">
+    <!-- row template -->
+    <text x="20" y="92" font-weight="600">你决定什么</text>
+    <text x="350" y="92" font-weight="600">你决定什么</text>
+    <text x="20" y="120">只说「做什么」</text>
+    <text x="350" y="120">每条指令 / 寄存器 / 周期</text>
+
+</g></svg><pre><code>&lt;text x="20" y="158" font-weight="600"&gt;寄存器&lt;/text&gt;
+&lt;text x="350" y="158" font-weight="600"&gt;寄存器&lt;/text&gt;
+&lt;text x="20" y="186"&gt;编译器分配（可能 spill）&lt;/text&gt;
+&lt;text x="350" y="186"&gt;你分配 + 约束钉死（"=w","2"(..)）&lt;/text&gt;
+
+&lt;text x="20" y="224" font-weight="600"&gt;指令顺序&lt;/text&gt;
+&lt;text x="350" y="224" font-weight="600"&gt;指令顺序&lt;/text&gt;
+&lt;text x="20" y="252"&gt;编译器排（保守）&lt;/text&gt;
+&lt;text x="350" y="252"&gt;你排（ILP / prfm 预取 / 循环尾）&lt;/text&gt;
+
+&lt;text x="20" y="290" font-weight="600"&gt;何时下沉&lt;/text&gt;
+&lt;text x="350" y="290" font-weight="600"&gt;何时下沉&lt;/text&gt;
+&lt;text x="20" y="318"&gt;大多数热点已够&lt;/text&gt;
+&lt;text x="350" y="318"&gt;真·热微内核（每秒上亿次）&lt;/text&gt;
+</code></pre>
+  
+  <rect x="20" y="330" width="640" height="20" rx="4" fill="#f3f4f6">
+  <text x="340" y="344" font-size="11" fill="#666" text-anchor="middle">下沉 = 账单逼的，不是炫技：spill / 多余 vst / 未排好的停顿 在亿次调用下不可接受</text>
+
+
+</rect></div>
+
+
+<hr>
+<h2 id="四、验证方法（落回你的工具链）"><a href="#四、验证方法（落回你的工具链）" class="headerlink" title="四、验证方法（落回你的工具链）"></a>四、验证方法（落回你的工具链）</h2><ol>
+<li><strong>先 intrinsics 后 asm</strong>：用 §4/§6 的 intrinsics 写出来 → <code>objdump -d</code> 看编译器生成了什么（有没有 spill、顺序好不好）→ 把热块改成内联汇编微调。</li>
+<li>**<code>objdump -d ./bin | grep -E 'fadd|fmla|sdot|vadd'</code>**：确认出现 <code>v</code> 前缀 NEON 指令、且无 <code>str</code>/<code>ldr</code> 的 spill 痕迹。</li>
+<li>**<code>perf stat -e instructions,cycles ./bin</code>**：调度好了 = 同样工作量下 <code>cycles</code> 更少、<code>IPC</code> 更高。</li>
+<li>**<code>perf annotate</code>**：确认你手调的块真的以你写的顺序进了二进制（没被编译器挪走）。</li>
+<li><strong>查微架构手册</strong>：ARM《Cortex-A76 Software Optimization Guide》逐条列出每条指令的 latency/throughput——这是调度的「圣经」，比猜准。</li>
+</ol>
+<hr>
+<h2 id="全文串联（接回你前面的所有知识点）"><a href="#全文串联（接回你前面的所有知识点）" class="headerlink" title="全文串联（接回你前面的所有知识点）"></a>全文串联（接回你前面的所有知识点）</h2><table>
+<thead>
+<tr>
+<th>你之前学的</th>
+<th>在本部分的落点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>§3 SoA + 对齐</td>
+<td>打包成 tile 让 <code>ld1</code> 一次取满 128B，正是「连续对齐访存」的寄存器级兑现</td>
+</tr>
+<tr>
+<td>§4/§6 intrinsics</td>
+<td>下沉到汇编前的「正确性基线」</td>
+</tr>
+<tr>
+<td>§6 GEMM 微内核 <code>fmla</code> rank-1</td>
+<td>此处换成 <code>sdot</code> + 16 累加器寄存器分块，同一棵树</td>
+</tr>
+<tr>
+<td>profiling 篇 <code>prfm</code>/cache-miss</td>
+<td>3.3 的预取调度 = 手工版「藏访存延迟」</td>
+</tr>
+<tr>
+<td>int8 GEMM 篇 SDOT 指令</td>
+<td>本部分三、的调度对象正是那 16 条 <code>sdot</code></td>
+</tr>
+<tr>
+<td>CUDA L3 PTX/SASS</td>
+<td>3.5 已点明：同构——手写最接近硬件的一层</td>
+</tr>
+</tbody></table>
+<p>至此 L3 第一部分（<strong>手写汇编 / 寄存器分配 / 指令调度</strong>）闭环，且全部用你工作区 <code>gemm_arm.cpp:2455</code> 与 <code>gemm_int8.h:10018</code> 的真代码印证。</p>
+<p><strong>下一步</strong>（你定）：</p>
+<ul>
+<li>继续 L3 第二部分：<strong>针对 Cortex-A 微架构调优（流水线 / 缓存 / 延迟吞吐）</strong>；</li>
+<li>或回到主线外传：<strong>CUDA 合并访问铁律</strong>（之前聊过、暂存）；</li>
+<li>或把这份落盘成目录总索引，方便抄回 <code>00NEON基础学习.docx</code>。</li>
+</ul>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/neon_demo/">NEON_DEMO</a></li>
+            <li>NEON_L3_ASM</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

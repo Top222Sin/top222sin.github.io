@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 770" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  <rect x="0" y="0" width="720" height="770" fill="#ffffff"/>
+  <text x="20" y="28" font-size="16" font-weight="700" fill="#0f172a">CUDA profiling —— compute-bound vs memory-bound</text>
+
+  <!-- ===== Panel 1: ncu vs nsys ===== -->
+  <rect x="20" y="44" width="680" height="168" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="34" y="66" font-size="13" font-weight="700" fill="#334155">① 两个工具：NCU（钻进 kernel） vs NSYS（看整段时间线）</text>
+  <g font-size="9.5">
+    <rect x="34" y="80" width="320" height="118" rx="6" fill="#e0f2fe" stroke="#0ea5e9"/>
+    <text x="46" y="100" font-size="11" font-weight="700" fill="#0369a1">Nsight Compute (ncu)</text>
+    <text x="46" y="118" fill="#075985">单 kernel 深层硬件指标</text>
+    <text x="46" y="134" fill="#075985">· sm__throughput（算力利用率）</text>
+    <text x="46" y="150" fill="#075985">· dram__throughput（显存带宽）</text>
+    <text x="46" y="166" fill="#075985">· achieved occupancy（warp 驻留）</text>
+    <text x="46" y="182" fill="#075985">命令：ncu --set full -k saxpy ./exe</text>
+  </g>
+  <g font-size="9.5">
+    <rect x="366" y="80" width="320" height="118" rx="6" fill="#fef9c3" stroke="#eab308"/>
+    <text x="378" y="100" font-size="11" font-weight="700" fill="#854d0e">Nsight Systems (nsys)</text>
+    <text x="378" y="118" fill="#854d0e">整段时间线 / 宏观利用率</text>
+    <text x="378" y="134" fill="#854d0e">· GPU 绿条是否连续（有空隙？）</text>
+    <text x="378" y="150" fill="#854d0e">· CPU 与 GPU 是否重叠</text>
+    <text x="378" y="166" fill="#854d0e">· cudaMemcpy 占比 / API 开销</text>
+    <text x="378" y="182" fill="#854d0e">命令：nsys profile -o tl ./exe</text>
+  </g>
+  <text x="34" y="206" font-size="9" fill="#475569">顺序：先用 nsys 确认 GPU 有没有被喂饱 → 再用 ncu 钻进 kernel 看卡在算力还是带宽</text>
+
+  <!-- ===== Panel 2: Roofline / AI ===== -->
+  <rect x="20" y="220" width="680" height="176" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.2"/>
+  <text x="34" y="242" font-size="13" font-weight="700" fill="#047857">② Roofline：算术强度 AI 决定落在带宽屋顶还是算力屋顶</text>
+  <!-- roofline 坐标 -->
+  <g transform="translate(60,300)">
+    <!-- 轴 -->
+    <line x1="0" y1="0" x2="0" y2="-70" stroke="#0f172a" stroke-width="1.2"/>
+    <line x1="0" y1="0" x2="230" y2="0" stroke="#0f172a" stroke-width="1.2"/>
+    <text x="-8" y="14" font-size="8" fill="#334155">算力</text>
+    <text x="170" y="14" font-size="8" fill="#334155">算术强度 AI →</text>
+    <!-- 带宽斜边 (mem roof) -->
+    <line x1="0" y1="0" x2="70" y2="-70" stroke="#ef4444" stroke-width="2"/>
+    <!-- 算力平顶 (compute roof) -->
+    <line x1="70" y1="-70" x2="230" y2="-70" stroke="#6366f1" stroke-width="2"/>
+    <!-- ridge 点 -->
+    <circle cx="70" cy="-70" r="3" fill="#0f172a"/>
+    <text x="74" y="-74" font-size="8" fill="#0f172a">ridge ≈ 12.5</text>
+    <!-- 两个 kernel 落点 -->
+    <circle cx="12" cy="-12" r="3.5" fill="#ef4444"/>
+    <text x="18" y="-9" font-size="8" fill="#b91c1c">saxpy AI≈0.17</text>
+    <circle cx="120" cy="-70" r="3.5" fill="#6366f1"/>
+    <text x="126" y="-73" font-size="8" fill="#3730a3">compute AI=16</text>
+  </g>
+  <!-- 右侧文字 -->
+  <g font-size="9.5">
+    <text x="330" y="270" font-weight="700" fill="#0f172a">判据（与规模无关）</text>
+    <text x="330" y="286" fill="#334155">AI = FLOPs / Bytes</text>
+    <text x="330" y="302" fill="#334155">ridge = 算力 / 带宽</text>
+    <rect x="330" y="312" width="346" height="68" rx="6" fill="#d1fae5"/>
+    <text x="340" y="330" font-size="9" fill="#065f46">saxpy: AI = 2/12 = 0.167 &lt; 12.5</text>
+    <text x="340" y="346" font-size="9" fill="#065f46">→ 左斜边 = 被带宽卡 → memory-bound</text>
+    <text x="340" y="364" font-size="9" fill="#065f46">compute: AI = 128/8 = 16 &gt; 12.5</text>
+    <text x="340" y="380" font-size="9" fill="#065f46">→ 平顶 = 被算力卡 → compute-bound</text>
+  </g>
+
+  <!-- ===== Panel 3: ncu metrics ===== -->
+  <rect x="20" y="404" width="680" height="166" rx="8" fill="#fff7ed" stroke="#f97316" stroke-width="1.2"/>
+  <text x="34" y="426" font-size="13" font-weight="700" fill="#c2410c">③ ncu 看板：哪两个指标"一高一低"判定 bound</text>
+  <g font-size="9.5">
+    <rect x="34" y="440" width="320" height="118" rx="6" fill="#fee2e2" stroke="#ef4444"/>
+    <text x="46" y="460" font-size="11" font-weight="700" fill="#b91c1c">memory-bound 信号</text>
+    <text x="46" y="478" fill="#7f1d1d">dram__throughput  ▲ 高（显存打满）</text>
+    <text x="46" y="494" fill="#7f1d1d">sm__throughput    ▽ 低（算力闲）</text>
+    <text x="46" y="510" fill="#7f1d1d">l1tex__throughput ▲ 高（频繁取数）</text>
+    <text x="46" y="526" fill="#7f1d1d">occupancy 可能低（等显存空转）</text>
+    <text x="46" y="544" font-size="8.5" fill="#7f1d1d">→ 优化：减访存/合并/shared/提AI</text>
+  </g>
+  <g font-size="9.5">
+    <rect x="366" y="440" width="320" height="118" rx="6" fill="#e0e7ff" stroke="#6366f1"/>
+    <text x="378" y="460" font-size="11" font-weight="700" fill="#3730a3">compute-bound 信号</text>
+    <text x="378" y="478" fill="#312e81">sm__throughput    ▲ 高（接近峰值）</text>
+    <text x="378" y="494" fill="#312e81">dram__throughput  ▽ 低（带宽闲）</text>
+    <text x="378" y="510" fill="#312e81">occupancy 较高</text>
+    <text x="378" y="526" fill="#312e81">kernel 时长由 FLOP 量主导</text>
+    <text x="378" y="544" font-size="8.5" fill="#312e81">→ 优化：减FLOP/Tensor Core/算法</text>
+  </g>
+  <text x="34" y="566" font-size="9" fill="#9a3412">两者都低 → 不是算力/带宽问题：occupancy 低 / 分支发散 / kernel 太小（回到 L2.2，或 nsys 看空隙）</text>
+
+  <!-- ===== Panel 4: nsys timeline ===== -->
+  <rect x="20" y="578" width="680" height="170" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="34" y="600" font-size="13" font-weight="700" fill="#1d4ed8">④ Nsight Systems 时间线：找空隙与重叠</text>
+  <!-- timeline -->
+  <g font-size="8.5">
+    <text x="34" y="620" fill="#334155">时间 →</text>
+    <!-- host 段 -->
+    <rect x="60" y="628" width="80" height="14" rx="2" fill="#fbbf24"/><text x="64" y="639" fill="#7c2d12">host 准备</text>
+    <!-- gpu 连续 -->
+    <rect x="150" y="628" width="120" height="14" rx="2" fill="#22c55e"/><text x="154" y="639" fill="#14532d">GPU 计算</text>
+    <!-- gap 红 -->
+    <rect x="278" y="628" width="40" height="14" rx="2" fill="#fee2e2" stroke="#ef4444"/><text x="282" y="639" fill="#b91c1c">空隙</text>
+    <!-- gpu2 -->
+    <rect x="326" y="628" width="100" height="14" rx="2" fill="#22c55e"/><text x="330" y="639" fill="#14532d">GPU 计算</text>
+    <!-- memcpy -->
+    <rect x="434" y="628" width="90" height="14" rx="2" fill="#a5b4fc"/><text x="438" y="639" fill="#312e81">cudaMemcpy</text>
+    <!-- 理想重叠示意 -->
+    <text x="34" y="668" font-weight="700" fill="#0f172a">理想：host 准备下一批 ⊥ GPU 在算（重叠）</text>
+    <rect x="60" y="676" width="100" height="12" rx="2" fill="#fbbf24"/><text x="64" y="686" fill="#7c2d12">host 下批</text>
+    <rect x="150" y="676" width="130" height="12" rx="2" fill="#22c55e"/><text x="154" y="686" fill="#14532d">GPU 算上批（重叠）</text>
+    <text x="300" y="686" font-size="9" fill="#1d4ed8">↑ 无空隙 = GPU 喂饱</text>
+  </g>
+  <text x="34" y="724" font-size="9" fill="#1e3a8a">排查：绿条空白→host 拖后腿；cudaMemcpy 占比大→传输瓶颈（pinned/异步/fusion）</text>
+  <text x="34" y="740" font-size="9" fill="#475569">调优顺序：nsys 宏观确认利用率 → ncu 微观定位 bound 类型 → 按 bound 选优化手段</text>
+</svg>

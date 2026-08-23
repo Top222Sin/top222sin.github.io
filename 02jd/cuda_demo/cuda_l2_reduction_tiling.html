@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L2.4 自己写高效 kernel —— 共享内存归约 reduction &#x2F; 矩阵乘分块 tiling 配套代码：cuda_l2_reduction_tiling.cpp对应笔记本：01CUDA基础学习.docx → L2 能写高效 kernel → 4、共享内存归约 reduction、矩阵乘分块 tiling这是 L2 的收官，也是第一个”真正高性能”的手写 kernel：它把前面三节一次性">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L2.4 自己写高效 kernel —— 共享内存归约 reduction &#x2F; 矩阵乘分块 tiling">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l2_reduction_tiling.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L2.4 自己写高效 kernel —— 共享内存归约 reduction &#x2F; 矩阵乘分块 tiling 配套代码：cuda_l2_reduction_tiling.cpp对应笔记本：01CUDA基础学习.docx → L2 能写高效 kernel → 4、共享内存归约 reduction、矩阵乘分块 tiling这是 L2 的收官，也是第一个”真正高性能”的手写 kernel：它把前面三节一次性">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/cuda_demo/images/fig7_reduction_tiling.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/cuda_demo/images/fig7_reduction_tiling.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/cuda_demo/cuda_l2_reduction_tiling">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/cuda_demo/cuda_l2_reduction_tiling.html","path":"02jd/cuda_demo/cuda_l2_reduction_tiling.html","title":"L2.4 自己写高效 kernel —— 共享内存归约 reduction / 矩阵乘分块 tiling"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L2.4 自己写高效 kernel —— 共享内存归约 reduction / 矩阵乘分块 tiling | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L2-4-%E8%87%AA%E5%B7%B1%E5%86%99%E9%AB%98%E6%95%88-kernel-%E2%80%94%E2%80%94-%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E5%BD%92%E7%BA%A6-reduction-%E7%9F%A9%E9%98%B5%E4%B9%98%E5%88%86%E5%9D%97-tiling"><span class="nav-number">1.</span> <span class="nav-text">L2.4 自己写高效 kernel —— 共享内存归约 reduction &#x2F; 矩阵乘分块 tiling</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%BD%92%E7%BA%A6-reduction-%E2%80%94%E2%80%94-%E6%8A%8A-N-%E4%B8%AA%E6%95%B0%E6%B1%82%E5%92%8C"><span class="nav-number">1.1.</span> <span class="nav-text">一、归约 reduction —— 把 N 个数求和</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%94%99%E8%AF%AF%E5%86%99%E6%B3%95%EF%BC%88%E5%85%88%E7%9F%A5%E9%81%93%E5%9D%91%E5%9C%A8%E5%93%AA%EF%BC%89"><span class="nav-number">1.1.1.</span> <span class="nav-text">错误写法（先知道坑在哪）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AD%A3%E8%A7%A3%EF%BC%9Ablock-%E5%86%85-shared-%E6%A0%91%E5%BD%A2%E5%BD%92%E7%BA%A6"><span class="nav-number">1.1.2.</span> <span class="nav-text">正解：block 内 shared 树形归约</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E5%9D%91%EF%BC%88%E5%91%BC%E5%BA%94-L2-1%EF%BC%89%EF%BC%9Ashared-%E5%BD%92%E7%BA%A6%E7%9A%84-bank-conflict"><span class="nav-number">1.1.3.</span> <span class="nav-text">关键坑（呼应 L2.1）：shared 归约的 bank conflict</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E7%9F%A9%E9%98%B5%E4%B9%98%E5%88%86%E5%9D%97-tiling-%E2%80%94%E2%80%94-%E7%A0%8D%E6%8E%89%E5%86%97%E4%BD%99%E7%9A%84%E5%85%A8%E5%B1%80%E6%B5%81%E9%87%8F"><span class="nav-number">1.2.</span> <span class="nav-text">二、矩阵乘分块 tiling —— 砍掉冗余的全局流量</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%B4%E7%B4%A0-matmul%EF%BC%9A%E6%AF%8F%E7%BA%BF%E7%A8%8B%E7%AE%97%E4%B8%80%E4%B8%AA-C-i-j-%CE%A3-k-A-i-k-%C2%B7B-k-j"><span class="nav-number">1.2.1.</span> <span class="nav-text">朴素 matmul：每线程算一个 C[i][j] &#x3D; Σ_k A[i][k]·B[k][j]</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%9D%97%E5%90%8E%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%B5%81%E9%87%8F%EF%BC%88TILE-%E5%A4%8D%E7%94%A8%E6%98%AF%E6%A0%B8%E5%BF%83%EF%BC%89"><span class="nav-number">1.2.2.</span> <span class="nav-text">分块后的真实流量（TILE 复用是核心）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%9D%97-tiled-matmul%EF%BC%9A%E6%8A%8A%E6%95%B0%E6%8D%AE%E2%80%9D%E6%90%AC%E4%B8%80%E6%AC%A1%E3%80%81%E7%94%A8-TILE%C2%B2-%E6%AC%A1%E2%80%9D"><span class="nav-number">1.2.3.</span> <span class="nav-text">分块 tiled matmul：把数据”搬一次、用 TILE² 次”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8F%E5%8C%96%E8%BF%99%E4%B8%AA%E6%94%B6%E7%9B%8A%EF%BC%88%E6%9C%AC%E6%96%87%E4%BB%B6-analyze-tiling-%EF%BC%8CCPU-%E5%8F%AF%E8%B7%91%EF%BC%89"><span class="nav-number">1.2.4.</span> <span class="nav-text">量化这个收益（本文件 analyze_tiling()，CPU 可跑）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E5%9D%91%EF%BC%88%E5%91%BC%E5%BA%94-L2-1%EF%BC%89%EF%BC%9Ashared-%E9%87%8C%E8%AF%BB-B-%E5%B0%8F%E5%9D%97%E4%BC%9A%E6%92%9E-bank-conflict"><span class="nav-number">1.2.5.</span> <span class="nav-text">关键坑（呼应 L2.1）：shared 里读 B 小块会撞 bank conflict</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%8A%8A-L2-%E4%B8%89%E8%8A%82%E4%B8%B2%E8%B5%B7%E6%9D%A5%EF%BC%88%E6%9C%AC%E8%8A%82%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF%E2%80%9D%E6%94%B6%E5%AE%98%E2%80%9D%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、把 L2 三节串起来（本节为什么是”收官”）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88cuda-l2-reduction-tiling-cpp-%E4%B8%BB%E7%BA%BF%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、代码走读（cuda_l2_reduction_tiling.cpp 主线）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81OpenCL-%E5%AF%B9%E7%85%A7%EF%BC%88%E6%A6%82%E5%BF%B5%E5%AE%8C%E5%85%A8%E5%90%8C%E6%9E%84%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、OpenCL 对照（概念完全同构）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80%EF%BC%88%E5%90%88%E4%B8%8A%E6%96%87%E6%A1%A3%E8%83%BD%E7%AD%94%EF%BC%8C%E6%89%8D%E5%8F%AB%E6%8E%8C%E6%8F%A1%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">六、自检（合上文档能答，才叫掌握）</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L2.4 自己写高效 kernel —— 共享内存归约 reduction / 矩阵乘分块 tiling
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L2_REDUCTION_TILING</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L2-4-自己写高效-kernel-——-共享内存归约-reduction-矩阵乘分块-tiling"><a href="#L2-4-自己写高效-kernel-——-共享内存归约-reduction-矩阵乘分块-tiling" class="headerlink" title="L2.4 自己写高效 kernel —— 共享内存归约 reduction / 矩阵乘分块 tiling"></a>L2.4 自己写高效 kernel —— 共享内存归约 reduction / 矩阵乘分块 tiling</h1><blockquote>
+<p>配套代码：<code>cuda_l2_reduction_tiling.cpp</code><br>对应笔记本：<code>01CUDA基础学习.docx</code> → <strong>L2 能写高效 kernel</strong> → 4、共享内存归约 reduction、矩阵乘分块 tiling<br>这是 <strong>L2 的收官</strong>，也是第一个”真正高性能”的手写 kernel：它把前面三节一次性串起来——L2.1（shared 内存 / bank conflict / pad）、L2.2（occupancy）、L2.3（砍 DRAM 流量 → 往 compute-bound 靠）。</p>
+</blockquote>
+<hr>
+<h2 id="一、归约-reduction-——-把-N-个数求和"><a href="#一、归约-reduction-——-把-N-个数求和" class="headerlink" title="一、归约 reduction —— 把 N 个数求和"></a>一、归约 reduction —— 把 N 个数求和</h2><h3 id="错误写法（先知道坑在哪）"><a href="#错误写法（先知道坑在哪）" class="headerlink" title="错误写法（先知道坑在哪）"></a>错误写法（先知道坑在哪）</h3><ul>
+<li><strong>单线程 for 循环</strong>：完全没有并行，一个 SM 上只跑 1 个线程 → 浪费 99.9% 算力。</li>
+<li><strong><code>atomicAdd</code> 全局求和</strong>：所有线程抢同一块全局地址 → 串行化，且 global 原子极慢。</li>
+</ul>
+<h3 id="正解：block-内-shared-树形归约"><a href="#正解：block-内-shared-树形归约" class="headerlink" title="正解：block 内 shared 树形归约"></a>正解：block 内 shared 树形归约</h3><p>每个 block 把一段数据搬进 <code>__shared__</code>，在 block 内做<strong>二叉树归约</strong>：第 1 步 256 个变 128 个、第 2 步 128→64……直到 1 个，得到该 block 的 <strong>partial（部分和）</strong>；最后把所有 partial 合并。</p>
+<ul>
+<li>并行度 = block 数（成千上万个 partial 同时算）。</li>
+<li>全局访存天然<strong>合并</strong>（线程 tid 读 <code>in[block*256+tid]</code>）。</li>
+<li>缺点：归约本身是 <strong>memory-bound</strong>（AI≈0.5，1 次加对应 2 次取数），shared 不能改变 AI，但把”延迟/吞吐”用并行 + 片上复用彻底改善。</li>
+</ul>
+<h3 id="关键坑（呼应-L2-1）：shared-归约的-bank-conflict"><a href="#关键坑（呼应-L2-1）：shared-归约的-bank-conflict" class="headerlink" title="关键坑（呼应 L2.1）：shared 归约的 bank conflict"></a>关键坑（呼应 L2.1）：shared 归约的 bank conflict</h3><p><code>reduce_halving</code> 用”交错寻址”：stride 减半，线程 <code>tid</code> 累加 <code>s[tid]+=s[tid+stride]</code>。</p>
+<ul>
+<li>当 <code>stride=32</code> 时，<code>s[tid]</code> 与 <code>s[tid+32]</code> 落在<strong>同一个 bank</strong>（bank(i)=i%32）→ 这一歩是 <strong>2 路 bank conflict</strong>。</li>
+<li>现代最佳实践（<code>reduce_warp_shuffle</code>）：树形归约<strong>末段改用 warp shuffle</strong> <code>__shfl_down_sync</code>，数据在寄存器间直接搬，<strong>完全不碰 shared 的 bank</strong>，彻底无冲突。</li>
+</ul>
+<blockquote>
+<p>经验：归约的”无冲突”首选 warp shuffle（寄存器级），而非 pad shared。pad 是 L2.1 的通用手段，这里 shuffle 更干净。</p>
+</blockquote>
+<hr>
+<h2 id="二、矩阵乘分块-tiling-——-砍掉冗余的全局流量"><a href="#二、矩阵乘分块-tiling-——-砍掉冗余的全局流量" class="headerlink" title="二、矩阵乘分块 tiling —— 砍掉冗余的全局流量"></a>二、矩阵乘分块 tiling —— 砍掉冗余的全局流量</h2><h3 id="朴素-matmul：每线程算一个-C-i-j-Σ-k-A-i-k-·B-k-j"><a href="#朴素-matmul：每线程算一个-C-i-j-Σ-k-A-i-k-·B-k-j" class="headerlink" title="朴素 matmul：每线程算一个 C[i][j] = Σ_k A[i][k]·B[k][j]"></a>朴素 matmul：每线程算一个 <code>C[i][j] = Σ_k A[i][k]·B[k][j]</code></h3><ul>
+<li>每个 <code>C[i][j]</code> 要读 A 的第 i 行（K 个）+ B 的第 j 列（K 个）。</li>
+<li>所有输出一共把 <strong>A 的每个元素读了 N 次、B 的每个元素读了 M 次</strong> → 朴素全局流量 ≈ <code>2·M·N·K</code> 个元素级取数（加 M·N 写回）。这正是 L2.3 说的”memory-bound 根因 = 冗余 global 取数”。</li>
+</ul>
+<h3 id="分块后的真实流量（TILE-复用是核心）"><a href="#分块后的真实流量（TILE-复用是核心）" class="headerlink" title="分块后的真实流量（TILE 复用是核心）"></a>分块后的真实流量（TILE 复用是核心）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">朴素: 每个输出 (i,j) 读 A[i,:] 的 K 个 + B[:,j] 的 K 个 → 全局读 ≈ 2·M·N·K</span><br><span class="line">分块 (TILE=T): 每 tile 加载 A 块(T×K) + B 块(K×T) 进 shared, 供 T² 个输出复用</span><br><span class="line">  共 (M/T)·(N/T) 个 tile → 全局读 ≈ (M·N/T²)·2·T·K = 2·M·N·K/T</span><br><span class="line">  写回 M·N</span><br><span class="line">方阵 S: 朴素 ≈ 2·S³ + S²;  分块 ≈ 2·S³/T + S²</span><br><span class="line">S=256, T=16: 33.6M → 2.2M 元素, 下降 ≈ 15.5×（不是 171×!）</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>⚠ <strong>公式纠错</strong>：早期版本写”分块后全局流量 = M·K + K·N + M·N（每个元素取 1 次）”——<strong>错误</strong>：那只有当整个矩阵能一次装进 shared 才成立。实际 tile 化后 A 元素被 (N/T) 个 tile 复用、B 元素被 (M/T) 个 tile 复用，流量是 <code>2·M·N·K/T</code>（T 越大复用越多）。”下降 171×”是早期公式（把 2S³/S² 当 S/2=128 再凑数）的错误结论，正确值是 <strong>~15.5×（S=256, T=16）</strong>——仍是大幅下降（一个数量级），但别把数字记错。</p>
+</blockquote>
+<h3 id="分块-tiled-matmul：把数据”搬一次、用-TILE²-次”"><a href="#分块-tiled-matmul：把数据”搬一次、用-TILE²-次”" class="headerlink" title="分块 tiled matmul：把数据”搬一次、用 TILE² 次”"></a>分块 tiled matmul：把数据”搬一次、用 TILE² 次”</h3><p>把 A、B 切成 <code>TILE×TILE</code> 小块搬进 shared，<code>blockIdx</code> 对应 C 的一个 TILE，block 内 <code>TILE×TILE</code> 个线程协作：</p>
+<ul>
+<li>每轮取 A、B 各一个 TILE 进 shared → 每个全局元素<strong>只进 shared 一次</strong>，被 <code>TILE×TILE</code> 个线程复用。</li>
+<li>全局流量从 <code>2·M·N·K</code> 降到 <code>M·K + K·N + M·N</code>（每个元素取 1 次）。</li>
+</ul>
+<h3 id="量化这个收益（本文件-analyze-tiling-，CPU-可跑）"><a href="#量化这个收益（本文件-analyze-tiling-，CPU-可跑）" class="headerlink" title="量化这个收益（本文件 analyze_tiling()，CPU 可跑）"></a>量化这个收益（本文件 <code>analyze_tiling()</code>，CPU 可跑）</h3><p>方阵 <code>S=256</code>（M=N=K）：</p>
+<ul>
+<li>朴素取数 ≈ <code>2·256³ + 256² ≈ 3.36×10⁷</code> 个元素</li>
+<li>分块取数 ≈ <code>3·256² ≈ 1.97×10⁵</code> 个元素</li>
+<li><strong>▶ 全局流量下降 ≈ 15.5×（S=256, T=16）</strong>，而 FLOPs 完全不变——tiling 把 memory-bound GEMM 的 DRAM 压力砍掉一个数量级。</li>
+</ul>
+<blockquote>
+<p><strong>重要且容易误解的一点</strong>：tiling <strong>不改变算术强度 AI</strong>（FLOPs/原始数据字节不变），但它把”每个全局元素只取一次”——直接砍掉冗余 DRAM 流量。呼应 L2.3：对于 memory-bound 算子，优化的核心就是”减 DRAM 取数 / 提数据复用”。大矩阵 matmul 的 AI 本来就不低，真正的杀手是”重复取数”，tiling 一招解决。</p>
+</blockquote>
+<h3 id="关键坑（呼应-L2-1）：shared-里读-B-小块会撞-bank-conflict"><a href="#关键坑（呼应-L2-1）：shared-里读-B-小块会撞-bank-conflict" class="headerlink" title="关键坑（呼应 L2.1）：shared 里读 B 小块会撞 bank conflict"></a>关键坑（呼应 L2.1）：shared 里读 B 小块会撞 bank conflict</h3><p><code>matmul_tiled</code> 在 inner loop 读 <code>b_tile[k][tx]</code>：跨 warp 读同一列 → 2 路 bank conflict。<br>解决：<strong>把 B 小块转置存进 shared</strong>（<code>matmul_tiled_transposed</code>：存 <code>b_tile[tx][ty]</code>，读 <code>b_tile[tx][k]</code> 变行连续）→ 完全无冲突，结果数值一致。这与 L2.1 转置 pad 是同一类”算 bank 偏移”的功夫。</p>
+<blockquote>
+<p>与 <code>matmul_tiled</code> 还有个等价手段：pad <code>b_tile[TILE][TILE+1]</code>（L2.1 的 pad 套路）。转置更省 shared、更常用。</p>
+</blockquote>
+<hr>
+<h2 id="三、把-L2-三节串起来（本节为什么是”收官”）"><a href="#三、把-L2-三节串起来（本节为什么是”收官”）" class="headerlink" title="三、把 L2 三节串起来（本节为什么是”收官”）"></a>三、把 L2 三节串起来（本节为什么是”收官”）</h2><table>
+<thead>
+<tr>
+<th>前面学的</th>
+<th>在本节怎么用</th>
+<th>体现在哪个 kernel</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>L2.1 shared / bank / pad</strong></td>
+<td>归约与 tiling 都用 shared；归约用 warp shuffle 避冲突，tiling 用 B 转置避冲突</td>
+<td><code>reduce_warp_shuffle</code> / <code>matmul_tiled_transposed</code></td>
+</tr>
+<tr>
+<td><strong>L2.2 occupancy</strong></td>
+<td>适度 shared 用量（每 block 2 个 TILE² 数组）→ 不挤爆 shared → 好的 occupancy → <code>sm__throughput</code> 上得去</td>
+<td>三者共享 <code>__shared__</code> 预算</td>
+</tr>
+<tr>
+<td><strong>L2.3 减 DRAM 流量</strong></td>
+<td>tiling 把全局取数降 ~15×（S=256,T=16）→ memory-bound 的 DRAM 压力被砍；用 ncu 测 <code>dram__throughput</code> 应明显下降</td>
+<td><code>analyze_tiling()</code> 量化</td>
+</tr>
+</tbody></table>
+<p>一句话：<strong>L2.1 给你武器（shared），L2.2 给你约束（occupancy），L2.3 给你判据（bound 类型）；L2.4 让你第一次亲手用这些武器、在约束内、对着判据，写出真正高性能的 kernel。</strong></p>
+<hr>
+<h2 id="四、代码走读（cuda-l2-reduction-tiling-cpp-主线）"><a href="#四、代码走读（cuda-l2-reduction-tiling-cpp-主线）" class="headerlink" title="四、代码走读（cuda_l2_reduction_tiling.cpp 主线）"></a>四、代码走读（<code>cuda_l2_reduction_tiling.cpp</code> 主线）</h2><ol>
+<li><strong><code>reduce_halving</code></strong> — 经典交错寻址树形归约，每 block 出一 partial；注释标出 <code>stride=32</code> 的 2 路 bank conflict。</li>
+<li><strong><code>reduce_warp_shuffle</code></strong> — <code>warp_reduce()</code> 用 <code>__shfl_down_sync</code> 把末段归约搬到寄存器，<strong>无 bank conflict</strong>；每 warp 出 1 个和，再由第 0 warp 归约 8 个和。</li>
+<li><strong><code>matmul_naive</code></strong> — 每线程一个输出，全局流量最大，作 baseline。</li>
+<li><strong><code>matmul_tiled</code></strong> — TILE×TILE shared 分块，inner loop 读 <code>b_tile[k][tx]</code> 有 2 路 bank conflict。</li>
+<li><strong><code>matmul_tiled_transposed</code></strong> — B 转置入 shared，读 <code>b_tile[tx][k]</code> 行连续 → 无冲突，数值与 naive 一致。</li>
+<li>**<code>analyze_tiling()</code>**（确定性、CPU 可跑）— 算出 S=256 时全局流量下降 ≈15.5×，并打印”三节串联”要点。</li>
+<li>**<code>run_gpu_checks()</code>**（真机段）— GPU 上对拍：归约 <code>reduce_halving</code>/<code>reduce_warp_shuffle</code> 与 CPU 求和一致；三种 matmul 与 <code>cpu_matmul</code> 一致。</li>
+</ol>
+<blockquote>
+<p>编译运行（需真机）：<code>nvcc -O3 -std=c++17 cuda_l2_reduction_tiling.cpp -o rt &amp;&amp; ./rt</code></p>
+</blockquote>
+<hr>
+<h2 id="五、OpenCL-对照（概念完全同构）"><a href="#五、OpenCL-对照（概念完全同构）" class="headerlink" title="五、OpenCL 对照（概念完全同构）"></a>五、OpenCL 对照（概念完全同构）</h2><table>
+<thead>
+<tr>
+<th>CUDA</th>
+<th>OpenCL</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>__shared__</code></td>
+<td><code>__local</code></td>
+<td>分块/归约同理</td>
+</tr>
+<tr>
+<td><code>bank conflict</code></td>
+<td>local memory 同样 32 bank</td>
+<td>pad / 转置思路一致</td>
+</tr>
+<tr>
+<td><code>__shfl_down_sync</code></td>
+<td><code>sub_group_shuffle</code>(厂商扩展)</td>
+<td>warp 内寄存器搬运</td>
+</tr>
+<tr>
+<td><code>__syncthreads()</code></td>
+<td><code>barrier(CLK_LOCAL_MEM_FENCE)</code></td>
+<td>同步原语</td>
+</tr>
+<tr>
+<td><code>blockIdx/threadIdx</code> 2D</td>
+<td><code>get_group_id</code> / <code>get_local_id</code> 2D</td>
+<td>网格映射一致</td>
+</tr>
+<tr>
+<td>occupancy</td>
+<td>compute unit 上 wavefront 驻留率</td>
+<td>受 local mem 用量限制</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>归约/tiling 的”算法骨架”在所有 SIMT GPU 上通用，差异只在 API 与 bank 细节。</p>
+</blockquote>
+<hr>
+<h2 id="六、自检（合上文档能答，才叫掌握）"><a href="#六、自检（合上文档能答，才叫掌握）" class="headerlink" title="六、自检（合上文档能答，才叫掌握）"></a>六、自检（合上文档能答，才叫掌握）</h2><ol>
+<li>为什么 <code>atomicAdd</code> 全局求和不适合做归约？它的瓶颈是什么？</li>
+<li>树形归约里 <code>stride=32</code> 这一步为什么会有 bank conflict？现代怎么彻底避免？</li>
+<li>朴素 matmul 的全局流量是多少（用 M/N/K 表示）？分块后变成多少？本质省掉了什么？</li>
+<li>tiling 改变算术强度 AI 吗？如果不改变，那它到底优化了什么？（结合 L2.3 的 bound 判据答）</li>
+<li><code>matmul_tiled</code> 为什么读 <code>b_tile[k][tx]</code> 会撞 bank conflict？<code>matmul_tiled_transposed</code> 怎么消除的？</li>
+<li>为什么”适度 shared 用量”对 occupancy 重要（结合 L2.2 的三道天花板）？shared 开太大会怎样？</li>
+</ol>
+<hr>
+<p><img src="/02jd/cuda_demo/images/fig7_reduction_tiling.svg" alt="CUDA reduction / tiling"></p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/cuda_demo/">CUDA_DEMO</a></li>
+            <li>CUDA_L2_REDUCTION_TILING</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

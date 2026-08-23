@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L4.6 稀疏正则化：Lasso（L1 惩罚最小二乘） 一句话：Lasso &#x3D; 最小二乘 + L1 惩罚 λ‖x‖₁。L2（岭回归 L1.3）只把系数”压小”，L1 会把不重要的系数直接压成 0——于是顺带做了特征选择。求解靠近端梯度（ISTA&#x2F;FISTA），核心算子是软阈值 soft(z, t)。   一、问题定义与”为什么是 L1”标准 LS 求 x̂ &#x3D; argmin ½‖Ax−b‖²（全特">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L4.6 稀疏正则化：Lasso（L1 惩罚最小二乘）">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l4_lasso.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L4.6 稀疏正则化：Lasso（L1 惩罚最小二乘） 一句话：Lasso &#x3D; 最小二乘 + L1 惩罚 λ‖x‖₁。L2（岭回归 L1.3）只把系数”压小”，L1 会把不重要的系数直接压成 0——于是顺带做了特征选择。求解靠近端梯度（ISTA&#x2F;FISTA），核心算子是软阈值 soft(z, t)。   一、问题定义与”为什么是 L1”标准 LS 求 x̂ &#x3D; argmin ½‖Ax−b‖²（全特">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/images/fig21_lasso.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.950Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/images/fig21_lasso.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l4_lasso">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l4_lasso.html","path":"02jd/Least_squares_method_demo/ls_l4_lasso.html","title":"L4.6 稀疏正则化：Lasso（L1 惩罚最小二乘）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L4.6 稀疏正则化：Lasso（L1 惩罚最小二乘） | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L4-6-%E7%A8%80%E7%96%8F%E6%AD%A3%E5%88%99%E5%8C%96%EF%BC%9ALasso%EF%BC%88L1-%E6%83%A9%E7%BD%9A%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">L4.6 稀疏正则化：Lasso（L1 惩罚最小二乘）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89%E4%B8%8E%E2%80%9D%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF-L1%E2%80%9D"><span class="nav-number">1.1.</span> <span class="nav-text">一、问题定义与”为什么是 L1”</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81ISTA%EF%BC%88%E8%BF%AD%E4%BB%A3-shrinkage-%E9%98%88%E5%80%BC%E7%AE%97%E6%B3%95%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">二、ISTA（迭代 shrinkage 阈值算法）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81FISTA%EF%BC%88Fast-ISTA%EF%BC%89"><span class="nav-number">1.3.</span> <span class="nav-text">三、FISTA（Fast ISTA）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E5%9D%90%E6%A0%87%E4%B8%8B%E9%99%8D%EF%BC%88%E7%8B%AC%E7%AB%8B%E5%8F%82%E8%80%83%E8%A7%A3%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、坐标下降（独立参考解）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%B8%8E%E5%B2%AD%E5%9B%9E%E5%BD%92-OLS-%E7%9A%84%E5%AF%B9%E6%AF%94%EF%BC%88%E6%A0%B8%E5%BF%83%E6%95%99%E5%AD%A6%E7%82%B9%EF%BC%89"><span class="nav-number">1.5.</span> <span class="nav-text">五、与岭回归 &#x2F; OLS 的对比（核心教学点）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%B7%A5%E4%B8%9A%E5%9C%BA%E6%99%AF%EF%BC%88%E6%9C%AC%E7%AF%87%E5%AE%9A%E4%BD%8D-%E6%96%B0%E6%96%B9%E5%90%91%E2%91%A8%EF%BC%9A%E7%A8%80%E7%96%8F%E5%BB%BA%E6%A8%A1%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">六、工业场景（本篇定位 &#x3D; 新方向⑨：稀疏建模）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88ls-l4-lasso-cpp%EF%BC%89"><span class="nav-number">1.7.</span> <span class="nav-text">七、代码走读（ls_l4_lasso.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.8.</span> <span class="nav-text">八、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B9%9D%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.9.</span> <span class="nav-text">九、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%81%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.10.</span> <span class="nav-text">十、下一步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%84%E5%BC%9F%E4%BB%93%E5%BA%93%E8%81%94%E7%B3%BB"><span class="nav-number">1.11.</span> <span class="nav-text">兄弟仓库联系</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L4.6 稀疏正则化：Lasso（L1 惩罚最小二乘）
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Least_squares_method_demo/">LEAST_SQUARES_METHOD_DEMO</a></li>
+            <li>LS_L4_LASSO</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L4-6-稀疏正则化：Lasso（L1-惩罚最小二乘）"><a href="#L4-6-稀疏正则化：Lasso（L1-惩罚最小二乘）" class="headerlink" title="L4.6 稀疏正则化：Lasso（L1 惩罚最小二乘）"></a>L4.6 稀疏正则化：Lasso（L1 惩罚最小二乘）</h1><blockquote>
+<p>一句话：<strong>Lasso = 最小二乘 + L1 惩罚 <code>λ‖x‖₁</code><strong>。L2（岭回归 L1.3）只把系数”压小”，L1 会把不重要的系数</strong>直接压成 0</strong>——于是顺带做了特征选择。求解靠<strong>近端梯度（ISTA/FISTA）</strong>，核心算子是软阈值 <code>soft(z, t)</code>。</p>
+</blockquote>
+<hr>
+<h2 id="一、问题定义与”为什么是-L1”"><a href="#一、问题定义与”为什么是-L1”" class="headerlink" title="一、问题定义与”为什么是 L1”"></a>一、问题定义与”为什么是 L1”</h2><p>标准 LS 求 <code>x̂ = argmin ½‖Ax−b‖²</code>（全特征参与）。当特征多、样本相对少、且真解稀疏时，OLS 会把噪声也”拟合”进去（过拟合、系数铺开）。Lasso 改为</p>
+<blockquote>
+<p>minₓ  f(x) + λ·g(x)，  f(x)=½‖Ax−b‖²，  g(x)=‖x‖₁=Σ|xi|</p>
+</blockquote>
+<p><code>λ</code> 越大，惩罚越重，越多系数被压零。<strong>几何直觉</strong>：等高线（椭圆）与约束集（L1 菱形）相切点更可能落在坐标轴上 → 稀疏；L2 约束是圆，切点一般不落在轴上 → 不稀疏。这是 Lasso 区别于岭回归（L1.3）的本质。</p>
+<blockquote>
+<p>注意有效正则强度：近端梯度步长 <code>η=1/L</code>（<code>L=λ_max(AᵀA)</code>），软阈值 = <code>ηλ</code>，故**有效阈值 <code>T = λ/L</code>**。调 <code>λ</code> 时心里要换算成 <code>T</code>（见 <code>ls_l4_lasso.cpp</code> 第 211 行 <code>lam = T*L</code>）。</p>
+</blockquote>
+<h2 id="二、ISTA（迭代-shrinkage-阈值算法）"><a href="#二、ISTA（迭代-shrinkage-阈值算法）" class="headerlink" title="二、ISTA（迭代 shrinkage 阈值算法）"></a>二、ISTA（迭代 shrinkage 阈值算法）</h2><p>把目标拆成<strong>平滑项 f</strong> + <strong>非平滑项 g</strong>。对 f 做一阶近似，套上 g 的近端算子：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">x_{k+1} = prox_{ηλ‖·‖₁}( x_k − η·∇f(x_k) )</span><br><span class="line">∇f(x)   = Aᵀ(Ax − b)                         ← 梯度, η = 1/L, L = λ_max(AᵀA)</span><br><span class="line">prox_{ηλ‖·‖₁}(z) = soft(z, ηλ)              ← 逐项软阈值</span><br><span class="line">soft(zi, t) = sign(zi)·max(|zi|−t, 0)</span><br></pre></td></tr></tbody></table></figure>
+
+<p><code>cpp</code> 第 80–99 行正是 ISTA：<code>r = Ax−b</code>，<code>g = Aᵀr</code>，<code>z = x−η·g</code>，<code>xnew = soft(z, λη)</code>，收敛判据 <code>‖xnew−x‖&lt;tol</code>。</p>
+<p><strong>软阈值的意义</strong>：把梯度步的结果向 0 拉，<code>|zi|≤t</code> 的直接归零——这就是”稀疏”的来源。<code>ls_l4_lasso.cpp</code> 第 1 节先用 4 个闭式样例验证 <code>soft</code> 正确。</p>
+<h2 id="三、FISTA（Fast-ISTA）"><a href="#三、FISTA（Fast-ISTA）" class="headerlink" title="三、FISTA（Fast ISTA）"></a>三、FISTA（Fast ISTA）</h2><p>在 ISTA 基础上加<strong>动量</strong>：每步用带动量的辅助点 <code>y</code> 代替 <code>x</code> 做梯度步，再用 <code>x_{k+1}</code> 与 <code>x_k</code> 的差更新 <code>y</code>。收敛速率从 ISTA 的 <code>O(1/k)</code> 提升到 <code>O(1/k²)</code>。<code>cpp</code> 第 104–127 行：<code>tk</code> 递推 <code>t_{k+1}=(1+√(1+4t_k²))/2</code>，<code>y = xnew + (t_k−1)/t_{k+1}·(xnew−x_k)</code>。</p>
+<blockquote>
+<p>⚠️ <strong>工程坑</strong>：FISTA 的<strong>目标函数值不单调</strong>，所以不能用 <code>‖x_{k+1}−x_k‖</code> 当唯一停止判据（会让 FISTA 多跑很多无意义迭代）。公平比较应看<strong>固定迭代步数下的目标值</strong>：<code>cpp</code> 第 230–234 行跑 12 步，FISTA 目标 21.37 &lt; ISTA 23.25，加速肉眼可见。</p>
+</blockquote>
+<h2 id="四、坐标下降（独立参考解）"><a href="#四、坐标下降（独立参考解）" class="headerlink" title="四、坐标下降（独立参考解）"></a>四、坐标下降（独立参考解）</h2><p>另一套求同一 Lasso 解的算法：逐坐标更新 <code>x_j ← S(w_j/‖A_j‖², λ/‖A_j‖²)</code>，其中 <code>w_j = A_jᵀ(b−Ax)</code>（残差口径，与 ISTA 梯度符号相反但数学等价）。<code>cpp</code> 第 129–151 行。它和 ISTA/FISTA <strong>殊途同归</strong>——<code>cpp</code> 第 228 行 <code>ISTA≈CD 一致</code> 即验证两者误差相同（~1e-1，即 Lasso 的固有偏置）。</p>
+<h2 id="五、与岭回归-OLS-的对比（核心教学点）"><a href="#五、与岭回归-OLS-的对比（核心教学点）" class="headerlink" title="五、与岭回归 / OLS 的对比（核心教学点）"></a>五、与岭回归 / OLS 的对比（核心教学点）</h2><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>目标</th>
+<th>系数行为</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OLS (L1.1)</td>
+<td>½‖Ax−b‖²</td>
+<td>全特征，无稀疏</td>
+<td>特征少、信噪比高</td>
+</tr>
+<tr>
+<td>岭回归 (L1.3)</td>
+<td>+ λ‖x‖₂²</td>
+<td>全收缩，≠0</td>
+<td>多重共线、要稳定</td>
+</tr>
+<tr>
+<td><strong>Lasso (本篇)</strong></td>
+<td><strong>+ λ‖x‖₁</strong></td>
+<td><strong>部分压零 → 稀疏</strong></td>
+<td><strong>高维特征选择、稀疏建模</strong></td>
+</tr>
+</tbody></table>
+<p><code>cpp</code> 第 7 节用一份较噪数据对比：OLS 系数铺开（15 个非零），Lasso 只留 3 个真支撑 <code>{2,7,13}</code>——这就是 Lasso 的”模型选择”能力，OLS 没有。</p>
+<h2 id="六、工业场景（本篇定位-新方向⑨：稀疏建模）"><a href="#六、工业场景（本篇定位-新方向⑨：稀疏建模）" class="headerlink" title="六、工业场景（本篇定位 = 新方向⑨：稀疏建模）"></a>六、工业场景（本篇定位 = 新方向⑨：稀疏建模）</h2><ul>
+<li><strong>高维特征选择</strong>：基因/蛋白筛选、金融因子选择、传感器选型——从成千特征里挑少数有效者。</li>
+<li><strong>压缩感知</strong>：<code>m&lt;n</code> 欠定下，靠信号稀疏性从少量采样重建（<code>cpp</code> 第 6 节，<code>m=18&lt;n=40</code> 仍恢复 3-稀疏真值）。</li>
+<li><strong>稀疏系统辨识</strong>：只留显著项的 ARX/状态空间模型（呼应 L3.3）。</li>
+<li><strong>异常检测</strong>：残差稀疏假设下，少数大残差即异常。</li>
+</ul>
+<h2 id="七、代码走读（ls-l4-lasso-cpp）"><a href="#七、代码走读（ls-l4-lasso-cpp）" class="headerlink" title="七、代码走读（ls_l4_lasso.cpp）"></a>七、代码走读（ls_l4_lasso.cpp）</h2><ul>
+<li><strong>工具层</strong>（第 18–151 行）：固定种子 LCG + Box-Muller（与受管 Python 验证脚本同种子，<strong>实例可复现</strong>）；<code>matvec/matTvec/norm2/maxEigAtA</code>（幂迭代求 <code>L=λ_max(AᵀA)</code>）；<code>softThresh</code>；<code>ista/fista/lassoCD</code>；<code>ols</code>（高斯消元）；<code>obj</code>。</li>
+<li><strong>[1] 软阈值闭式</strong>（第 184–190）：4 组 <code>(z,t)</code>，对拍闭式 <code>sign(z)(|z|−t)</code>。</li>
+<li><strong>[2] 1D 闭式</strong>（第 193–199）：<code>min ½(ax−b)²+λ|x|</code> 闭式 <code>x*=sign(b/a)max(|b/a|−λ/a²,0)</code>，ISTA 得 0.375 一致。</li>
+<li><strong>[3] 稀疏恢复</strong>（第 201–235）：<code>n=20,m=40,k=3</code>，<code>T=0.03</code>，ISTA/FISTA 收敛、<code>17/17</code> 真零压零、3 非零、支撑 <code>{2,7,13}</code> 精确；FISTA 12 步目标更低。</li>
+<li><strong>[4] 大 λ→全零</strong>（第 237–251）：<code>λ=50L</code>（T=50），输出全 0。</li>
+<li><strong>[5] 2D 网格搜索</strong>（第 253–268）：小问题网格遍历确认 ISTA 解确为最小点。</li>
+<li><strong>[6] 欠定 CS</strong>（第 270–293）：<code>m=18&lt;n=40</code>，FISTA 恢复，真支撑 ⊆ 恢复支撑。</li>
+<li><strong>[7] Lasso vs OLS</strong>（第 295–314）：较噪数据，OLS 铺开 15、Lasso 选 3。</li>
+</ul>
+<h2 id="八、你会看到什么"><a href="#八、你会看到什么" class="headerlink" title="八、你会看到什么"></a>八、你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">=== L4.6 Lasso 稀疏正则化 (ISTA/FISTA/坐标下降) ===</span><br><span class="line">  [1] 软阈值闭式</span><br><span class="line">     soft 闭式一致                 err=0.000e+00 tol=1e-12  PASS  (×4)</span><br><span class="line">  [2] 1D Lasso 闭式: min 0.5(ax−b)²+λ|x|</span><br><span class="line">     1D ISTA vs 闭式              err=0.000e+00 tol=1e-06  PASS</span><br><span class="line">  [3] 稀疏恢复 n=20 m=40 k=3</span><br><span class="line">     L=95.96 T=lam/L=0.0300 ISTA收敛it=63 FISTA收敛it=80</span><br><span class="line">     恢复误差 ISTA=1.08e-01 FISTA=1.08e-01 CD=1.08e-01  真零压零=17/17 非零=3(真=3)</span><br><span class="line">     FISTA 恢复误差&lt;0.15          err=1.08e-01 tol=5e-01  PASS</span><br><span class="line">     真零漏压&lt;=1(即&gt;=16/17)       err=0.000e+00 tol=2e+00  PASS</span><br><span class="line">     非零系数 3~5                 err=0.000e+00 tol=5e-01  PASS</span><br><span class="line">     ISTA≈CD 一致                 err=1.07e-07 tol=1e-02  PASS</span><br><span class="line">     [固定12迭代] 目标 ISTA=23.24634 FISTA=21.37308 (FISTA更低=yes)</span><br><span class="line">     FISTA 目标严格低于 ISTA      err=0.000e+00 tol=5e-01  PASS</span><br><span class="line">  [4] 大 λ -&gt; 全零</span><br><span class="line">     λ=4797.9 (T=50.0) -&gt; 非零=0 (应=0)</span><br><span class="line">     大λ非零个数=0                err=0.000e+00 tol=5e-01  PASS</span><br><span class="line">  [5] 2D 网格搜索确认 ISTA 解最小化目标</span><br><span class="line">     2D问题 ISTA目标=1.02755 网格最小=1.02771</span><br><span class="line">     ISTA目标≈网格最小            err=1.61e-04 tol=1e-02  PASS</span><br><span class="line">  [6] 欠定压缩感知 m=18&lt;n=40 k=3</span><br><span class="line">     T=0.0180 FISTA收敛it=314 真零压零=36/37 非零=4(真=3) 真支撑⊆恢复=yes</span><br><span class="line">     真零漏压&lt;=1(即&gt;=36/37)       err=0.000e+00 tol=2e+00  PASS</span><br><span class="line">     非零&lt;=6                      err=0.000e+00 tol=5e-01  PASS</span><br><span class="line">     真支撑⊆恢复支撑              err=0.000e+00 tol=5e-01  PASS</span><br><span class="line">  [7] Lasso vs OLS: 稀疏性/支撑对比 (较噪数据)</span><br><span class="line">     OLS 非零=15(铺开) Lasso 非零=3(稀疏) 支撑命中=yes</span><br><span class="line">     OLS 更铺开(非零更多)         err=0.000e+00 tol=5e-01  PASS</span><br><span class="line">     Lasso 支撑=真值{2,7,13}      err=0.000e+00 tol=5e-01  PASS</span><br><span class="line">=== 17 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>本机 RNG 固定种子（与受管 Python 验证脚本一致），上述数值为实际输出；若改动种子，具体数字会浮动，但”稀疏恢复 / FISTA 更快 / 大λ全零 / CS 支撑命中 / Lasso 选 3”等结论不变。数学正确性已由受管 Python 3.13.12 验证脚本（软阈值闭式、1D 闭式、稀疏恢复 17/17 压零、固定迭代 FISTA 目标更低、大λ全零、2D 网格搜索、CS 支撑、Lasso vs OLS）逐条对拍，<strong>ALL CHECKS: PASS</strong>。</p>
+</blockquote>
+<p><img src="/02jd/Least_squares_method_demo/images/fig21_lasso.svg" alt="L4.6 稀疏正则化：Lasso"></p>
+<h2 id="九、自检"><a href="#九、自检" class="headerlink" title="九、自检"></a>九、自检</h2><ul>
+<li>把 <code>T</code> 从 0.03 调到 0.3，看恢复误差怎么变（偏置 ↑，但真零压得更干净）？调到 0.003 呢（稀疏性丢失）？</li>
+<li>为什么 FISTA 不能简单用 <code>‖x_{k+1}−x_k‖</code> 停止？（提示：目标不单调，见第三节）</li>
+<li>把第 7 节的 OLS 换成岭回归，非零个数会介于 OLS 与 Lasso 之间吗？为什么？</li>
+</ul>
+<h2 id="十、下一步"><a href="#十、下一步" class="headerlink" title="十、下一步"></a>十、下一步</h2><p>进入 <a href="/02jd/Least_squares_method_demo/ls_l4_autodrive.html">L4.5 自动驾驶：ICP/车道线/滑窗</a> 看 LS 在感知里的落地；或回看 <a href="/02jd/Least_squares_method_demo/ls_l1_ridge.html">L1.3 岭回归</a> 对比 L1/L2 正则；稀疏约束的”带约束 LS”视角见 <a href="/02jd/Least_squares_method_demo/ls_l2_constraint.html">L2.5 等式约束 LS（KKT）</a>。Lasso 的稀疏先验也与 <a href="/02jd/KF_demo/README.html">KF</a> 的稀疏估计、<a href="/02jd/Jacobian_demo/README.html">Jacobian</a> L4 自动微分的优化底座相关。</p>
+<h2 id="兄弟仓库联系"><a href="#兄弟仓库联系" class="headerlink" title="兄弟仓库联系"></a>兄弟仓库联系</h2><ul>
+<li>岭回归/L2 正则对比见 <a href="/02jd/Least_squares_method_demo/ls_l1_ridge.html">LS L1.3</a>；约束 LS 见 <a href="/02jd/Least_squares_method_demo/ls_l2_constraint.html">LS L2.5</a>。</li>
+<li>稀疏估计/鲁棒先验与 <a href="/02jd/KF_demo/README.html">KF</a> 的协方差、异常检测相通。</li>
+<li>优化底座（梯度/自动微分）见 <a href="/02jd/Jacobian_demo/README.html">Jacobian</a> L4 自动微分。</li>
+</ul>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Least_squares_method_demo/">LEAST_SQUARES_METHOD_DEMO</a></li>
+            <li>LS_L4_LASSO</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

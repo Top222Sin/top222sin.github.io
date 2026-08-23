@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"192.168.1.3","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="L2.2 最速下降 vs GN vs LM 一句话：三兄弟谱系——GD 稳但锯齿慢，GN 快但远点发散，LM 用 (JᵀJ+λI)⁻¹Jᵀr 在两者间自适应插值，λ 大像 GD、λ 小像 GN。   一、三种迭代器非线性 LS 的迭代步长都长成 p ← p + Δp，区别在 Δp 怎么算：  GD：Δp &#x3D; −t·Jᵀr  （最速下降，t 是步长）GN：Δp &#x3D; −(JᵀJ)⁻¹Jᵀr  （L2.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="L2.2 最速下降 vs GN vs LM">
+<meta property="og:url" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l2_gnlm.html">
+<meta property="og:site_name" content="学习笔记">
+<meta property="og:description" content="L2.2 最速下降 vs GN vs LM 一句话：三兄弟谱系——GD 稳但锯齿慢，GN 快但远点发散，LM 用 (JᵀJ+λI)⁻¹Jᵀr 在两者间自适应插值，λ 大像 GD、λ 小像 GN。   一、三种迭代器非线性 LS 的迭代步长都长成 p ← p + Δp，区别在 Δp 怎么算：  GD：Δp &#x3D; −t·Jᵀr  （最速下降，t 是步长）GN：Δp &#x3D; −(JᵀJ)⁻¹Jᵀr  （L2.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/images/fig7_gnlm.svg">
+<meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-23T01:12:39.950Z">
+<meta property="article:author" content="zodiac">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="模型部署">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="数据结构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://192.168.1.3:4000/02jd/Least_squares_method_demo/images/fig7_gnlm.svg">
+
+
+<link rel="canonical" href="http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l2_gnlm">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l2_gnlm.html","path":"02jd/Least_squares_method_demo/ls_l2_gnlm.html","title":"L2.2 最速下降 vs GN vs LM"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>L2.2 最速下降 vs GN vs LM | 学习笔记
+</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学习笔记</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">C++ · 模型部署 · 高性能计算</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-cpp"><a href="/00cpp/" rel="section"><i class="fa fa-code fa-fw"></i>cpp</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#L2-2-%E6%9C%80%E9%80%9F%E4%B8%8B%E9%99%8D-vs-GN-vs-LM"><span class="nav-number">1.</span> <span class="nav-text">L2.2 最速下降 vs GN vs LM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%89%E7%A7%8D%E8%BF%AD%E4%BB%A3%E5%99%A8"><span class="nav-number">1.1.</span> <span class="nav-text">一、三种迭代器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-LM"><span class="nav-number">1.2.</span> <span class="nav-text">二、为什么需要 LM</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#LM-%E7%9A%84%E4%BF%A1%E4%BB%BB%E5%9F%9F%E8%A7%A3%E9%87%8A%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88-%CE%BB-%E8%87%AA%E9%80%82%E5%BA%94%EF%BC%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">LM 的信任域解释（为什么 λ 自适应）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81demo-%E8%AE%BE%E5%AE%9A"><span class="nav-number">1.3.</span> <span class="nav-text">三、demo 设定</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BB%A3%E7%A0%81%E8%B5%B0%E8%AF%BB%EF%BC%88ls-l2-gnlm-cpp%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">四、代码走读（ls_l2_gnlm.cpp）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E4%BD%A0%E4%BC%9A%E7%9C%8B%E5%88%B0%E4%BB%80%E4%B9%88"><span class="nav-number">1.5.</span> <span class="nav-text">五、你会看到什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%87%AA%E6%A3%80"><span class="nav-number">1.6.</span> <span class="nav-text">六、自检</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E4%B8%8B%E4%B8%80%E6%AD%A5"><span class="nav-number">1.7.</span> <span class="nav-text">七、下一步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%84%E5%BC%9F%E4%BB%93%E5%BA%93%E8%81%94%E7%B3%BB"><span class="nav-number">1.8.</span> <span class="nav-text">兄弟仓库联系</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zodiac"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">zodiac</p>
+  <div class="site-description" itemprop="description">个人学习笔记汇总，涵盖 C++ 现代用法、算法数据结构、深度学习编译器、CUDA、模型部署等</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zodiac" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zodiac" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner page posts-expand">
+
+
+    
+    
+    
+    <div class="post-block" lang="zh-CN"><header class="post-header">
+
+<h1 class="post-title" itemprop="name headline">L2.2 最速下降 vs GN vs LM
+</h1>
+
+<div class="post-meta-container">
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Least_squares_method_demo/">LEAST_SQUARES_METHOD_DEMO</a></li>
+            <li>LS_L2_GNLM</li>
+  </ul>
+</div>
+
+</header>
+
+      
+      
+      
+      <div class="post-body">
+          <h1 id="L2-2-最速下降-vs-GN-vs-LM"><a href="#L2-2-最速下降-vs-GN-vs-LM" class="headerlink" title="L2.2 最速下降 vs GN vs LM"></a>L2.2 最速下降 vs GN vs LM</h1><blockquote>
+<p>一句话：<strong>三兄弟谱系</strong>——GD 稳但锯齿慢，GN 快但远点发散，LM 用 <code>(JᵀJ+λI)⁻¹Jᵀr</code> 在两者间自适应插值，λ 大像 GD、λ 小像 GN。</p>
+</blockquote>
+<hr>
+<h2 id="一、三种迭代器"><a href="#一、三种迭代器" class="headerlink" title="一、三种迭代器"></a>一、三种迭代器</h2><p>非线性 LS 的迭代步长都长成 <code>p ← p + Δp</code>，区别在 Δp 怎么算：</p>
+<blockquote>
+<p><strong>GD</strong>：Δp = −t·Jᵀr  （最速下降，t 是步长）<br><strong>GN</strong>：Δp = −(JᵀJ)⁻¹Jᵀr  （L2.1 的海塞近似）<br><strong>LM</strong>：Δp = −(JᵀJ+λI)⁻¹Jᵀr  （阻尼 GN）</p>
+</blockquote>
+<h2 id="二、为什么需要-LM"><a href="#二、为什么需要-LM" class="headerlink" title="二、为什么需要 LM"></a>二、为什么需要 LM</h2><ul>
+<li><strong>GD</strong>：只要步长够小，代价总下降（稳），但梯度方向锯齿形逼近，收敛慢（线性收敛）。</li>
+<li><strong>GN</strong>：把 JᵀJ 当海塞，近收敛点二阶收敛（快），但远点 <code>JᵀJ</code> 可能奇异或方向错误 → 步长让代价不降反升 → 发散。</li>
+<li><strong>LM</strong>：给 <code>JᵀJ</code> 加 <code>λI</code> 正则——λ 大时 dominated by I，退化到 GD（稳）；λ 小时退化到 GN（快）。<strong>每步按代价是否下降调 λ</strong>：下降则 λ×0.3（往 GN 靠），不降则 λ×10（往 GD 靠）。</li>
+</ul>
+<p>LM 是 Ceres/g2o 的默认求解器。</p>
+<h3 id="LM-的信任域解释（为什么-λ-自适应）"><a href="#LM-的信任域解释（为什么-λ-自适应）" class="headerlink" title="LM 的信任域解释（为什么 λ 自适应）"></a>LM 的信任域解释（为什么 λ 自适应）</h3><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">LM 步: Δ = −(JᵀJ + λI)⁻¹Jᵀr —— 等价于"带半径约束的最小化":</span><br><span class="line">  min ‖JΔ + r‖²  s.t. ‖Δ‖ ≤ ρ   （信任域: 只信半径 ρ 内的线性化）</span><br><span class="line">λ 与 ρ 的关系: λ 大 → ‖Δ‖ 小（信任域小, 保守）; λ 小 → ‖Δ‖ 大（信任域大, 激进）</span><br><span class="line">调 λ 的判据: 实际下降/预测下降比 ρ_gain</span><br><span class="line">  ρ_gain ≈ 1 → 模型准 → 扩大信任域（λ↓）; ρ_gain ≪ 1 → 模型差 → 缩小（λ↑）</span><br><span class="line">Ceres 的 TRUST_REGION 实现: 按 ρ_gain 直接调半径, λ 只是参数化</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>核心洞察</strong>：LM 不是”GN 和 GD 的简单拼接”——它是<strong>带约束的信任域优化</strong>：只在”线性化可信的半径”内移动。λ 自适应 = 信任域半径自适应（模型准就大胆走，不准就缩回去）。这解释了 LM 的鲁棒性：远点模型差 → λ↑ → 小步走（不炸）；近点模型准 → λ↓ → GN 大步（快收敛）。<strong>λ 初值 1e-3 和 ×0.3/×10 是工程经验</strong>——Ceres 的默认参数族同源。</p>
+<h2 id="三、demo-设定"><a href="#三、demo-设定" class="headerlink" title="三、demo 设定"></a>三、demo 设定</h2><p>模型 <code>y = a·exp(b·x)</code>，n=30 点，真值 <code>(a,b)=(3.0, −1.2)</code>，噪声 σ=0.05。<strong>远起点</strong> <code>(a,b)=(0.3, 0.5)</code>——故意离真值远，逼出三种方法的差异。</p>
+<h2 id="四、代码走读（ls-l2-gnlm-cpp）"><a href="#四、代码走读（ls-l2-gnlm-cpp）" class="headerlink" title="四、代码走读（ls_l2_gnlm.cpp）"></a>四、代码走读（ls_l2_gnlm.cpp）</h2><ul>
+<li>第 28–34 行：生成指数衰减数据。</li>
+<li>第 35–48 行：<code>costF</code> 和 <code>jacob</code>——<code>jacob</code> 同时算 <code>H=JᵀJ</code>（H00/H01/H11）和 <code>g=Jᵀr</code>（g0/g1），三种方法共用。</li>
+<li>第 51–62 行：<strong>GD</strong>，回溯步长（第 59 行：<code>t</code> 从 0.1 起 halves 到代价下降），最多 3000 步。</li>
+<li>第 63–74 行：<strong>GN</strong>，直接解 2×2 <code>(JᵀJ)⁻¹Jᵀr</code>（第 68–69 行），<strong>代价不降即停</strong>（第 70 行）——远点发散的保护。</li>
+<li>第 75–95 行：<strong>LM</strong>，λ 初值 1e-3，内层 trust-region 循环（第 83–90 行）：试 <code>(JᵀJ+λI)⁻¹Jᵀr</code>，代价降则 λ×0.3 接受，不降则 λ×10 重试，最多 20 次。</li>
+<li>第 96–99 行：打印三种方法误差，chk LM 收敛且不劣于 GN。</li>
+</ul>
+<h2 id="五、你会看到什么"><a href="#五、你会看到什么" class="headerlink" title="五、你会看到什么"></a>五、你会看到什么</h2><figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">=== L2.2 GD vs GN vs LM ===</span><br><span class="line">  [demo] 远起点(0.3, 0.5): GD err=~1e-01 | GN err=~1e+00 | LM err=~2e-02</span><br><span class="line">  LM 远起点收敛                  err=~2e-02 tol=5e-02  PASS</span><br><span class="line">  LM 不劣于 GN(远起点)           err=0.0e+00 tol=5e-01  PASS</span><br><span class="line">  [结论] λ大→像GD(稳) λ小→像GN(快) 每步按代价是否下降调λ;</span><br><span class="line">        LM=Ceres 默认,MPMC 迭代里做对比的基线。</span><br><span class="line">=== 2 passed, 0 failed ===</span><br></pre></td></tr></tbody></table></figure>
+
+<blockquote>
+<p>远起点下 GN 因 <code>JᵀJ</code> 方向错而早早停步（err ~1，发散被保护机制拦住）；GD 靠 3000 步小步爬到 ~0.1；LM 靠 λ 自适应收敛到 ~0.02。噪声随机，每次具体数值略异，但三者相对关系（GN 卡住 &lt; GD 慢爬 &lt; LM 收敛）稳定。</p>
+</blockquote>
+<p><img src="/02jd/Least_squares_method_demo/images/fig7_gnlm.svg" alt="L2.2 最速下降 vs GN vs LM"></p>
+<h2 id="六、自检"><a href="#六、自检" class="headerlink" title="六、自检"></a>六、自检</h2><ul>
+<li>把起点挪到近真值 <code>(2.9, −1.1)</code>，看 GN 是否反超 LM（近收敛点 GN 二阶收敛最快）。</li>
+<li>思考：为什么 GD 锯齿？（梯度方向不一定是代价椭圆的轴向，见 L1.1 的条件数几何。）</li>
+<li>把 LM 的 λ 初值调到 1e6，看它退化成 GD 的慢爬。</li>
+</ul>
+<h2 id="七、下一步"><a href="#七、下一步" class="headerlink" title="七、下一步"></a>七、下一步</h2><p>进入 <a href="/02jd/Least_squares_method_demo/ls_l2_robust.html">L2.3 鲁棒估计：Huber IRLS</a>——LM 解决了”远点发散”，但野值会让代价本身失真，需要换损失函数。</p>
+<h2 id="兄弟仓库联系"><a href="#兄弟仓库联系" class="headerlink" title="兄弟仓库联系"></a>兄弟仓库联系</h2><p>LM 是 <a href="/02jd/cali_demo/README.html">cali</a> BA、<a href="/02jd/KF_demo/README.html">KF</a> EKF 迭代、<a href="/02jd/control_demo/README.html">control</a> 系统辨识的公共求解器；Ceres 的 <code>LEVENBERG_MARQUARDT</code> 就是本篇的实现。</p>
+
+      </div>
+      
+      
+      
+    </div>
+  <ul class="breadcrumb">
+            <li><a href="/02jd/">02JD</a></li>
+            <li><a href="/02jd/Least_squares_method_demo/">LEAST_SQUARES_METHOD_DEMO</a></li>
+            <li>LS_L2_GNLM</li>
+  </ul>
+
+    
+    
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">zodiac</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

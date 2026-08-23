@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 780" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  <rect x="0" y="0" width="720" height="780" fill="#ffffff"/>
+  <text x="20" y="28" font-size="16" font-weight="700" fill="#0f172a">CUDA reduction / 矩阵乘分块 tiling —— L2 收官</text>
+
+  <!-- ===== Panel 1: reduction tree + bank conflict ===== -->
+  <rect x="20" y="44" width="680" height="180" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="34" y="66" font-size="13" font-weight="700" fill="#334155">① 归约 reduction：block 内树形归约 + 末段 warp shuffle 避 bank conflict</text>
+  <!-- tree -->
+  <g stroke="#334155" stroke-width="1">
+    <!-- level 0: 8 leaves -->
+    <circle cx="60"  cy="96"  r="6" fill="#3b82f6"/><circle cx="100" cy="96"  r="6" fill="#3b82f6"/><circle cx="140" cy="96"  r="6" fill="#3b82f6"/><circle cx="180" cy="96"  r="6" fill="#3b82f6"/>
+    <circle cx="240" cy="96"  r="6" fill="#3b82f6"/><circle cx="280" cy="96"  r="6" fill="#3b82f6"/><circle cx="320" cy="96"  r="6" fill="#3b82f6"/><circle cx="360" cy="96"  r="6" fill="#3b82f6"/>
+    <line x1="60" y1="96" x2="100" y2="96" stroke="#94a3b8"/>
+    <!-- level 1 -->
+    <circle cx="80"  cy="124" r="6" fill="#60a5fa"/><circle cx="160" cy="124" r="6" fill="#60a5fa"/><circle cx="260" cy="124" r="6" fill="#60a5fa"/><circle cx="340" cy="124" r="6" fill="#60a5fa"/>
+    <line x1="60" y1="96" x2="80" y2="124"/><line x1="100" y1="96" x2="80" y2="124"/>
+    <line x1="140" y1="96" x2="160" y2="124"/><line x1="180" y1="96" x2="160" y2="124"/>
+    <line x1="240" y1="96" x2="260" y2="124"/><line x1="280" y1="96" x2="260" y2="124"/>
+    <line x1="320" y1="96" x2="340" y2="124"/><line x1="360" y1="96" x2="340" y2="124"/>
+    <!-- level 2 -->
+    <circle cx="120" cy="152" r="6" fill="#2563eb"/><circle cx="300" cy="152" r="6" fill="#2563eb"/>
+    <line x1="80" y1="124" x2="120" y2="152"/><line x1="160" y1="124" x2="120" y2="152"/>
+    <line x1="260" y1="124" x2="300" y2="152"/><line x1="340" y1="124" x2="300" y2="152"/>
+    <!-- root -->
+    <circle cx="210" cy="180" r="6" fill="#1e3a8a"/>
+    <line x1="120" y1="152" x2="210" y2="180"/><line x1="300" y1="152" x2="210" y2="180"/>
+  </g>
+  <text x="44" y="200" font-size="8.5" fill="#475569">二叉树：256→128→...→1（每 block 一 partial）</text>
+  <!-- 右侧 bank conflict 说明 -->
+  <g font-size="9.5">
+    <rect x="400" y="84" width="288" height="128" rx="6" fill="#fff7ed" stroke="#f97316"/>
+    <text x="412" y="104" font-size="11" font-weight="700" fill="#c2410c">bank conflict 与修复</text>
+    <text x="412" y="122" fill="#7c2d12">reduce_halving：stride=32 时</text>
+    <text x="412" y="138" fill="#7c2d12">s[tid] 与 s[tid+32] 同 bank</text>
+    <text x="412" y="154" fill="#b91c1c">→ 2 路冲突 ❌</text>
+    <text x="412" y="176" font-weight="700" fill="#047857">reduce_warp_shuffle：</text>
+    <text x="412" y="192" fill="#065f46">末段用 __shfl_down_sync</text>
+    <text x="412" y="208" fill="#065f46">寄存器级搬运 → 无冲突 ✅</text>
+  </g>
+
+  <!-- ===== Panel 2: matmul naive vs tiled data reuse ===== -->
+  <rect x="20" y="232" width="680" height="178" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.2"/>
+  <text x="34" y="254" font-size="13" font-weight="700" fill="#047857">② 矩阵乘 tiling：每个全局元素"搬一次、用 TILE² 次"</text>
+  <!-- naive: A read K times -->
+  <g font-size="8.5">
+    <text x="40" y="276" font-weight="700" fill="#0f172a">朴素 matmul</text>
+    <rect x="40" y="284" width="40" height="40" rx="3" fill="#fee2e2" stroke="#ef4444"/>
+    <text x="46" y="308" fill="#7f1d1d">A</text>
+    <text x="90" y="296" fill="#7f1d1d">每行被 N 个</text>
+    <text x="90" y="310" fill="#7f1d1d">输出重复读</text>
+    <text x="90" y="324" fill="#b91c1c">→ 取数 2MNK</text>
+    <text x="40" y="344" fill="#475569">AI 不变，但 DRAM</text>
+    <text x="40" y="358" fill="#475569">流量爆炸</text>
+  </g>
+  <!-- tiled: shared reuse -->
+  <g font-size="8.5">
+    <text x="280" y="276" font-weight="700" fill="#0f172a">分块 matmul</text>
+    <rect x="280" y="284" width="44" height="44" rx="3" fill="#dbffe8" stroke="#10b981"/>
+    <text x="288" y="310" fill="#065f46">A tile</text>
+    <rect x="332" y="284" width="44" height="44" rx="3" fill="#dbeafe" stroke="#3b82f6"/>
+    <text x="340" y="310" fill="#1e3a8a">B tile</text>
+    <text x="384" y="296" fill="#065f46">每块仅进</text>
+    <text x="384" y="310" fill="#065f46">shared 一次</text>
+    <text x="384" y="324" fill="#047857">→ 取数 MK+KN</text>
+    <text x="280" y="344" fill="#475569">每个元素被 block</text>
+    <text x="280" y="358" fill="#475569">内 TILE² 线程复用</text>
+  </g>
+  <text x="40" y="400" font-size="9.5" font-weight="700" fill="#374151">S=256 量化：全局取数 朴素≈3.36e7 → 分块≈1.97e5，下降 ≈ 171×（FLOPs 不变）</text>
+
+  <!-- ===== Panel 3: bank conflict in tiled matmul + transpose fix ===== -->
+  <rect x="20" y="418" width="680" height="170" rx="8" fill="#fff7ed" stroke="#f97316" stroke-width="1.2"/>
+  <text x="34" y="440" font-size="13" font-weight="700" fill="#c2410c">③ tiled matmul 的 bank conflict：读 B 列 → 2 路冲突；转置存 → 无冲突</text>
+  <!-- b_tile normal: column read -->
+  <g font-size="8.5">
+    <text x="40" y="462" font-weight="700" fill="#0f172a">matmul_tiled（B 正常存）</text>
+    <rect x="40" y="468" width="96" height="72" rx="3" fill="#fff" stroke="#94a3b8"/>
+    <line x1="40" y1="492" x2="136" y2="492" stroke="#e2e8f0"/>
+    <line x1="40" y1="516" x2="136" y2="516" stroke="#e2e8f0"/>
+    <line x1="72" y1="468" x2="72" y2="540" stroke="#e2e8f0"/>
+    <line x1="104" y1="468" x2="104" y2="540" stroke="#e2e8f0"/>
+    <text x="48" y="486" fill="#ef4444" font-size="8">b[k][tx]</text>
+    <text x="40" y="556" fill="#b91c1c">列访问 → 跨 warp 同 bank</text>
+    <text x="40" y="570" fill="#b91c1c">→ 2 路 bank conflict ❌</text>
+  </g>
+  <!-- arrow -->
+  <line x1="150" y1="504" x2="190" y2="504" stroke="#0f172a" stroke-width="1.5"/>
+  <text x="156" y="498" font-size="8.5" fill="#0f172a">转置存</text>
+  <!-- b_tile transposed: row read -->
+  <g font-size="8.5">
+    <text x="200" y="462" font-weight="700" fill="#0f172a">matmul_tiled_transposed（B 转存）</text>
+    <rect x="200" y="468" width="96" height="72" rx="3" fill="#ecfdf5" stroke="#10b981"/>
+    <line x1="200" y1="492" x2="296" y2="492" stroke="#bbf7d0"/>
+    <line x1="200" y1="516" x2="296" y2="516" stroke="#bbf7d0"/>
+    <line x1="232" y1="468" x2="232" y2="540" stroke="#bbf7d0"/>
+    <line x1="264" y1="468" x2="264" y2="540" stroke="#bbf7d0"/>
+    <text x="208" y="486" fill="#047857" font-size="8">b[tx][k]</text>
+    <text x="200" y="556" fill="#047857">行访问 → 每 bank 一次</text>
+    <text x="200" y="570" fill="#047857">→ 无 bank conflict ✅</text>
+  </g>
+  <!-- 公式 -->
+  <g font-size="9">
+    <rect x="440" y="462" width="248" height="104" rx="6" fill="#eff6ff" stroke="#3b82f6"/>
+    <text x="452" y="482" font-size="9.5" font-weight="700" fill="#1d4ed8">bank 公式回顾（L2.1）</text>
+    <text x="452" y="500" fill="#1e3a8a">bank(i) = i % 32</text>
+    <text x="452" y="518" fill="#1e3a8a">正常：b[k][tx] 列访问</text>
+    <text x="452" y="534" fill="#1e3a8a">→ 同 bank 被多 lane 命中</text>
+    <text x="452" y="552" fill="#1e3a8a">转置：b[tx][k] 行访问</text>
+    <text x="452" y="568" fill="#1e3a8a">→ 连续 bank 各一次 ✅</text>
+  </g>
+
+  <!-- ===== Panel 4: L2 三节串联 ===== -->
+  <rect x="20" y="596" width="680" height="166" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="34" y="618" font-size="13" font-weight="700" fill="#1d4ed8">④ 收官：L2.1(shared/bank/pad) × L2.2(occupancy) × L2.3(减 DRAM) 合一</text>
+  <g font-size="9.5">
+    <rect x="34" y="630" width="200" height="120" rx="6" fill="#f8fafc" stroke="#94a3b8"/>
+    <text x="44" y="650" font-weight="700" fill="#334155">L2.1 武器</text>
+    <text x="44" y="668" fill="#475569">shared 做分块/归约</text>
+    <text x="44" y="682" fill="#475569">warp shuffle 避冲突</text>
+    <text x="44" y="696" fill="#475569">B 转置避 bank 冲突</text>
+    <text x="44" y="712" fill="#475569">pad 是备选（L2.1）</text>
+    <text x="44" y="728" fill="#475569">→ 本节核心操作</text>
+
+    <rect x="250" y="630" width="200" height="120" rx="6" fill="#f0fdf4" stroke="#10b981"/>
+    <text x="260" y="650" font-weight="700" fill="#047857">L2.2 约束</text>
+    <text x="260" y="668" fill="#065f46">shared 用量适中</text>
+    <text x="260" y="682" fill="#065f46">→ 不挤爆 shared</text>
+    <text x="260" y="696" fill="#065f46">→ 好的 occupancy</text>
+    <text x="260" y="710" fill="#065f46">→ sm__throughput 上来</text>
+    <text x="260" y="728" fill="#065f46">→ 三 kernel 共享预算</text>
+
+    <rect x="466" y="630" width="214" height="120" rx="6" fill="#fef2f2" stroke="#ef4444"/>
+    <text x="476" y="650" font-weight="700" fill="#b91c1c">L2.3 判据</text>
+    <text x="476" y="668" fill="#7f1d1d">tiling 砍 DRAM 流量</text>
+    <text x="476" y="682" fill="#7f1d1d">≈171× (S=256)</text>
+    <text x="476" y="696" fill="#7f1d1d">ncu: dram__throughput↓</text>
+    <text x="476" y="710" fill="#7f1d1d">memory-bound → 减负</text>
+    <text x="476" y="728" fill="#7f1d1d">→ 对着判据优化</text>
+  </g>
+  <text x="34" y="762" font-size="9" fill="#1e3a8a">一句话：武器(L2.1) + 约束(L2.2) + 判据(L2.3) → 第一次手写真正高性能 kernel</text>
+</svg>

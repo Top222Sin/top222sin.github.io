@@ -1,0 +1,40 @@
+<svg viewBox="0 0 680 300" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,'Microsoft YaHei',sans-serif">
+  <text x="340" y="26" text-anchor="middle" font-size="15" font-weight="500" fill="#1a202c">单目标定：标定前 vs 标定后 重投影误差</text>
+
+  <!-- 投影链示意 -->
+  <g transform="translate(20,46)">
+    <rect x="0" y="0" width="300" height="60" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1"/>
+    <text x="150" y="20" text-anchor="middle" font-size="11" font-weight="500" fill="#27500a">同一批 3D 棋盘点</text>
+    <text x="20" y="42" font-size="10" fill="#444441">3D 板点 →(外参 R,t)→ 相机系 →(K+畸变)→ 像素观测</text>
+    <text x="270" y="42" font-size="10" fill="#444441">误差 = 投影点 − 实测点</text>
+  </g>
+
+  <!-- 标定后 卡片 -->
+  <g transform="translate(20,120)">
+    <rect x="0" y="0" width="300" height="150" rx="10" fill="#fff" stroke="#185FA5" stroke-width="1"/>
+    <text x="14" y="22" font-size="12" font-weight="500" fill="#0c447c">① 标定后（反估 K + 畸变）</text>
+    <rect x="14" y="36" width="180" height="18" rx="4" fill="#E6F1FB"/>
+    <rect x="14" y="36" width="22" height="18" rx="4" fill="#3B6D11"/>
+    <text x="206" y="50" font-size="11" fill="#27500a">≈ 0.6 px</text>
+    <text x="14" y="78" font-size="10" fill="#444441">误差仅剩角点噪声：</text>
+    <text x="14" y="94" font-size="10" fill="#444441">K 对、畸变已去除、外参已求</text>
+    <text x="14" y="124" font-size="11" font-weight="500" fill="#0c447c">PASS 判据：K 误差&lt;5%、RMS&lt;2px</text>
+  </g>
+
+  <!-- 不标定 naive 卡片 -->
+  <g transform="translate(360,120)">
+    <rect x="0" y="0" width="300" height="150" rx="10" fill="#fff" stroke="#993C1D" stroke-width="1"/>
+    <text x="14" y="22" font-size="12" font-weight="500" fill="#712b13">② 不标定（naive 针孔）</text>
+    <rect x="14" y="36" width="180" height="18" rx="4" fill="#FCEBEB"/>
+    <rect x="14" y="36" width="168" height="18" rx="4" fill="#E24B4A"/>
+    <text x="206" y="50" font-size="11" fill="#a32d2d">数 px ~ 十 px</text>
+    <text x="14" y="78" font-size="10" fill="#444441">K 错（焦距/主点错）+</text>
+    <text x="14" y="94" font-size="10" fill="#444441">未去畸变 → 系统性大误差</text>
+    <text x="14" y="124" font-size="11" font-weight="500" fill="#712b13">判定：naiveRMS &lt; 3×calRMS 即 FAIL</text>
+  </g>
+
+  <!-- 结论条 -->
+  <g transform="translate(20,280)">
+    <text x="320" y="0" text-anchor="middle" font-size="11" fill="#1a202c">结论：标定为下游（PnP/SLAM/手眼/双目）提供可信内参，误差降低数倍 ✓</text>
+  </g>
+</svg>

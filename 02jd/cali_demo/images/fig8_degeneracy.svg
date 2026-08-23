@@ -1,0 +1,52 @@
+<svg viewBox="0 0 680 330" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,'Microsoft YaHei',sans-serif">
+  <text x="340" y="26" text-anchor="middle" font-size="15" font-weight="500" fill="#1a202c">L2.3 四类运动的可观测性</text>
+
+  <!-- ① 多样 -->
+  <g transform="translate(20,50)">
+    <rect x="0" y="0" width="300" height="115" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1"/>
+    <text x="12" y="20" font-size="12" font-weight="500" fill="#27500a">① 多样运动（好）</text>
+    <g stroke="#3B6D11" stroke-width="2" fill="none">
+      <line x1="40" y1="80" x2="90" y2="50"/><line x1="40" y1="80" x2="120" y2="85"/><line x1="40" y1="80" x2="80" y2="100"/>
+      <line x1="40" y1="80" x2="150" y2="55"/><line x1="40" y1="80" x2="60" y2="40"/>
+    </g>
+    <g fill="#3B6D11"><circle cx="90" cy="50" r="3"/><circle cx="120" cy="85" r="3"/><circle cx="80" cy="100" r="3"/><circle cx="150" cy="55" r="3"/><circle cx="60" cy="40" r="3"/></g>
+    <text x="240" y="60" font-size="10" fill="#27500a">满秩</text>
+    <text x="220" y="78" font-size="11" font-weight="500" fill="#27500a">✓ 可解</text>
+  </g>
+
+  <!-- ② 纯平移 -->
+  <g transform="translate(360,50)">
+    <rect x="0" y="0" width="300" height="115" rx="10" fill="#FCEBEB" stroke="#A32D2D" stroke-width="1"/>
+    <text x="12" y="20" font-size="12" font-weight="500" fill="#501313">② 纯平移（无旋转）</text>
+    <g stroke="#A32D2D" stroke-width="2" fill="none">
+      <line x1="40" y1="40" x2="120" y2="40"/><line x1="40" y1="60" x2="120" y2="60"/><line x1="40" y1="80" x2="120" y2="80"/><line x1="40" y1="100" x2="120" y2="100"/>
+    </g>
+    <g fill="#A32D2D"><circle cx="120" cy="40" r="3"/><circle cx="120" cy="60" r="3"/><circle cx="120" cy="80" r="3"/><circle cx="120" cy="100" r="3"/></g>
+    <text x="200" y="60" font-size="10" fill="#a32d2d">M 整块为 0</text>
+    <text x="200" y="78" font-size="11" font-weight="500" fill="#a32d2d">✗ 秩亏</text>
+  </g>
+
+  <!-- ③ 单轴旋转 -->
+  <g transform="translate(20,185)">
+    <rect x="0" y="0" width="300" height="115" rx="10" fill="#FCEBEB" stroke="#A32D2D" stroke-width="1"/>
+    <text x="12" y="20" font-size="12" font-weight="500" fill="#501313">③ 仅绕 z 轴旋转</text>
+    <g stroke="#A32D2D" stroke-width="2" fill="none">
+      <path d="M70 70 A30 30 0 0 1 100 50"/><path d="M70 90 A30 30 0 0 1 130 70"/><path d="M60 80 A40 40 0 0 1 110 45"/>
+    </g>
+    <text x="200" y="60" font-size="10" fill="#a32d2d">旋转仅 1 维</text>
+    <text x="195" y="78" font-size="11" font-weight="500" fill="#a32d2d">✗ 缺 2 维约束</text>
+  </g>
+
+  <!-- ④ 平面运动 -->
+  <g transform="translate(360,185)">
+    <rect x="0" y="0" width="300" height="115" rx="10" fill="#FCEBEB" stroke="#A32D2D" stroke-width="1"/>
+    <text x="12" y="20" font-size="12" font-weight="500" fill="#501313">④ 平面运动（无倾斜）</text>
+    <g stroke="#A32D2D" stroke-width="2" fill="none">
+      <line x1="50" y1="95" x2="160" y2="95"/><line x1="50" y1="95" x2="60" y2="45"/><line x1="160" y1="95" x2="150" y2="45"/>
+      <line x1="60" y1="45" x2="150" y2="45"/>
+    </g>
+    <circle cx="105" cy="70" r="3" fill="#A32D2D"/>
+    <text x="200" y="60" font-size="10" fill="#a32d2d">板始终躺平</text>
+    <text x="195" y="78" font-size="11" font-weight="500" fill="#a32d2d">✗ 缺倾斜自由度</text>
+  </g>
+</svg>

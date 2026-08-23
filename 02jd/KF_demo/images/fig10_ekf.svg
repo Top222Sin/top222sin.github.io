@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="680" height="360" fill="#fafafa"/>
+  <text x="20" y="30" font-size="16" font-weight="bold" fill="#222">L2.5 EKF：在当前估计点一阶泰勒展开</text>
+  <defs>
+    <marker id="arrA" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#555"/>
+    </marker>
+  </defs>
+  <!-- 线性化示意 -->
+  <g transform="translate(60,60)">
+    <line x1="0" y1="150" x2="260" y2="150" stroke="#999"/>
+    <line x1="0" y1="150" x2="0" y2="0" stroke="#999"/>
+    <path d="M10,140 C60,130 110,60 160,30 C200,10 240,8 255,8" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+    <line x1="110" y1="150" x2="230" y2="30" stroke="#dc2626" stroke-width="2" stroke-dasharray="6,3"/>
+    <circle cx="110" cy="92" r="5" fill="#dc2626"/>
+    <text x="118" y="85" font-size="12" fill="#dc2626">当前估计点 x̂</text>
+    <text x="180" y="45" font-size="11.5" fill="#dc2626">切线 = F, H（一阶展开）</text>
+    <text x="130" y="168" font-size="11" fill="#555" text-anchor="middle">离点越远，切线越不靠谱 → 过信/发散</text>
+  </g>
+  <!-- 公式 -->
+  <rect x="360" y="60" width="300" height="110" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="510" y="88" font-size="13.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">两处替换</text>
+  <text x="510" y="114" font-size="13" fill="#1e3a8a" text-anchor="middle">F = ∂f/∂x｜ₓ    H = ∂h/∂x｜ₓ⁻</text>
+  <text x="510" y="140" font-size="12" fill="#555" text-anchor="middle">其余五公式照旧（L1.1）</text>
+  <text x="510" y="160" font-size="12" fill="#555" text-anchor="middle">雅可比推导见 Jacobian_demo</text>
+  <!-- 三种死法 -->
+  <rect x="40" y="200" width="620" height="140" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="350" y="226" font-size="13.5" font-weight="bold" fill="#7f1d1d" text-anchor="middle">EKF 的三种死法 × 解药</text>
+  <text x="350" y="252" font-size="12.5" fill="#7f1d1d" text-anchor="middle">① 线性化失准（初值差/强非线性）→ UKF（L2.6）、迭代 EKF</text>
+  <text x="350" y="276" font-size="12.5" fill="#7f1d1d" text-anchor="middle">② 协方差塌缩（长期无更新）→ Joseph + Q 下限</text>
+  <text x="350" y="300" font-size="12.5" fill="#7f1d1d" text-anchor="middle">③ 雅可比手推错（本仓库踩过 3 次）→ 永远用有限差分对拍 ✓(demo)</text>
+  <text x="350" y="326" font-size="12" fill="#555" text-anchor="middle">demo：极坐标 H、单摆 F 均与 FD 对拍 ~1e-10；单摆滤波 RMSE 0.027 &lt; 观测 0.137</text>
+</svg>
