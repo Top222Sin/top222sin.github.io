@@ -29,7 +29,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://192.168.1.3:4000/02jd/cali_demo/images/fig5_handeye.svg">
 <meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-23T01:12:39.910Z">
+<meta property="article:modified_time" content="2026-09-02T06:02:32.070Z">
 <meta property="article:author" content="zodiac">
 <meta property="article:tag" content="C++">
 <meta property="article:tag" content="CUDA">
@@ -81,7 +81,6 @@
   </noscript>
 
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
-<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
@@ -155,22 +154,6 @@
 </div>
 <div class="site-state-wrap animated">
   <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">18</span>
-          <span class="site-state-item-name">日志</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-          <a href="/categories/">
-        <span class="site-state-item-count">5</span>
-        <span class="site-state-item-name">分类</span></a>
-      </div>
-      <div class="site-state-item site-state-tags">
-          <a href="/tags/">
-        <span class="site-state-item-count">34</span>
-        <span class="site-state-item-name">标签</span></a>
-      </div>
   </nav>
 </div>
   <div class="links-of-author animated">
@@ -302,7 +285,7 @@
 <li><strong>OpenCV</strong> <code>cv::calibrateHandEye</code>：支持 TSAI/PARK/HORAUD/ANDREFF 四种方法——本 demo 自实现 Park–Martin 与它交叉对拍。</li>
 <li><strong>easy_handeye（ROS）</strong>：工业级手眼标定包——采集 + 求解 + 发布 tf 全自动，内置退化检查（L2.3 的工程化）。</li>
 <li><strong>Halcon</strong> <code>calibrate_hand_eye</code>：机器视觉行业标准工具。</li>
-<li><strong>与 08robot</strong>：UR5e + 末端相机的”视觉引导抓取”必须先做 eye-in-hand 标定——<code>T_cam2gripper</code> 就是这里的 X。</li>
+<li><strong>与 UR5e 仿真项目</strong>：UR5e + 末端相机的”视觉引导抓取”必须先做 eye-in-hand 标定——<code>T_cam2gripper</code> 就是这里的 X。</li>
 </ul>
 <h2 id="七、自检"><a href="#七、自检" class="headerlink" title="七、自检"></a>七、自检</h2><ul>
 <li>把位姿数 N 从 14 降到 3，看误差是否暴涨（体会”样本要多”）。</li>

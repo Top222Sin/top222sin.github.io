@@ -28,7 +28,7 @@
 <meta property="og:description" content="L2.5 误差校验方案（Error check）⭐ L1 让你”能跑通五个标定”。L2.1–L2.4 让你”知道误差从哪来”。但标完之后，怎么用一句话回答”这套参数到底准不准”？ 本篇给出一套可落地的量化指标，并在合成数据上闭环对拍。   一、为什么要专门做误差校验标定算法（无论是 OpenCV 的 calibrateCamera 还是自写的 solveHandEye）都会返回一个”解”。但：">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-23T01:12:39.910Z">
+<meta property="article:modified_time" content="2026-09-02T06:02:32.110Z">
 <meta property="article:author" content="zodiac">
 <meta property="article:tag" content="C++">
 <meta property="article:tag" content="CUDA">
@@ -79,7 +79,6 @@
   </noscript>
 
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
-<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
@@ -153,22 +152,6 @@
 </div>
 <div class="site-state-wrap animated">
   <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">18</span>
-          <span class="site-state-item-name">日志</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-          <a href="/categories/">
-        <span class="site-state-item-count">5</span>
-        <span class="site-state-item-name">分类</span></a>
-      </div>
-      <div class="site-state-item site-state-tags">
-          <a href="/tags/">
-        <span class="site-state-item-count">34</span>
-        <span class="site-state-item-name">标签</span></a>
-      </div>
   </nav>
 </div>
   <div class="links-of-author animated">
@@ -295,7 +278,7 @@
 <li><strong>easy_handeye</strong>：标定后输出 <code>hand-eye error</code>（AX=XB 残差）——就是本 demo 的指标②。</li>
 <li><strong>Halcon</strong> <code>calibration report</code>：每图残差 + 总体 RMS——指标①的行业版。</li>
 <li><strong>机器人产线验收</strong>：端到端”够取验证”（L3.1）才是最终指标——本 demo 的指标是”中间体检”，L3.1 是”期末考”。</li>
-<li><strong>与 08robot</strong>：手眼标定后，用”机器人照着标定结果去抓一个已知点”验证——误差 &lt;1mm 才上线（L3.1 的够取验证就是它）。</li>
+<li><strong>与 UR5e 仿真项目</strong>：手眼标定后，用”机器人照着标定结果去抓一个已知点”验证——误差 &lt;1mm 才上线（L3.1 的够取验证就是它）。</li>
 </ul>
 <h2 id="六、下一步"><a href="#六、下一步" class="headerlink" title="六、下一步"></a>六、下一步</h2><p>进 <a href="/02jd/cali_demo/cali_l3_validation.html">L3.1 验证方案 ⭐</a>：把”参数准不准”升级为”机器人按这套参数干活，实际偏差多少”的端到端验证。</p>
 

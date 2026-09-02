@@ -29,7 +29,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://192.168.1.3:4000/02jd/Jacobian_demo/images/fig8_ik.svg">
 <meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:modified_time" content="2026-09-02T06:02:37.720Z">
 <meta property="article:author" content="zodiac">
 <meta property="article:tag" content="C++">
 <meta property="article:tag" content="CUDA">
@@ -81,7 +81,6 @@
   </noscript>
 
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
-<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
@@ -155,22 +154,6 @@
 </div>
 <div class="site-state-wrap animated">
   <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">18</span>
-          <span class="site-state-item-name">日志</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-          <a href="/categories/">
-        <span class="site-state-item-count">5</span>
-        <span class="site-state-item-name">分类</span></a>
-      </div>
-      <div class="site-state-item site-state-tags">
-          <a href="/tags/">
-        <span class="site-state-item-count">34</span>
-        <span class="site-state-item-name">标签</span></a>
-      </div>
   </nav>
 </div>
   <div class="links-of-author animated">
@@ -252,7 +235,7 @@
 <li><strong>工业臂在线 IK</strong>：UR/ABB 示教器的”线性运动”每拍解一次 J⁺（DLS）——你在拖动示教时背后就是这个方程。</li>
 <li><strong>ROS MoveIt</strong>：<code>KDL</code>/<code>TRAC-IK</code> 的数值 IK 全是”雅可比伪逆 + 线搜索”的工业实现；TRAC-IK 并行跑多初值提高成功率。</li>
 <li><strong>视觉伺服</strong>：L3.4 IBVS 的关节速度也是 DLS 反解——同一工具。</li>
-<li><strong>与解析 IK 的取舍</strong>：UR5e 等有解析解（效率高、可重复），但解析解需要手推闭式、只适用特定构型；数值 DLS 通用、天然处理奇异——你 08robot 项目里 IK 用数值解（Jacobian 阻尼最小二乘 + 8 初值多解）正是本 demo 的工程化。</li>
+<li><strong>与解析 IK 的取舍</strong>：UR5e 等有解析解（效率高、可重复），但解析解需要手推闭式、只适用特定构型；数值 DLS 通用、天然处理奇异——你 UR5e 仿真项目里 IK 用数值解（Jacobian 阻尼最小二乘 + 8 初值多解）正是本 demo 的工程化。</li>
 </ul>
 <h2 id="六、自检"><a href="#六、自检" class="headerlink" title="六、自检"></a>六、自检</h2><ul>
 <li>把目标设到工作空间边缘（接近奇异位形），看普通伪逆如何崩、DLS 如何稳住。</li>

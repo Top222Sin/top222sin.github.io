@@ -2,7 +2,142 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l2_ik.html</loc>
+    
+    <lastmod>2026-09-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l3_validation.html</loc>
+    
+    <lastmod>2026-09-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l3_auto_system.html</loc>
+    
+    <lastmod>2026-09-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l2_tcp_deep.html</loc>
+    
+    <lastmod>2026-09-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l2_error_check.html</loc>
+    
+    <lastmod>2026-09-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l1_stereo.html</loc>
+    
+    <lastmod>2026-09-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l1_tcp.html</loc>
+    
+    <lastmod>2026-09-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l1_frames.html</loc>
+    
+    <lastmod>2026-09-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l1_handeye.html</loc>
+    
+    <lastmod>2026-09-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l1_normal.html</loc>
+    
+    <lastmod>2026-09-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/KF_demo/kf_l3_slam.html</loc>
+    
+    <lastmod>2026-09-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/KF_demo/kf_l3_px4.html</loc>
+    
+    <lastmod>2026-09-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l3_ibvs.html</loc>
+    
+    <lastmod>2026-09-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l2_vision.html</loc>
+    
+    <lastmod>2026-09-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://192.168.1.3:4000/02jd/index.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/cali_demo/index.html</loc>
     
     <lastmod>2026-08-23</lastmod>
     
@@ -38,7 +173,16 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/02jd/cali_demo/index.html</loc>
+    <loc>http://192.168.1.3:4000/02jd/control_demo/index.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/pid_demo/index.html</loc>
     
     <lastmod>2026-08-23</lastmod>
     
@@ -57,24 +201,6 @@
   
   <url>
     <loc>http://192.168.1.3:4000/02jd/cuda_demo/index.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/control_demo/index.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/pid_demo/index.html</loc>
     
     <lastmod>2026-08-23</lastmod>
     
@@ -174,123 +300,6 @@
   
   <url>
     <loc>http://192.168.1.3:4000/02jd/pid_demo/pid_l4_smith.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/neon_demo/README.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_demo_review.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l1_examples_final.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l3_asm.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l3_gemm.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l3_microarch.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l3_sve2.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l3_sve_kernels.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l4_audio_dsp.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l4_bf16.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l4_cmsis_dsp.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l4_simd_abstract.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l4_sme2.html</loc>
     
     <lastmod>2026-08-23</lastmod>
     
@@ -479,6 +488,123 @@
   </url>
   
   <url>
+    <loc>http://192.168.1.3:4000/02jd/neon_demo/README.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_demo_review.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l1_examples_final.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l3_asm.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l3_gemm.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l3_microarch.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l3_sve2.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l3_sve_kernels.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l4_audio_dsp.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l4_bf16.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l4_cmsis_dsp.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l4_simd_abstract.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/neon_demo/neon_l4_sme2.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://192.168.1.3:4000/02jd/Least_squares_method_demo/Least_squares_method_demo_review.html</loc>
     
     <lastmod>2026-08-23</lastmod>
@@ -498,15 +624,6 @@
   
   <url>
     <loc>http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l1_gn.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/Least_squares_method_demo/ls_l1_normal.html</loc>
     
     <lastmod>2026-08-23</lastmod>
     
@@ -956,24 +1073,6 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/02jd/KF_demo/kf_l3_px4.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/KF_demo/kf_l3_slam.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://192.168.1.3:4000/02jd/KF_demo/kf_l4_enkf_mhe.html</loc>
     
     <lastmod>2026-08-23</lastmod>
@@ -1082,15 +1181,6 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l2_ik.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l2_manipulability.html</loc>
     
     <lastmod>2026-08-23</lastmod>
@@ -1110,15 +1200,6 @@
   
   <url>
     <loc>http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l2_trajectory.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l2_vision.html</loc>
     
     <lastmod>2026-08-23</lastmod>
     
@@ -1154,24 +1235,6 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/02jd/Jacobian_demo/jac_l3_ibvs.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/cuda_demo/README.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://192.168.1.3:4000/02jd/cuda_demo/cuda_demo_review.html</loc>
     
     <lastmod>2026-08-23</lastmod>
@@ -1182,6 +1245,15 @@
   
   <url>
     <loc>http://192.168.1.3:4000/02jd/cuda_demo/cuda_l1_blas_cudnn.html</loc>
+    
+    <lastmod>2026-08-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://192.168.1.3:4000/02jd/cuda_demo/README.html</loc>
     
     <lastmod>2026-08-23</lastmod>
     
@@ -1649,24 +1721,6 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l1_frames.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l1_handeye.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l1_intrinsics.html</loc>
     
     <lastmod>2026-08-23</lastmod>
@@ -1685,34 +1739,7 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l1_stereo.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l1_tcp.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l2_degeneracy.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l2_error_check.html</loc>
     
     <lastmod>2026-08-23</lastmod>
     
@@ -1748,24 +1775,6 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l2_tcp_deep.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l3_auto_system.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l3_pipeline.html</loc>
     
     <lastmod>2026-08-23</lastmod>
@@ -1776,15 +1785,6 @@
   
   <url>
     <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l3_robust.html</loc>
-    
-    <lastmod>2026-08-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/02jd/cali_demo/cali_l3_validation.html</loc>
     
     <lastmod>2026-08-23</lastmod>
     
@@ -1883,25 +1883,7 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/2026/07/23/cpp-idioms-complete-guide/</loc>
-    
-    <lastmod>2026-07-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://192.168.1.3:4000/00cpp/cpp-idioms-complete-guide.html</loc>
-    
-    <lastmod>2026-07-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/2026/07/23/algorithms-complete-guide/</loc>
     
     <lastmod>2026-07-23</lastmod>
     
@@ -1919,25 +1901,7 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/2026/07/23/design-patterns-modern-cpp/</loc>
-    
-    <lastmod>2026-07-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://192.168.1.3:4000/00cpp/design-patterns-modern-cpp.html</loc>
-    
-    <lastmod>2026-07-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/2026/07/23/data-structures-complete-guide/</loc>
     
     <lastmod>2026-07-23</lastmod>
     
@@ -1955,25 +1919,7 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/2026/07/23/cpp-high-performance-summary/</loc>
-    
-    <lastmod>2026-07-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://192.168.1.3:4000/00cpp/cpp-high-performance-summary.html</loc>
-    
-    <lastmod>2026-07-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/2026/07/23/modern-cpp-tutorial-summary/</loc>
     
     <lastmod>2026-07-23</lastmod>
     
@@ -1991,25 +1937,7 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/2026/07/23/modern-cpp-complete-guide/</loc>
-    
-    <lastmod>2026-07-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://192.168.1.3:4000/00cpp/modern-cpp-complete-guide.html</loc>
-    
-    <lastmod>2026-07-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/2026/07/23/dl-compiler-study-plan/</loc>
     
     <lastmod>2026-07-23</lastmod>
     
@@ -2027,25 +1955,7 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/2026/07/23/cuda-study-plan/</loc>
-    
-    <lastmod>2026-07-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://192.168.1.3:4000/00cpp/cuda-study-plan.html</loc>
-    
-    <lastmod>2026-07-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/2026/07/23/hpc-study-plan/</loc>
     
     <lastmod>2026-07-23</lastmod>
     
@@ -2063,25 +1973,7 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/2026/07/01/network-summary/</loc>
-    
-    <lastmod>2026-07-01</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://192.168.1.3:4000/00cpp/network-summary.html</loc>
-    
-    <lastmod>2026-07-01</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/2026/07/01/os-summary/</loc>
     
     <lastmod>2026-07-01</lastmod>
     
@@ -2099,25 +1991,7 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/2026/07/01/algorithm-summary/</loc>
-    
-    <lastmod>2026-07-01</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://192.168.1.3:4000/00cpp/algorithm-summary.html</loc>
-    
-    <lastmod>2026-07-01</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/2026/07/01/cpp-others-summary/</loc>
     
     <lastmod>2026-07-01</lastmod>
     
@@ -2135,25 +2009,7 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/2026/07/01/cpp-stl-summary/</loc>
-    
-    <lastmod>2026-07-01</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://192.168.1.3:4000/00cpp/cpp-stl-summary.html</loc>
-    
-    <lastmod>2026-07-01</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/2026/07/01/cpp11-features-summary/</loc>
     
     <lastmod>2026-07-01</lastmod>
     
@@ -2171,25 +2027,7 @@
   </url>
   
   <url>
-    <loc>http://192.168.1.3:4000/2026/07/01/cpp-memory-summary/</loc>
-    
-    <lastmod>2026-07-01</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://192.168.1.3:4000/00cpp/cpp-memory-summary.html</loc>
-    
-    <lastmod>2026-07-01</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/2026/07/01/cpp-syntax-summary/</loc>
     
     <lastmod>2026-07-01</lastmod>
     
@@ -2209,285 +2047,12 @@
 
   <url>
     <loc>http://192.168.1.3:4000/</loc>
-    <lastmod>2026-08-23</lastmod>
+    <lastmod>2026-09-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
   
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E9%9D%A2%E8%AF%95/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E7%AE%97%E6%B3%95/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E6%8E%92%E5%BA%8F/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E5%85%AB%E8%82%A1%E6%96%87/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/C/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E9%AB%98%E6%80%A7%E8%83%BD/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E5%AE%9E%E8%B7%B5/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E5%86%85%E5%AD%98/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/LeetCode/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E5%A4%9A%E6%80%81/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E6%83%AF%E7%94%A8%E6%B3%95/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/RAII/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/CRTP/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/STL/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/C-11/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/CUDA/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/GPU/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/GOF/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E6%9E%B6%E6%9E%84/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E9%AB%98%E6%80%A7%E8%83%BD%E8%AE%A1%E7%AE%97/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E7%BC%96%E8%AF%91%E5%99%A8/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/TVM/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/MLIR/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/Triton/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E7%8E%B0%E4%BB%A3C/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/C-17/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/C-20/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/C-23/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
 
-  
-  <url>
-    <loc>http://192.168.1.3:4000/categories/%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/categories/C/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/categories/%E7%AE%97%E6%B3%95/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/categories/%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://192.168.1.3:4000/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
   
 </urlset>

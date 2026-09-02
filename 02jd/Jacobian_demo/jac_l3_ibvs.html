@@ -29,7 +29,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://192.168.1.3:4000/02jd/Jacobian_demo/images/fig15_ibvs.svg">
 <meta property="article:published_time" content="2026-08-20T02:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-23T01:12:39.930Z">
+<meta property="article:modified_time" content="2026-09-02T06:02:31.830Z">
 <meta property="article:author" content="zodiac">
 <meta property="article:tag" content="C++">
 <meta property="article:tag" content="CUDA">
@@ -81,7 +81,6 @@
   </noscript>
 
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
-<link rel="alternate" href="/atom.xml" title="学习笔记" type="application/atom+xml">
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
@@ -155,22 +154,6 @@
 </div>
 <div class="site-state-wrap animated">
   <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">18</span>
-          <span class="site-state-item-name">日志</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-          <a href="/categories/">
-        <span class="site-state-item-count">5</span>
-        <span class="site-state-item-name">分类</span></a>
-      </div>
-      <div class="site-state-item site-state-tags">
-          <a href="/tags/">
-        <span class="site-state-item-count">34</span>
-        <span class="site-state-item-name">标签</span></a>
-      </div>
   </nav>
 </div>
   <div class="links-of-author animated">
@@ -262,7 +245,7 @@
 <li><strong>工业视觉伺服（ViSP 库）</strong>：法国 Inria 的 ViSP 就是 IBVS/PBVS 的标准实现（<code>vpServo</code> 类），大量工业抓取/装配应用。</li>
 <li><strong>手术机器人</strong>：内窥镜持镜臂用 IBVS 自动跟器械——特征就是器械末端在图像里的位置。</li>
 <li><strong>无人机视觉着陆</strong>：AprilTag 特征 → 图像雅可比 → 位置/姿态伺服（PX4 的 precision landing 是类似思想）。</li>
-<li><strong>与 08robot 手眼标定的关系</strong>：IBVS 需要”相机-末端”外参（cali_demo 的手眼标定 AX=XB 就是干这个）——<strong>标定误差直接进 L·J 的精度</strong>，标定是 IBVS 的地基。</li>
+<li><strong>与 UR5e 仿真项目 手眼标定的关系</strong>：IBVS 需要”相机-末端”外参（cali_demo 的手眼标定 AX=XB 就是干这个）——<strong>标定误差直接进 L·J 的精度</strong>，标定是 IBVS 的地基。</li>
 </ul>
 <h2 id="六、自检"><a href="#六、自检" class="headerlink" title="六、自检"></a>六、自检</h2><ul>
 <li>把特征点移到视野边缘（Pc.x 接近 0 的奇异侧），看控制律是否触发奇异检测/限幅——体会”投影分母为零”的退化（注意 Pc.x&lt;0 是相机后方非成像区，控制器拿不到真实特征，不能期待”拉回来”）。</li>
