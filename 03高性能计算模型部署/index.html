@@ -20,15 +20,15 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"top222sin.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.28.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat","show_result":true},"fold":{"enable":false,"height":500},"language":false,"border_radius":4},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
 
-    <meta name="description" content="本栏目内容建设中。 计划收录：PX4 源码、EKF、uORB、MAVSDK。  计划收录 PX4 源码结构与构建体系 uORB 发布订阅与实时性口径 EKF2 状态估计(传感器融合) MAVSDK &#x2F; MAVLink 与地面站联调    本页是占位页(2026-09-14 建立), 目的是让首页入口可访问;文章就位后会替换为正式的目录页。相关笔记见 C++ 与算法。">
+    <meta name="description" content="本栏目内容建设中。 计划收录：推理引擎与后端、算子级优化、编译器与 DSL、服务化运行时、端侧异构、性能工程。  计划收录 推理引擎与多后端：自研推理引擎的分层设计与后端抽象（x86 &#x2F; CUDA &#x2F; 优化 CUDA &#x2F; DSL 生成） 算子级优化：GEMM &#x2F; GEMV &#x2F; Attention 的手写实现与 DSL 生成对照；tiling、流水、归约、向量化 编译器与 DSL：TVM &#x2F; LL">
 <meta property="og:type" content="website">
-<meta property="og:title" content="PX4 无人机">
-<meta property="og:url" content="https://top222sin.github.io/03px4%E6%97%A0%E4%BA%BA%E6%9C%BA/index.html">
+<meta property="og:title" content="高性能计算模型部署专题">
+<meta property="og:url" content="https://top222sin.github.io/03%E9%AB%98%E6%80%A7%E8%83%BD%E8%AE%A1%E7%AE%97%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/index.html">
 <meta property="og:site_name" content="学习笔记">
-<meta property="og:description" content="本栏目内容建设中。 计划收录：PX4 源码、EKF、uORB、MAVSDK。  计划收录 PX4 源码结构与构建体系 uORB 发布订阅与实时性口径 EKF2 状态估计(传感器融合) MAVSDK &#x2F; MAVLink 与地面站联调    本页是占位页(2026-09-14 建立), 目的是让首页入口可访问;文章就位后会替换为正式的目录页。相关笔记见 C++ 与算法。">
+<meta property="og:description" content="本栏目内容建设中。 计划收录：推理引擎与后端、算子级优化、编译器与 DSL、服务化运行时、端侧异构、性能工程。  计划收录 推理引擎与多后端：自研推理引擎的分层设计与后端抽象（x86 &#x2F; CUDA &#x2F; 优化 CUDA &#x2F; DSL 生成） 算子级优化：GEMM &#x2F; GEMV &#x2F; Attention 的手写实现与 DSL 生成对照；tiling、流水、归约、向量化 编译器与 DSL：TVM &#x2F; LL">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2026-09-14T02:23:16.840Z">
-<meta property="article:modified_time" content="2026-09-14T02:23:16.840Z">
+<meta property="article:published_time" content="2026-09-14T07:37:20.630Z">
+<meta property="article:modified_time" content="2026-09-14T07:37:20.630Z">
 <meta property="article:author" content="zodiac">
 <meta property="article:tag" content="C++">
 <meta property="article:tag" content="CUDA">
@@ -39,13 +39,13 @@
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="https://top222sin.github.io/03px4%E6%97%A0%E4%BA%BA%E6%9C%BA/">
+<link rel="canonical" href="https://top222sin.github.io/03%E9%AB%98%E6%80%A7%E8%83%BD%E8%AE%A1%E7%AE%97%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/">
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"https://top222sin.github.io/03px4%E6%97%A0%E4%BA%BA%E6%9C%BA/index.html","path":"03px4无人机/index.html","title":"PX4 无人机"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":true,"permalink":"https://top222sin.github.io/03%E9%AB%98%E6%80%A7%E8%83%BD%E8%AE%A1%E7%AE%97%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/index.html","path":"03高性能计算模型部署/index.html","title":"高性能计算模型部署专题"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>PX4 无人机 | 学习笔记
+<title>高性能计算模型部署专题 | 学习笔记
 </title>
   
 
@@ -182,7 +182,7 @@
     
     <div class="post-block" lang="zh-CN"><header class="post-header">
 
-<h1 class="post-title" itemprop="name headline">PX4 无人机
+<h1 class="post-title" itemprop="name headline">高性能计算模型部署专题
 </h1>
 
 <div class="post-meta-container">
@@ -195,17 +195,19 @@
       
       <div class="post-body">
           <blockquote>
-<p><strong>本栏目内容建设中。</strong> 计划收录：PX4 源码、EKF、uORB、MAVSDK。</p>
+<p><strong>本栏目内容建设中。</strong> 计划收录：推理引擎与后端、算子级优化、编译器与 DSL、服务化运行时、端侧异构、性能工程。</p>
 </blockquote>
 <h2 id="计划收录"><a href="#计划收录" class="headerlink" title="计划收录"></a>计划收录</h2><ul>
-<li>PX4 源码结构与构建体系</li>
-<li>uORB 发布订阅与实时性口径</li>
-<li>EKF2 状态估计(传感器融合)</li>
-<li>MAVSDK / MAVLink 与地面站联调</li>
+<li><strong>推理引擎与多后端</strong>：自研推理引擎的分层设计与后端抽象（x86 / CUDA / 优化 CUDA / DSL 生成）</li>
+<li><strong>算子级优化</strong>：GEMM / GEMV / Attention 的手写实现与 DSL 生成对照；tiling、流水、归约、向量化</li>
+<li><strong>编译器与 DSL</strong>：TVM / LLVM 的分层关系，TileLang / Triton 的定位与适用边界</li>
+<li><strong>服务化与运行时</strong>：ONNX Runtime / TensorRT / vLLM 的部署形态与取舍（静态图、动态批、显存管理）</li>
+<li><strong>端侧与异构</strong>：ARM NEON 手写内核、OpenCL / BLAS、Android 端推理与算力实测</li>
+<li><strong>性能工程</strong>：计算强度与 roofline 建模、ncu / perf 实测归因、量化与精度权衡</li>
 </ul>
 <hr>
 <blockquote>
-<p>本页是<strong>占位页</strong>(2026-09-14 建立), 目的是让首页入口可访问;<br>文章就位后会替换为正式的目录页。相关笔记见 <a href="/00cpp/">C++ 与算法</a>。</p>
+<p>本页是<strong>占位页</strong>(2026-09-14 建立), 目的是让首页入口可访问;<br>文章就位后会替换为正式的目录页。</p>
 </blockquote>
 
       </div>
