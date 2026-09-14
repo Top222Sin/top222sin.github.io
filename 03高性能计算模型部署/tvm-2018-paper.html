@@ -28,7 +28,7 @@
 <meta property="og:description" content="TVM(OSDI 2018)论文精讲: 端到端深度学习编译器 论文: TVM: An Automated End-to-End Optimizing Compiler for Deep Learning, Tianqi Chen et al., OSDI 2018 (arXiv:1802.04799v3)视角: 模型部署 &#x2F; 推理引擎工程师。所有加速比、结构名、图表编号均以原文为准;论文之后的生态">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-09-14T02:00:00.000Z">
-<meta property="article:modified_time" content="2026-09-14T07:54:49.960Z">
+<meta property="article:modified_time" content="2026-09-14T08:04:12.260Z">
 <meta property="article:author" content="zodiac">
 <meta property="article:tag" content="深度学习编译器">
 <meta property="article:tag" content="TVM">
@@ -137,7 +137,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#TVM-OSDI-2018-%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AE%B2-%E7%AB%AF%E5%88%B0%E7%AB%AF%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%BC%96%E8%AF%91%E5%99%A8"><span class="nav-number">1.</span> <span class="nav-text">TVM(OSDI 2018)论文精讲: 端到端深度学习编译器</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E7%BB%93%E8%AE%BA%E5%85%88%E8%A1%8C-30-%E7%A7%92"><span class="nav-number">1.1.</span> <span class="nav-text">0. 结论先行(30 秒)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E8%A6%81%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98-%E4%B8%BA%E4%BB%80%E4%B9%88%E2%80%9D%E6%A1%86%E6%9E%B6-%E7%AE%97%E5%AD%90%E5%BA%93%E2%80%9D%E4%B8%8D%E5%A4%9F%E7%94%A8"><span class="nav-number">1.2.</span> <span class="nav-text">1. 要解决的问题: 为什么”框架 + 算子库”不够用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-TVM-%E7%9A%84%E5%85%B3%E9%94%AE%E5%88%86%E8%A7%A3-%E5%85%88%E7%9C%8B%E9%AA%A8%E6%9E%B6"><span class="nav-number">1.3.</span> <span class="nav-text">2. TVM 的关键分解(先看骨架)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E7%AC%AC%E4%B8%80%E5%B1%82-%E5%9B%BE%E7%BA%A7%E4%BC%98%E5%8C%96-%E7%A1%AC%E4%BB%B6%E6%97%A0%E5%85%B3-%E6%94%B6%E7%9B%8A%E6%9C%80%E5%A4%A7"><span class="nav-number">1.4.</span> <span class="nav-text">3. 第一层: 图级优化(硬件无关,收益最大)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E7%AE%97%E5%AD%90%E8%9E%8D%E5%90%88-%E5%9B%9B%E7%B1%BB%E7%AE%97%E5%AD%90-%E4%B8%89%E6%9D%A1%E8%A7%84%E5%88%99"><span class="nav-number">1.4.1.</span> <span class="nav-text">3.1 算子融合: 四类算子 + 三条规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E6%95%B0%E6%8D%AE%E5%B8%83%E5%B1%80%E5%8F%98%E6%8D%A2%E4%B8%8E%E9%9D%99%E6%80%81%E5%86%85%E5%AD%98%E8%A7%84%E5%88%92"><span class="nav-number">1.4.2.</span> <span class="nav-text">3.2 数据布局变换与静态内存规划</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%AC%AC%E4%BA%8C%E5%B1%82-%E7%AE%97%E5%AD%90%E7%BA%A7-%E2%80%94%E2%80%94-%E2%80%9C%E8%AE%A1%E7%AE%97%E4%B8%8E%E8%B0%83%E5%BA%A6%E5%88%86%E7%A6%BB%E2%80%9D"><span class="nav-number">1.5.</span> <span class="nav-text">4. 第二层: 算子级 —— “计算与调度分离”</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E5%BC%A0%E9%87%8F%E8%A1%A8%E8%BE%BE%E5%BC%8F-%E5%8F%AA%E5%A3%B0%E6%98%8E%E2%80%9D%E7%AE%97%E4%BB%80%E4%B9%88%E2%80%9D"><span class="nav-number">1.5.1.</span> <span class="nav-text">4.1 张量表达式: 只声明”算什么”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-TVM-%E7%9B%B8%E5%AF%B9-Halide-%E6%96%B0%E5%A2%9E%E7%9A%84%E8%B0%83%E5%BA%A6%E5%8E%9F%E8%AF%AD-Figure-6"><span class="nav-number">1.5.2.</span> <span class="nav-text">4.2 TVM 相对 Halide 新增的调度原语(Figure 6)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E7%AC%AC%E4%B8%89%E5%B1%82-%E8%87%AA%E5%8A%A8%E8%B0%83%E4%BC%98-%E2%80%94%E2%80%94-%E7%94%A8-ML-%E6%88%90%E6%9C%AC%E6%A8%A1%E5%9E%8B%E6%90%9C%E8%B0%83%E5%BA%A6"><span class="nav-number">1.6.</span> <span class="nav-text">5. 第三层: 自动调优 —— 用 ML 成本模型搜调度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E4%B8%89%E6%9D%A1%E8%B7%AF%E7%BA%BF-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%89%E2%80%9D%E5%AD%A6%E4%B9%A0%E5%9E%8B%E2%80%9D-Table-1"><span class="nav-number">1.6.1.</span> <span class="nav-text">5.1 三条路线,为什么选”学习型”(Table 1)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E6%A8%A1%E5%9E%8B%E3%80%81%E7%9B%AE%E6%A0%87%E5%87%BD%E6%95%B0%E4%B8%8E%E9%80%9F%E5%BA%A6%E7%BA%A6%E6%9D%9F"><span class="nav-number">1.6.2.</span> <span class="nav-text">5.2 模型、目标函数与速度约束</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E6%88%90%E6%9C%AC%E6%A8%A1%E5%9E%8B-%E2%89%A0-%E5%9F%BA%E5%87%86%E6%B5%8B%E8%AF%95-%E9%83%A8%E7%BD%B2%E4%BA%BA%E8%A7%86%E8%A7%92"><span class="nav-number">1.6.3.</span> <span class="nav-text">5.3 成本模型 ≠ 基准测试(部署人视角)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E8%AE%BA%E6%96%87%E5%AE%9E%E9%AA%8C%E6%95%B0%E6%8D%AE-%E9%80%90%E6%9D%A1%E5%BC%95%E5%8E%9F%E8%A1%A8-%E5%8E%9F%E5%9B%BE"><span class="nav-number">1.7.</span> <span class="nav-text">6. 论文实验数据(逐条引原表 &#x2F; 原图)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E4%B8%8E%E5%90%8E%E7%BB%AD%E7%94%9F%E6%80%81%E7%9A%84%E5%85%B3%E7%B3%BB-%E6%9C%AC%E8%8A%82%E4%B8%BA%E8%AE%BA%E6%96%87%E4%B9%8B%E5%90%8E%E7%9A%84%E6%BC%94%E8%BF%9B-%E6%A0%87%E6%B3%A8%E4%B8%BA%E2%80%9D%E8%A1%8C%E4%B8%9A%E5%85%B1%E8%AF%86%E2%80%9D"><span class="nav-number">1.8.</span> <span class="nav-text">7. 与后续生态的关系(本节为论文之后的演进,标注为”行业共识”)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-1-TVM-%E5%86%85%E9%83%A8%E7%9A%84-IR-%E6%BC%94%E8%BF%9B"><span class="nav-number">1.8.1.</span> <span class="nav-text">7.1 TVM 内部的 IR 演进</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-%E4%B8%8E-Triton-TileLang-%E7%9A%84%E5%AE%9A%E4%BD%8D%E5%B7%AE%E5%BC%82"><span class="nav-number">1.8.2.</span> <span class="nav-text">7.2 与 Triton &#x2F; TileLang 的定位差异</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E9%80%9F%E6%9F%A5%E5%8D%A1%E4%B8%8E%E8%AE%B0%E5%BF%86%E5%8F%A3%E8%AF%80"><span class="nav-number">1.9.</span> <span class="nav-text">8. 速查卡与记忆口诀</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E4%B8%93%E9%A2%98%E5%85%B6%E5%AE%83%E6%96%87%E7%AB%A0"><span class="nav-number">1.10.</span> <span class="nav-text">本专题其它文章</span></a></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#TVM-OSDI-2018-%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AE%B2-%E7%AB%AF%E5%88%B0%E7%AB%AF%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%BC%96%E8%AF%91%E5%99%A8"><span class="nav-number">1.</span> <span class="nav-text">TVM(OSDI 2018)论文精讲: 端到端深度学习编译器</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E7%BB%93%E8%AE%BA%E5%85%88%E8%A1%8C-30-%E7%A7%92"><span class="nav-number">1.1.</span> <span class="nav-text">0. 结论先行(30 秒)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E8%A6%81%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98-%E4%B8%BA%E4%BB%80%E4%B9%88%E2%80%9D%E6%A1%86%E6%9E%B6-%E7%AE%97%E5%AD%90%E5%BA%93%E2%80%9D%E4%B8%8D%E5%A4%9F%E7%94%A8"><span class="nav-number">1.2.</span> <span class="nav-text">1. 要解决的问题: 为什么”框架 + 算子库”不够用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-TVM-%E7%9A%84%E5%85%B3%E9%94%AE%E5%88%86%E8%A7%A3-%E5%85%88%E7%9C%8B%E9%AA%A8%E6%9E%B6"><span class="nav-number">1.3.</span> <span class="nav-text">2. TVM 的关键分解(先看骨架)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E7%AC%AC%E4%B8%80%E5%B1%82-%E5%9B%BE%E7%BA%A7%E4%BC%98%E5%8C%96-%E7%A1%AC%E4%BB%B6%E6%97%A0%E5%85%B3-%E6%94%B6%E7%9B%8A%E6%9C%80%E5%A4%A7"><span class="nav-number">1.4.</span> <span class="nav-text">3. 第一层: 图级优化(硬件无关,收益最大)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E7%AE%97%E5%AD%90%E8%9E%8D%E5%90%88-%E5%9B%9B%E7%B1%BB%E7%AE%97%E5%AD%90-%E4%B8%89%E6%9D%A1%E8%A7%84%E5%88%99"><span class="nav-number">1.4.1.</span> <span class="nav-text">3.1 算子融合: 四类算子 + 三条规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E6%95%B0%E6%8D%AE%E5%B8%83%E5%B1%80%E5%8F%98%E6%8D%A2%E4%B8%8E%E9%9D%99%E6%80%81%E5%86%85%E5%AD%98%E8%A7%84%E5%88%92"><span class="nav-number">1.4.2.</span> <span class="nav-text">3.2 数据布局变换与静态内存规划</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%AC%AC%E4%BA%8C%E5%B1%82-%E7%AE%97%E5%AD%90%E7%BA%A7-%E2%80%94%E2%80%94-%E2%80%9C%E8%AE%A1%E7%AE%97%E4%B8%8E%E8%B0%83%E5%BA%A6%E5%88%86%E7%A6%BB%E2%80%9D"><span class="nav-number">1.5.</span> <span class="nav-text">4. 第二层: 算子级 —— “计算与调度分离”</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E5%BC%A0%E9%87%8F%E8%A1%A8%E8%BE%BE%E5%BC%8F-%E5%8F%AA%E5%A3%B0%E6%98%8E%E2%80%9D%E7%AE%97%E4%BB%80%E4%B9%88%E2%80%9D"><span class="nav-number">1.5.1.</span> <span class="nav-text">4.1 张量表达式: 只声明”算什么”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-TVM-%E7%9B%B8%E5%AF%B9-Halide-%E6%96%B0%E5%A2%9E%E7%9A%84%E8%B0%83%E5%BA%A6%E5%8E%9F%E8%AF%AD%EF%BC%88TVM-%E8%AE%BA%E6%96%87%E5%9B%BE-6%EF%BC%89"><span class="nav-number">1.5.2.</span> <span class="nav-text">4.2 TVM 相对 Halide 新增的调度原语（TVM 论文图 6）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E7%AC%AC%E4%B8%89%E5%B1%82-%E8%87%AA%E5%8A%A8%E8%B0%83%E4%BC%98-%E2%80%94%E2%80%94-%E7%94%A8-ML-%E6%88%90%E6%9C%AC%E6%A8%A1%E5%9E%8B%E6%90%9C%E8%B0%83%E5%BA%A6"><span class="nav-number">1.6.</span> <span class="nav-text">5. 第三层: 自动调优 —— 用 ML 成本模型搜调度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E4%B8%89%E6%9D%A1%E8%B7%AF%E7%BA%BF-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%89%E2%80%9D%E5%AD%A6%E4%B9%A0%E5%9E%8B%E2%80%9D%EF%BC%88TVM-%E8%AE%BA%E6%96%87%E8%A1%A8-1%EF%BC%89"><span class="nav-number">1.6.1.</span> <span class="nav-text">5.1 三条路线,为什么选”学习型”（TVM 论文表 1）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E6%A8%A1%E5%9E%8B%E3%80%81%E7%9B%AE%E6%A0%87%E5%87%BD%E6%95%B0%E4%B8%8E%E9%80%9F%E5%BA%A6%E7%BA%A6%E6%9D%9F"><span class="nav-number">1.6.2.</span> <span class="nav-text">5.2 模型、目标函数与速度约束</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E6%88%90%E6%9C%AC%E6%A8%A1%E5%9E%8B-%E2%89%A0-%E5%9F%BA%E5%87%86%E6%B5%8B%E8%AF%95-%E9%83%A8%E7%BD%B2%E4%BA%BA%E8%A7%86%E8%A7%92"><span class="nav-number">1.6.3.</span> <span class="nav-text">5.3 成本模型 ≠ 基准测试(部署人视角)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E8%AE%BA%E6%96%87%E5%AE%9E%E9%AA%8C%E6%95%B0%E6%8D%AE-%E9%80%90%E6%9D%A1%E5%BC%95%E5%8E%9F%E8%A1%A8-%E5%8E%9F%E5%9B%BE"><span class="nav-number">1.7.</span> <span class="nav-text">6. 论文实验数据(逐条引原表 &#x2F; 原图)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E4%B8%8E%E5%90%8E%E7%BB%AD%E7%94%9F%E6%80%81%E7%9A%84%E5%85%B3%E7%B3%BB-%E6%9C%AC%E8%8A%82%E4%B8%BA%E8%AE%BA%E6%96%87%E4%B9%8B%E5%90%8E%E7%9A%84%E6%BC%94%E8%BF%9B-%E6%A0%87%E6%B3%A8%E4%B8%BA%E2%80%9D%E8%A1%8C%E4%B8%9A%E5%85%B1%E8%AF%86%E2%80%9D"><span class="nav-number">1.8.</span> <span class="nav-text">7. 与后续生态的关系(本节为论文之后的演进,标注为”行业共识”)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-1-TVM-%E5%86%85%E9%83%A8%E7%9A%84-IR-%E6%BC%94%E8%BF%9B"><span class="nav-number">1.8.1.</span> <span class="nav-text">7.1 TVM 内部的 IR 演进</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-%E4%B8%8E-Triton-TileLang-%E7%9A%84%E5%AE%9A%E4%BD%8D%E5%B7%AE%E5%BC%82"><span class="nav-number">1.8.2.</span> <span class="nav-text">7.2 与 Triton &#x2F; TileLang 的定位差异</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E9%80%9F%E6%9F%A5%E5%8D%A1%E4%B8%8E%E8%AE%B0%E5%BF%86%E5%8F%A3%E8%AF%80"><span class="nav-number">1.9.</span> <span class="nav-text">8. 速查卡与记忆口诀</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E4%B8%93%E9%A2%98%E5%85%B6%E5%AE%83%E6%96%87%E7%AB%A0"><span class="nav-number">1.10.</span> <span class="nav-text">本专题其它文章</span></a></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -199,36 +199,36 @@
 <h2 id="0-结论先行-30-秒"><a href="#0-结论先行-30-秒" class="headerlink" title="0. 结论先行(30 秒)"></a>0. 结论先行(30 秒)</h2><ul>
 <li><strong>TVM 的骨架是”两级优化 + 一个自动调优器”</strong>: 图级(算子融合 / 布局变换 / 静态内存规划)+ 算子级(张量表达式 + 调度原语),再叠加 <strong>ML 成本模型驱动的调度搜索器</strong>。</li>
 <li><strong>核心抽象是”计算与调度分离”</strong>(继承 Halide),TVM 的增量是<strong>把硬件 intrinsic 也从调度里解耦</strong>(tensorization),于是同一份算子描述能落到 CPU / GPU / FPGA 加速器。</li>
-<li><strong>关键数字(全部来自原文)</strong>: 端到端相对既有框架(含手工优化库)加速 <strong>1.2×–3.8×</strong>(§1);算子融合 <strong>1.2×–2×</strong>(Figure 4);成本模型单次预测 <strong>0.67 ms</strong>(§5.2);FPGA 加速器上被卸载的卷积层 <strong>40×</strong>(Figure 21);延迟隐藏让峰值计算利用率 <strong>70% → 88%</strong>(§4.4)。</li>
+<li><strong>关键数字(全部来自原文)</strong>: 端到端相对既有框架(含手工优化库)加速 <strong>1.2×–3.8×</strong>（TVM 论文）;算子融合 <strong>1.2×–2×</strong>（TVM 论文图 4）;成本模型单次预测 <strong>0.67 ms</strong>（TVM 论文）;FPGA 加速器上被卸载的卷积层 <strong>40×</strong>（TVM 论文图 21）;延迟隐藏让峰值计算利用率 **70% → 88%**（TVM 论文）。</li>
 <li><strong>对部署人的意义</strong>: 当推理框架里没有目标算子的优化实现时,DSL + 代码生成是”止损”手段;而”成本模型”和”基准测试”是两种不同的东西 —— 前者用来<strong>排序候选</strong>,后者用来<strong>定真值</strong>。</li>
 </ul>
 <hr>
-<h2 id="1-要解决的问题-为什么”框架-算子库”不够用"><a href="#1-要解决的问题-为什么”框架-算子库”不够用" class="headerlink" title="1. 要解决的问题: 为什么”框架 + 算子库”不够用"></a>1. 要解决的问题: 为什么”框架 + 算子库”不够用</h2><p>论文开篇把矛盾拆成三点(§1 Introduction):</p>
+<h2 id="1-要解决的问题-为什么”框架-算子库”不够用"><a href="#1-要解决的问题-为什么”框架-算子库”不够用" class="headerlink" title="1. 要解决的问题: 为什么”框架 + 算子库”不够用"></a>1. 要解决的问题: 为什么”框架 + 算子库”不够用</h2><p>论文开篇把矛盾拆成三点（TVM 论文）:</p>
 <p><strong>1) 图级优化”看不见”硬件,算子库”只认少数后端。</strong> TensorFlow / MXNet / Caffe / PyTorch 靠计算图 IR 做自动微分、内存管理等优化,但图级优化<strong>太高层,处理不了后端相关的算子级变换</strong>;于是把目标相关优化甩给厂商算子库(cuDNN / cuBLAS / MKL)。这些库需要大量人工调优,<strong>特化、不透明、难以跨硬件移植</strong>。</p>
 <p><strong>2) 图级与算子级之间存在一个”二选一”陷阱。</strong> 框架做图优化常会<strong>产生新算子</strong>(如融合后的 conv+bn+relu),此时只能二选一: (a) 放弃产生新算子的图优化 —— 因为库里没有实现;(b) 用未优化的 fallback 实现这些新算子 —— 收益被吃掉。论文原话点得很直白: 图级优化**”其效果上限就是算子库提供了什么”<strong>;而算子种类 × 布局 × 数据类型 × 加速器 intrinsic 的组合是</strong>组合爆炸**的,靠手工写 kernel 不可持续。</p>
-<p><strong>3) 硬件分歧 + 巨大搜索空间。</strong> CPU 的存储层级由硬件隐式管理(SMT / 预取),GPU 靠 warp 快速切换,TPU 类加速器则偏好<strong>更精简的控制、把调度复杂度交给编译器栈</strong>,甚至要求编译器<strong>显式插入流水依赖同步</strong>来隐藏访存延迟(Figure 1)。同时,访存模式 × 线程组织 × 新 primitive 的组合让配置空间大到”黑盒自动调优无法承受”,而给每种硬件手写一个精确 cost model 同样不现实。</p>
+<p><strong>3) 硬件分歧 + 巨大搜索空间。</strong> CPU 的存储层级由硬件隐式管理(SMT / 预取),GPU 靠 warp 快速切换,TPU 类加速器则偏好<strong>更精简的控制、把调度复杂度交给编译器栈</strong>,甚至要求编译器<strong>显式插入流水依赖同步</strong>来隐藏访存延迟（TVM 论文图 1）。同时,访存模式 × 线程组织 × 新 primitive 的组合让配置空间大到”黑盒自动调优无法承受”,而给每种硬件手写一个精确 cost model 同样不现实。</p>
 <blockquote>
 <p><strong>为什么这对做模型部署的人重要</strong>: 你遇到的”某算子没有优化实现,只能退回 CPU / naive 版本”不是工程偷懒,而是第 2 条的结构性后果。理解它,才能判断<strong>什么时候该升级推理引擎、什么时候该上 DSL 生成 kernel</strong>。</p>
 </blockquote>
 <hr>
-<h2 id="2-TVM-的关键分解-先看骨架"><a href="#2-TVM-的关键分解-先看骨架" class="headerlink" title="2. TVM 的关键分解(先看骨架)"></a>2. TVM 的关键分解(先看骨架)</h2><p>论文用 Figure 2 给出系统总览,可以归纳成<strong>三个阶段、两个层级</strong>:</p>
+<h2 id="2-TVM-的关键分解-先看骨架"><a href="#2-TVM-的关键分解-先看骨架" class="headerlink" title="2. TVM 的关键分解(先看骨架)"></a>2. TVM 的关键分解(先看骨架)</h2><p>论文用（TVM 论文图 2） 给出系统总览,可以归纳成<strong>三个阶段、两个层级</strong>:</p>
 <svg viewBox="0 0 780 430" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" font-size="13">
-  <defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#555"></path></marker></defs>
-  <rect x="150" y="12" width="480" height="34" rx="6" fill="#eef4fb" stroke="#4a7fb5"></rect><text x="390" y="34" text-anchor="middle" fill="#1a3b5c">高层框架 / 交换格式: TensorFlow, MXNet, PyTorch, Keras, ONNX, CoreML</text>
-  <line x1="390" y1="46" x2="390" y2="66" stroke="#555" marker-end="url(#ar)"></line>
-  <rect x="150" y="66" width="480" height="34" rx="6" fill="#f7f7f7" stroke="#888"></rect><text x="390" y="88" text-anchor="middle">计算图 (Computational Graph) — 节点是算子, 边是数据依赖</text>
-  <line x1="390" y1="100" x2="390" y2="120" stroke="#555" marker-end="url(#ar)"></line>
-  <rect x="150" y="120" width="480" height="56" rx="6" fill="#eef7ee" stroke="#5a9a5a"></rect><text x="390" y="141" text-anchor="middle" font-weight="bold" fill="#245424">§3 图级重写 (High Level Graph Rewriting)</text><text x="390" y="162" text-anchor="middle">算子融合 · 布局变换 · 静态内存规划 · 常量折叠</text>
-  <line x1="390" y1="176" x2="390" y2="196" stroke="#555" marker-end="url(#ar)"></line><text x="404" y="192" fill="#5a9a5a">优化后的计算图</text>
-  <rect x="60" y="196" width="660" height="86" rx="6" fill="#fdf6e8" stroke="#c9962f"></rect><text x="390" y="217" text-anchor="middle" font-weight="bold" fill="#7a5a10">§4 算子级优化与代码生成 (Operator-level)</text>
-  <rect x="80" y="228" width="290" height="42" rx="4" fill="#fff" stroke="#c9962f"></rect><text x="225" y="247" text-anchor="middle">声明式张量表达式 (Tensor Expr)</text><text x="225" y="264" text-anchor="middle" font-size="11">只写"算什么", 不写"怎么循环"</text>
-  <rect x="410" y="228" width="290" height="42" rx="4" fill="#fff" stroke="#c9962f"></rect><text x="555" y="247" text-anchor="middle">硬件感知优化原语 (Schedule)</text><text x="555" y="264" text-anchor="middle" font-size="11">tile / bind / tensorize / vthread</text>
-  <line x1="390" y1="282" x2="390" y2="302" stroke="#555" marker-end="url(#ar)"></line><text x="404" y="298" fill="#7a5a10">优化后的低层循环程序</text>
-  <line x1="595" y1="302" x2="595" y2="250" stroke="#7a5ab5" stroke-dasharray="4 3" marker-end="url(#ar)"></line><text x="600" y="228" font-size="11" fill="#7a5ab5">反馈</text>
-  <rect x="470" y="302" width="250" height="52" rx="6" fill="#f2eefb" stroke="#7a5ab5"></rect><text x="595" y="322" text-anchor="middle" font-weight="bold" fill="#3f2a6b">§5 ML 自动优化器</text><text x="595" y="341" text-anchor="middle" font-size="11">成本模型预测 → 排序候选 → 实测回灌</text>
-  <rect x="60" y="302" width="380" height="52" rx="6" fill="#eef4fb" stroke="#4a7fb5"></rect><text x="250" y="322" text-anchor="middle">代码生成后端</text><text x="250" y="341" text-anchor="middle" font-size="12">加速器后端 · LLVM IR · CUDA / Metal / OpenCL</text>
-  <line x1="250" y1="354" x2="250" y2="378" stroke="#555" marker-end="url(#ar)"></line>
-  <rect x="150" y="378" width="480" height="34" rx="6" fill="#e8e8e8" stroke="#666"></rect><text x="390" y="400" text-anchor="middle" font-weight="bold">可部署模块 (Deployable Module)</text>
+ <defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#555"></path></marker></defs>
+ <rect x="150" y="12" width="480" height="34" rx="6" fill="#eef4fb" stroke="#4a7fb5"></rect><text x="390" y="34" text-anchor="middle" fill="#1a3b5c">高层框架 / 交换格式: TensorFlow, MXNet, PyTorch, Keras, ONNX, CoreML</text>
+ <line x1="390" y1="46" x2="390" y2="66" stroke="#555" marker-end="url(#ar)"></line>
+ <rect x="150" y="66" width="480" height="34" rx="6" fill="#f7f7f7" stroke="#888"></rect><text x="390" y="88" text-anchor="middle">计算图 (Computational Graph) — 节点是算子, 边是数据依赖</text>
+ <line x1="390" y1="100" x2="390" y2="120" stroke="#555" marker-end="url(#ar)"></line>
+ <rect x="150" y="120" width="480" height="56" rx="6" fill="#eef7ee" stroke="#5a9a5a"></rect><text x="390" y="141" text-anchor="middle" font-weight="bold" fill="#245424">TVM 论文：图级重写 (High Level Graph Rewriting)</text><text x="390" y="162" text-anchor="middle">算子融合 · 布局变换 · 静态内存规划 · 常量折叠</text>
+ <line x1="390" y1="176" x2="390" y2="196" stroke="#555" marker-end="url(#ar)"></line><text x="404" y="192" fill="#5a9a5a">优化后的计算图</text>
+ <rect x="60" y="196" width="660" height="86" rx="6" fill="#fdf6e8" stroke="#c9962f"></rect><text x="390" y="217" text-anchor="middle" font-weight="bold" fill="#7a5a10">TVM 论文：算子级优化与代码生成 (Operator-level)</text>
+ <rect x="80" y="228" width="290" height="42" rx="4" fill="#fff" stroke="#c9962f"></rect><text x="225" y="247" text-anchor="middle">声明式张量表达式 (Tensor Expr)</text><text x="225" y="264" text-anchor="middle" font-size="11">只写"算什么", 不写"怎么循环"</text>
+ <rect x="410" y="228" width="290" height="42" rx="4" fill="#fff" stroke="#c9962f"></rect><text x="555" y="247" text-anchor="middle">硬件感知优化原语 (Schedule)</text><text x="555" y="264" text-anchor="middle" font-size="11">tile / bind / tensorize / vthread</text>
+ <line x1="390" y1="282" x2="390" y2="302" stroke="#555" marker-end="url(#ar)"></line><text x="404" y="298" fill="#7a5a10">优化后的低层循环程序</text>
+ <line x1="595" y1="302" x2="595" y2="250" stroke="#7a5ab5" stroke-dasharray="4 3" marker-end="url(#ar)"></line><text x="600" y="228" font-size="11" fill="#7a5ab5">反馈</text>
+ <rect x="470" y="302" width="250" height="52" rx="6" fill="#f2eefb" stroke="#7a5ab5"></rect><text x="595" y="322" text-anchor="middle" font-weight="bold" fill="#3f2a6b">TVM 论文：ML 自动优化器</text><text x="595" y="341" text-anchor="middle" font-size="11">成本模型预测 → 排序候选 → 实测回灌</text>
+ <rect x="60" y="302" width="380" height="52" rx="6" fill="#eef4fb" stroke="#4a7fb5"></rect><text x="250" y="322" text-anchor="middle">代码生成后端</text><text x="250" y="341" text-anchor="middle" font-size="12">加速器后端 · LLVM IR · CUDA / Metal / OpenCL</text>
+ <line x1="250" y1="354" x2="250" y2="378" stroke="#555" marker-end="url(#ar)"></line>
+ <rect x="150" y="378" width="480" height="34" rx="6" fill="#e8e8e8" stroke="#666"></rect><text x="390" y="400" text-anchor="middle" font-weight="bold">可部署模块 (Deployable Module)</text>
 </svg>
 
 <table>
@@ -244,56 +244,56 @@
 <td><strong>图级</strong></td>
 <td>整个计算图的结构(融合、布局、内存)</td>
 <td>基本无关,收益最大</td>
-<td>§3</td>
+<td>（TVM 论文）</td>
 </tr>
 <tr>
 <td><strong>算子级</strong></td>
 <td>单个张量算子的循环实现</td>
 <td>强相关,决定能否追上手写库</td>
-<td>§4</td>
+<td>（TVM 论文）</td>
 </tr>
 <tr>
 <td><strong>搜索层</strong></td>
 <td>从海量合法实现里挑最优</td>
 <td>与硬件绑定,但无需人为建模</td>
-<td>§5</td>
+<td>（TVM 论文）</td>
 </tr>
 </tbody></table>
-<p>论文的贡献列表正是这三块: 张量表达式 + 新的调度原语、ML 驱动的自动优化框架、以及把它们与图级重写串起来的端到端栈(§1 贡献段)。</p>
+<p>论文的贡献列表正是这三块: 张量表达式 + 新的调度原语、ML 驱动的自动优化框架、以及把它们与图级重写串起来的端到端栈（TVM 论文）。</p>
 <hr>
-<h2 id="3-第一层-图级优化-硬件无关-收益最大"><a href="#3-第一层-图级优化-硬件无关-收益最大" class="headerlink" title="3. 第一层: 图级优化(硬件无关,收益最大)"></a>3. 第一层: 图级优化(硬件无关,收益最大)</h2><h3 id="3-1-算子融合-四类算子-三条规则"><a href="#3-1-算子融合-四类算子-三条规则" class="headerlink" title="3.1 算子融合: 四类算子 + 三条规则"></a>3.1 算子融合: 四类算子 + 三条规则</h3><p>论文把图上的算子分为四类(§3): <strong>injective</strong>(一对一映射,如 <code>add</code>)、<strong>reduction</strong>(归约,如 <code>sum</code>)、<strong>complex-out-fusable</strong>(可把逐元素映射融到其输出上,如 <code>conv2d</code>)、<strong>opaque</strong>(不可融合,如 <code>sort</code>)。对应的通用融合规则:</p>
+<h2 id="3-第一层-图级优化-硬件无关-收益最大"><a href="#3-第一层-图级优化-硬件无关-收益最大" class="headerlink" title="3. 第一层: 图级优化(硬件无关,收益最大)"></a>3. 第一层: 图级优化(硬件无关,收益最大)</h2><h3 id="3-1-算子融合-四类算子-三条规则"><a href="#3-1-算子融合-四类算子-三条规则" class="headerlink" title="3.1 算子融合: 四类算子 + 三条规则"></a>3.1 算子融合: 四类算子 + 三条规则</h3><p>论文把图上的算子分为四类（TVM 论文）: <strong>injective</strong>(一对一映射,如 <code>add</code>)、<strong>reduction</strong>(归约,如 <code>sum</code>)、<strong>complex-out-fusable</strong>(可把逐元素映射融到其输出上,如 <code>conv2d</code>)、<strong>opaque</strong>(不可融合,如 <code>sort</code>)。对应的通用融合规则:</p>
 <ol>
 <li>多个 injective 算子可以融合成另一个 injective 算子;</li>
 <li>reduction 算子可以和它的<strong>输入 injective</strong> 融合(如 <code>scale</code> + <code>sum</code>);</li>
 <li><code>conv2d</code> 这类 complex-out-fusable 可以把<strong>输出端的逐元素算子</strong>融进自己。</li>
 </ol>
-<p><strong>收益(Figure 4,NVIDIA Titan X)</strong>: 融合后算子相比未融合版本带来 <strong>1.2×–2× 的加速</strong>,原因是减少访存。测试负载: <code>conv+bn+relu</code>(128×28×28, 1×1×128×256)、<code>depthwise-conv+bn+relu</code>(512×14×14, 3×3×512)、<code>rnn cell</code> / <code>lstm cell</code>(hidden=128)。这套”四类 + 三规则”的价值在于它是<strong>可执行的判据</strong> —— 评估一个推理引擎的融合能力时,可以直接问它覆盖了哪些类别与规则组合。</p>
-<h3 id="3-2-数据布局变换与静态内存规划"><a href="#3-2-数据布局变换与静态内存规划" class="headerlink" title="3.2 数据布局变换与静态内存规划"></a>3.2 数据布局变换与静态内存规划</h3><p><strong>布局变换</strong>: 先为每个算子指定它在当前内存层级约束下的<strong>偏好布局</strong>,再在”生产者偏好 ≠ 消费者偏好”的边界上<strong>插入布局转换节点</strong>(§3)。典型例子是某类 DL 加速器原生做 4×4 矩阵操作,数据就要被切成 4×4 小块以获得访问局部性 —— 常见布局选择只是行主序 / 列主序,但真实部署里比这复杂得多。</p>
+<p><strong>收益（TVM 论文图 4）</strong>: 融合后算子相比未融合版本带来 <strong>1.2×–2× 的加速</strong>,原因是减少访存。测试负载: <code>conv+bn+relu</code>(128×28×28, 1×1×128×256)、<code>depthwise-conv+bn+relu</code>(512×14×14, 3×3×512)、<code>rnn cell</code> / <code>lstm cell</code>(hidden=128)。这套”四类 + 三规则”的价值在于它是<strong>可执行的判据</strong> —— 评估一个推理引擎的融合能力时,可以直接问它覆盖了哪些类别与规则组合。</p>
+<h3 id="3-2-数据布局变换与静态内存规划"><a href="#3-2-数据布局变换与静态内存规划" class="headerlink" title="3.2 数据布局变换与静态内存规划"></a>3.2 数据布局变换与静态内存规划</h3><p><strong>布局变换</strong>: 先为每个算子指定它在当前内存层级约束下的<strong>偏好布局</strong>,再在”生产者偏好 ≠ 消费者偏好”的边界上<strong>插入布局转换节点</strong>（TVM 论文）。典型例子是某类 DL 加速器原生做 4×4 矩阵操作,数据就要被切成 4×4 小块以获得访问局部性 —— 常见布局选择只是行主序 / 列主序,但真实部署里比这复杂得多。</p>
 <p><strong>静态内存规划</strong>: 该 pass 预先为每个中间张量分配内存,配合图级已知的固定输入形状(论文明确指出要利用”常见 DL 负载的形状特异性”)来压降峰值占用。</p>
 <blockquote>
 <p><strong>为什么这对部署人重要</strong>: 论文有一句话值得记住 —— 图级优化**”只和算子库提供的东西一样有效”<strong>。所以图优化收益大、硬件无关,是</strong>优先要做的**;算子级收益依赖后端,是<strong>必须能做的</strong>;而布局变换虽是”图级”手段,却直接决定访存效率 —— 这与端侧部署”先解决数据排布、再谈算术”的经验一致。</p>
 </blockquote>
 <hr>
-<h2 id="4-第二层-算子级-——-“计算与调度分离”"><a href="#4-第二层-算子级-——-“计算与调度分离”" class="headerlink" title="4. 第二层: 算子级 —— “计算与调度分离”"></a>4. 第二层: 算子级 —— “计算与调度分离”</h2><h3 id="4-1-张量表达式-只声明”算什么”"><a href="#4-1-张量表达式-只声明”算什么”" class="headerlink" title="4.1 张量表达式: 只声明”算什么”"></a>4.1 张量表达式: 只声明”算什么”</h3><p>TVM 用<strong>张量表达式语言</strong>描述算子。与计算图不同,这里每个算子的实现<strong>不再是不透明的</strong>: 它被写成”输出张量的形状 + 每个元素的索引公式”(§4.1)。论文给的转置矩阵乘例子:</p>
+<h2 id="4-第二层-算子级-——-“计算与调度分离”"><a href="#4-第二层-算子级-——-“计算与调度分离”" class="headerlink" title="4. 第二层: 算子级 —— “计算与调度分离”"></a>4. 第二层: 算子级 —— “计算与调度分离”</h2><h3 id="4-1-张量表达式-只声明”算什么”"><a href="#4-1-张量表达式-只声明”算什么”" class="headerlink" title="4.1 张量表达式: 只声明”算什么”"></a>4.1 张量表达式: 只声明”算什么”</h3><p>TVM 用<strong>张量表达式语言</strong>描述算子。与计算图不同,这里每个算子的实现<strong>不再是不透明的</strong>: 它被写成”输出张量的形状 + 每个元素的索引公式”（TVM 论文）。论文给的转置矩阵乘例子:</p>
 <figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">m, n, h = t.var(<span class="string">'m'</span>), t.var(<span class="string">'n'</span>), t.var(<span class="string">'h'</span>)</span><br><span class="line">A = t.placeholder((m, h), name=<span class="string">'A'</span>)</span><br><span class="line">B = t.placeholder((n, h), name=<span class="string">'B'</span>)</span><br><span class="line">k = t.reduce_axis((<span class="number">0</span>, h), name=<span class="string">'k'</span>)</span><br><span class="line">C = t.compute((m, n), <span class="keyword">lambda</span> y, x: t.<span class="built_in">sum</span>(A[k, y] * B[k, x], axis=k))</span><br></pre></td></tr></tbody></table></figure>
 
-<p>这段描述<strong>不含循环结构、不含线程组织、不含执行细节</strong>,只声明”算什么” —— 这正是 Halide 的 compute/schedule 分离思想(§4.1)。一个<strong>调度(schedule)</strong> = 从张量表达式到低层代码的具体映射,通过**增量施加保持语义等价的变换(调度原语)**来构造。Figure 5 用加速器上的矩阵乘举例: 同一份计算经不同调度步骤后变成完全不同的低层代码(先 tiling,再把中间结果缓存到加速器专用 buffer,最后用 <code>tensorize</code> 映射到 8×8 硬件矩阵指令)。</p>
+<p>这段描述<strong>不含循环结构、不含线程组织、不含执行细节</strong>,只声明”算什么” —— 这正是 Halide 的 compute/schedule 分离思想（TVM 论文）。一个<strong>调度(schedule)</strong> = 从张量表达式到低层代码的具体映射,通过**增量施加保持语义等价的变换(调度原语)**来构造。（TVM 论文图 5） 用加速器上的矩阵乘举例: 同一份计算经不同调度步骤后变成完全不同的低层代码(先 tiling,再把中间结果缓存到加速器专用 buffer,最后用 <code>tensorize</code> 映射到 8×8 硬件矩阵指令)。</p>
 <svg viewBox="0 0 780 290" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" font-size="13">
-  <defs><marker id="ar2" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#555"></path></marker></defs>
-  <rect x="20" y="100" width="200" height="86" rx="6" fill="#eef4fb" stroke="#4a7fb5"></rect><text x="120" y="124" text-anchor="middle" font-weight="bold" fill="#1a3b5c">计算 (Compute)</text><text x="120" y="146" text-anchor="middle" font-size="12">C[y][x] = Σ_k</text><text x="120" y="164" text-anchor="middle" font-size="12">A[k][y] * B[k][x]</text><text x="120" y="180" text-anchor="middle" font-size="11" fill="#666">唯一, 与硬件无关</text>
-  <line x1="220" y1="143" x2="286" y2="143" stroke="#555" marker-end="url(#ar2)"></line>
-  <rect x="286" y="66" width="200" height="156" rx="6" fill="#fdf6e8" stroke="#c9962f"></rect><text x="386" y="90" text-anchor="middle" font-weight="bold" fill="#7a5a10">调度 (Schedule)</text><text x="386" y="114" text-anchor="middle" font-size="12">tile(y, x, k, 8, 8, 8)</text><text x="386" y="134" text-anchor="middle" font-size="12">reorder / unroll</text><text x="386" y="154" text-anchor="middle" font-size="12">cache_write / cache_read</text><text x="386" y="174" text-anchor="middle" font-size="12">bind(thread / vthread)</text><text x="386" y="194" text-anchor="middle" font-size="12">tensorize(8×8 硬件指令)</text><text x="386" y="214" text-anchor="middle" font-size="11" fill="#666">组合爆炸 → 需要搜索器</text>
-  <line x1="486" y1="88" x2="565" y2="58" stroke="#555" marker-end="url(#ar2)"></line>
-  <line x1="486" y1="143" x2="565" y2="143" stroke="#555" marker-end="url(#ar2)"></line>
-  <line x1="486" y1="200" x2="565" y2="232" stroke="#555" marker-end="url(#ar2)"></line>
-  <rect x="565" y="32" width="195" height="52" rx="5" fill="#f7f7f7" stroke="#999"></rect><text x="662" y="52" text-anchor="middle" font-size="12">循环程序 A</text><text x="662" y="71" text-anchor="middle" font-size="11" fill="#666">朴素嵌套循环 → 慢</text>
-  <rect x="565" y="117" width="195" height="52" rx="5" fill="#f7f7f7" stroke="#999"></rect><text x="662" y="137" text-anchor="middle" font-size="12">循环程序 B</text><text x="662" y="156" text-anchor="middle" font-size="11" fill="#666">分块 + 并行 → 快</text>
-  <rect x="565" y="206" width="195" height="52" rx="5" fill="#f7f7f7" stroke="#999"></rect><text x="662" y="226" text-anchor="middle" font-size="12">循环程序 C</text><text x="662" y="245" text-anchor="middle" font-size="11" fill="#666">张量化 → 最快</text>
+ <defs><marker id="ar2" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#555"></path></marker></defs>
+ <rect x="20" y="100" width="200" height="86" rx="6" fill="#eef4fb" stroke="#4a7fb5"></rect><text x="120" y="124" text-anchor="middle" font-weight="bold" fill="#1a3b5c">计算 (Compute)</text><text x="120" y="146" text-anchor="middle" font-size="12">C[y][x] = Σ_k</text><text x="120" y="164" text-anchor="middle" font-size="12">A[k][y] * B[k][x]</text><text x="120" y="180" text-anchor="middle" font-size="11" fill="#666">唯一, 与硬件无关</text>
+ <line x1="220" y1="143" x2="286" y2="143" stroke="#555" marker-end="url(#ar2)"></line>
+ <rect x="286" y="66" width="200" height="156" rx="6" fill="#fdf6e8" stroke="#c9962f"></rect><text x="386" y="90" text-anchor="middle" font-weight="bold" fill="#7a5a10">调度 (Schedule)</text><text x="386" y="114" text-anchor="middle" font-size="12">tile(y, x, k, 8, 8, 8)</text><text x="386" y="134" text-anchor="middle" font-size="12">reorder / unroll</text><text x="386" y="154" text-anchor="middle" font-size="12">cache_write / cache_read</text><text x="386" y="174" text-anchor="middle" font-size="12">bind(thread / vthread)</text><text x="386" y="194" text-anchor="middle" font-size="12">tensorize(8×8 硬件指令)</text><text x="386" y="214" text-anchor="middle" font-size="11" fill="#666">组合爆炸 → 需要搜索器</text>
+ <line x1="486" y1="88" x2="565" y2="58" stroke="#555" marker-end="url(#ar2)"></line>
+ <line x1="486" y1="143" x2="565" y2="143" stroke="#555" marker-end="url(#ar2)"></line>
+ <line x1="486" y1="200" x2="565" y2="232" stroke="#555" marker-end="url(#ar2)"></line>
+ <rect x="565" y="32" width="195" height="52" rx="5" fill="#f7f7f7" stroke="#999"></rect><text x="662" y="52" text-anchor="middle" font-size="12">循环程序 A</text><text x="662" y="71" text-anchor="middle" font-size="11" fill="#666">朴素嵌套循环 → 慢</text>
+ <rect x="565" y="117" width="195" height="52" rx="5" fill="#f7f7f7" stroke="#999"></rect><text x="662" y="137" text-anchor="middle" font-size="12">循环程序 B</text><text x="662" y="156" text-anchor="middle" font-size="11" fill="#666">分块 + 并行 → 快</text>
+ <rect x="565" y="206" width="195" height="52" rx="5" fill="#f7f7f7" stroke="#999"></rect><text x="662" y="226" text-anchor="middle" font-size="12">循环程序 C</text><text x="662" y="245" text-anchor="middle" font-size="11" fill="#666">张量化 → 最快</text>
 </svg>
 
-<p>形式上,调度空间是”原语序列”的集合,论文 §5.1 原文说优化器必须对真实负载<strong>搜索”数十亿(billions)”量级的配置</strong>:</p>
+<p>形式上,调度空间是”原语序列”的集合,论文（TVM 论文） 原文说优化器必须对真实负载<strong>搜索”数十亿(billions)”量级的配置</strong>:</p>
 <p>$$<br>\mathcal{S} = {, s = (p_1, p_2, \dots, p_n) \mid \text{每个 } p_i \text{ 为保持语义的调度原语} ,}<br>\qquad |\mathcal{S}| \sim 10^{9}<br>$$</p>
-<h3 id="4-2-TVM-相对-Halide-新增的调度原语-Figure-6"><a href="#4-2-TVM-相对-Halide-新增的调度原语-Figure-6" class="headerlink" title="4.2 TVM 相对 Halide 新增的调度原语(Figure 6)"></a>4.2 TVM 相对 Halide 新增的调度原语(Figure 6)</h3><table>
+<h3 id="4-2-TVM-相对-Halide-新增的调度原语（TVM-论文图-6）"><a href="#4-2-TVM-相对-Halide-新增的调度原语（TVM-论文图-6）" class="headerlink" title="4.2 TVM 相对 Halide 新增的调度原语（TVM 论文图 6）"></a>4.2 TVM 相对 Halide 新增的调度原语（TVM 论文图 6）</h3><table>
 <thead>
 <tr>
 <th>原语</th>
@@ -333,15 +333,15 @@
 </tr>
 </tbody></table>
 <ul>
-<li><strong>嵌套并行 + 协作取数(§4.2)</strong>: 常见的”shared-nothing 嵌套并行”下,同一并行阶段内线程看不到兄弟线程的数据。TVM 引入 <strong>memory scope</strong>,允许把一个计算阶段标成 <code>shared</code>,让一组线程<strong>协作取数到共享内存</strong>,并由编译器自动插入 memory barrier。Figure 7 在 Titan X 上用矩阵乘(规模 1024 / 2048)比较”含协作取数 / 不含协作取数 / cuBLAS”,含协作取数版本耗时最低。</li>
-<li><strong>Tensorization(§4.3)</strong>: 类比 SIMD 向量化,但<strong>指令输入是多维张量</strong>、长度固定或可变、各有不同数据布局;且不能只支持一组固定原语 —— 新加速器会带来自己的变体。TVM 把<strong>硬件 intrinsic 的声明与调度解耦</strong>: 用同一套张量表达式语言既声明 intrinsic 的行为、也声明 lowering 规则,然后由 <code>tensorize</code> 原语<strong>自动匹配计算模式并下沉到对应硬件指令</strong>。实测: 把移动 CPU 上的超低精度(1–2 bit)bit-serial 矩阵向量微内核<strong>以 tensor intrinsic 形式暴露给 TVM,相对未张量化版本最高 1.5× 加速</strong>。</li>
-<li><strong>显式延迟隐藏(§4.4)</strong>: CPU 靠 SMT / 硬件预取隐式隐藏延迟,GPU 靠 warp 快速切换;TPU 类加速器采用 <strong>decoupled access-execute (DAE)</strong> 架构,把细粒度同步<strong>交给软件</strong>。TVM 引入 <strong>virtual threading 原语</strong>: 程序员按多线程的写法写(虚拟线程),编译器自动重写成<strong>单指令流 + 显式依赖入队 / 出队同步</strong>(Figure 8)。在 FPGA 加速器上跑 ResNet 各层,用 roofline 图(Figure 10)对比开 / 关延迟隐藏: **峰值计算利用率从 70% 提升到 88%**。</li>
+<li><strong>嵌套并行 + 协作取数（TVM 论文）</strong>: 常见的”shared-nothing 嵌套并行”下,同一并行阶段内线程看不到兄弟线程的数据。TVM 引入 <strong>memory scope</strong>,允许把一个计算阶段标成 <code>shared</code>,让一组线程<strong>协作取数到共享内存</strong>,并由编译器自动插入 memory barrier。（TVM 论文图 7） 在 Titan X 上用矩阵乘(规模 1024 / 2048)比较”含协作取数 / 不含协作取数 / cuBLAS”,含协作取数版本耗时最低。</li>
+<li><strong>Tensorization（TVM 论文）</strong>: 类比 SIMD 向量化,但<strong>指令输入是多维张量</strong>、长度固定或可变、各有不同数据布局;且不能只支持一组固定原语 —— 新加速器会带来自己的变体。TVM 把<strong>硬件 intrinsic 的声明与调度解耦</strong>: 用同一套张量表达式语言既声明 intrinsic 的行为、也声明 lowering 规则,然后由 <code>tensorize</code> 原语<strong>自动匹配计算模式并下沉到对应硬件指令</strong>。实测: 把移动 CPU 上的超低精度(1–2 bit)bit-serial 矩阵向量微内核<strong>以 tensor intrinsic 形式暴露给 TVM,相对未张量化版本最高 1.5× 加速</strong>。</li>
+<li><strong>显式延迟隐藏（TVM 论文）</strong>: CPU 靠 SMT / 硬件预取隐式隐藏延迟,GPU 靠 warp 快速切换;TPU 类加速器采用 <strong>decoupled access-execute (DAE)</strong> 架构,把细粒度同步<strong>交给软件</strong>。TVM 引入 <strong>virtual threading 原语</strong>: 程序员按多线程的写法写(虚拟线程),编译器自动重写成<strong>单指令流 + 显式依赖入队 / 出队同步</strong>（TVM 论文图 8）。在 FPGA 加速器上跑 ResNet 各层,用 roofline 图（TVM 论文图 10）对比开 / 关延迟隐藏: **峰值计算利用率从 70% 提升到 88%**。</li>
 </ul>
 <hr>
 <h2 id="5-第三层-自动调优-——-用-ML-成本模型搜调度"><a href="#5-第三层-自动调优-——-用-ML-成本模型搜调度" class="headerlink" title="5. 第三层: 自动调优 —— 用 ML 成本模型搜调度"></a>5. 第三层: 自动调优 —— 用 ML 成本模型搜调度</h2><blockquote>
 <p>论文里这套系统叫 <strong>automated optimizer / schedule explorer + ML-based cost model</strong>;”AutoTVM” 是它在后续 TVM 生态中的通行名字。</p>
 </blockquote>
-<h3 id="5-1-三条路线-为什么选”学习型”-Table-1"><a href="#5-1-三条路线-为什么选”学习型”-Table-1" class="headerlink" title="5.1 三条路线,为什么选”学习型”(Table 1)"></a>5.1 三条路线,为什么选”学习型”(Table 1)</h3><table>
+<h3 id="5-1-三条路线-为什么选”学习型”（TVM-论文表-1）"><a href="#5-1-三条路线-为什么选”学习型”（TVM-论文表-1）" class="headerlink" title="5.1 三条路线,为什么选”学习型”（TVM 论文表 1）"></a>5.1 三条路线,为什么选”学习型”（TVM 论文表 1）</h3><table>
 <thead>
 <tr>
 <th>方法</th>
@@ -374,19 +374,19 @@
 </tr>
 </tbody></table>
 <p><strong>黑盒调优</strong>(ATLAS / FFTW / TensorComprehensions 那一路)要跑很多次实验才能找到好配置,而一次真实测量是<strong>秒级</strong>的 —— 对十亿量级的空间不可行。<strong>预定义成本模型</strong>需要人为建模访存模式、数据复用、流水依赖、线程组织……而且<strong>每换一个硬件就得重建模型</strong>,工程负担巨大。<strong>ML 成本模型</strong>输入是 <strong>lowering 后的循环程序</strong>、输出是目标硬件上的<strong>预测运行时间</strong>,用户无需提供硬件细节,且随探索数据积累<strong>周期性更新</strong>,对相关负载的预测也更准。</p>
-<h3 id="5-2-模型、目标函数与速度约束"><a href="#5-2-模型、目标函数与速度约束" class="headerlink" title="5.2 模型、目标函数与速度约束"></a>5.2 模型、目标函数与速度约束</h3><p><strong>特征(§5.2)</strong>: 从循环程序里抽取 —— 每个循环层级上各 memory buffer 的<strong>访存次数</strong>与<strong>复用率(reuse ratio)</strong>,以及循环标注的 one-hot 编码(<code>vectorize</code> / <code>unroll</code> / <code>parallel</code> 等)。<strong>候选模型</strong>有两类: 基于 <strong>XGBoost 的 gradient tree boosting</strong>,以及用 <strong>TreeRNN</strong> 直接对循环程序 AST 做摘要(免特征工程)。论文结论: 两者预测质量相当,但 <strong>tree boosting 预测速度快一倍、训练成本低得多</strong>,故选为默认成本模型。</p>
-<p><strong>速度约束(容易被忽略的判断)</strong>: 搜索器会<strong>高频</strong>查询成本模型,因此”预测时间 + 重新拟合时间”必须<strong>远小于一次真实测量</strong>。这正是它区别于传统超参调优的地方 —— 后者测量代价极高,可以负担昂贵模型;这里测量是秒级,模型必须极快。<strong>实测: tree boosting 平均预测耗时 0.67 ms,比真实测量快数千倍</strong>(§5.2)。</p>
-<p><strong>目标函数</strong>: 搜索器只按预测值的<strong>相对次序</strong>(A 比 B 快)挑 top 候选,<strong>不预测绝对执行时间</strong>,因此用的是 <strong>rank objective</strong>(§5.2)。<strong>探索算法(§5.3)</strong>: “枚举 + 打分取 top-k”在大空间里不可行,改用<strong>并行模拟退火</strong> —— 从随机配置出发随机游走到邻近配置,模型预测成本下降则接受,否则大概率拒绝;探索状态在模型更新后<strong>保留</strong>并从上次配置继续;无初始数据时随机采样去实测。<strong>分布式设备池与 RPC(§5.4)</strong>: 在主机编译、请求远端设备、远端运行、主机脚本取回结果,同一套接口既服务单算子调优也服务整图推理,且<strong>能跑交叉编译的模块</strong> —— 论文强调这对嵌入式设备尤其关键,因为交叉编译、部署、测量传统上都是手工苦活。</p>
+<h3 id="5-2-模型、目标函数与速度约束"><a href="#5-2-模型、目标函数与速度约束" class="headerlink" title="5.2 模型、目标函数与速度约束"></a>5.2 模型、目标函数与速度约束</h3><p><strong>特征（TVM 论文）</strong>: 从循环程序里抽取 —— 每个循环层级上各 memory buffer 的<strong>访存次数</strong>与<strong>复用率(reuse ratio)</strong>,以及循环标注的 one-hot 编码(<code>vectorize</code> / <code>unroll</code> / <code>parallel</code> 等)。<strong>候选模型</strong>有两类: 基于 <strong>XGBoost 的 gradient tree boosting</strong>,以及用 <strong>TreeRNN</strong> 直接对循环程序 AST 做摘要(免特征工程)。论文结论: 两者预测质量相当,但 <strong>tree boosting 预测速度快一倍、训练成本低得多</strong>,故选为默认成本模型。</p>
+<p><strong>速度约束(容易被忽略的判断)</strong>: 搜索器会<strong>高频</strong>查询成本模型,因此”预测时间 + 重新拟合时间”必须<strong>远小于一次真实测量</strong>。这正是它区别于传统超参调优的地方 —— 后者测量代价极高,可以负担昂贵模型;这里测量是秒级,模型必须极快。<strong>实测: tree boosting 平均预测耗时 0.67 ms,比真实测量快数千倍</strong>（TVM 论文）。</p>
+<p><strong>目标函数</strong>: 搜索器只按预测值的<strong>相对次序</strong>(A 比 B 快)挑 top 候选,<strong>不预测绝对执行时间</strong>,因此用的是 <strong>rank objective</strong>（TVM 论文）。<strong>探索算法（TVM 论文）</strong>: “枚举 + 打分取 top-k”在大空间里不可行,改用<strong>并行模拟退火</strong> —— 从随机配置出发随机游走到邻近配置,模型预测成本下降则接受,否则大概率拒绝;探索状态在模型更新后<strong>保留</strong>并从上次配置继续;无初始数据时随机采样去实测。<strong>分布式设备池与 RPC（TVM 论文）</strong>: 在主机编译、请求远端设备、远端运行、主机脚本取回结果,同一套接口既服务单算子调优也服务整图推理,且<strong>能跑交叉编译的模块</strong> —— 论文强调这对嵌入式设备尤其关键,因为交叉编译、部署、测量传统上都是手工苦活。</p>
 <h3 id="5-3-成本模型-≠-基准测试-部署人视角"><a href="#5-3-成本模型-≠-基准测试-部署人视角" class="headerlink" title="5.3 成本模型 ≠ 基准测试(部署人视角)"></a>5.3 成本模型 ≠ 基准测试(部署人视角)</h3><ul>
 <li><strong>基准测试(benchmark)</strong>: 在真实硬件上测量,<strong>给出真值</strong>;慢(秒级)、昂贵、不可穷举。</li>
 <li><strong>成本模型(cost model)</strong>: 对<strong>未测过的候选</strong>给预测,<strong>用来排序与剪枝</strong>;快(毫秒级)、可以错、只需保序正确。</li>
-<li>两者构成<strong>闭环</strong>: 模型预测 → 选一批候选 → 真实测量 → 数据回灌 → 模型更新。论文 Figure 12 在 ResNet-18 的 conv2d 上(Titan X,最多 800 次试验)对比 ML 模型 / 黑盒遗传算法 / 随机搜索 / cuDNN 基线,结论是<strong>前者更快找到更好的配置</strong>;其说明还专门强调”ML 模型从没有任何训练数据开始,靠收集到的数据自我改进”。</li>
+<li>两者构成<strong>闭环</strong>: 模型预测 → 选一批候选 → 真实测量 → 数据回灌 → 模型更新。论文（TVM 论文图 12） 在 ResNet-18 的 conv2d 上(Titan X,最多 800 次试验)对比 ML 模型 / 黑盒遗传算法 / 随机搜索 / cuDNN 基线,结论是<strong>前者更快找到更好的配置</strong>;其说明还专门强调”ML 模型从没有任何训练数据开始,靠收集到的数据自我改进”。</li>
 </ul>
 <blockquote>
 <p>对部署工程的启示: 手头的”分阶段计时 + 手工试参”其实就是<strong>黑盒调优</strong>,问题是<strong>只有真值、没有泛化</strong>。一旦有了”特征 → 预测”的映射,历史调优结果就能迁移到结构相似的新 shape / 新设备上 —— 这是这一层真正的增量。</p>
 </blockquote>
 <hr>
-<h2 id="6-论文实验数据-逐条引原表-原图"><a href="#6-论文实验数据-逐条引原表-原图" class="headerlink" title="6. 论文实验数据(逐条引原表 / 原图)"></a>6. 论文实验数据(逐条引原表 / 原图)</h2><p>TVM 核心用 <strong>C++ 实现,约 50k LoC</strong>,提供 Python / Java 绑定(§6)。评测覆盖四类平台: 服务器 GPU、嵌入式 GPU、嵌入式 CPU、FPGA 上的 DL 加速器。</p>
+<h2 id="6-论文实验数据-逐条引原表-原图"><a href="#6-论文实验数据-逐条引原表-原图" class="headerlink" title="6. 论文实验数据(逐条引原表 / 原图)"></a>6. 论文实验数据(逐条引原表 / 原图)</h2><p>TVM 核心用 <strong>C++ 实现,约 50k LoC</strong>,提供 Python / Java 绑定（TVM 论文）。评测覆盖四类平台: 服务器 GPU、嵌入式 GPU、嵌入式 CPU、FPGA 上的 DL 加速器。</p>
 <table>
 <thead>
 <tr>
@@ -400,74 +400,74 @@
 <td>端到端总体</td>
 <td>既有框架 + 手工优化库</td>
 <td><strong>1.2×–3.8×</strong></td>
-<td>§1(贡献段末尾)</td>
+<td>（TVM 论文，贡献段末尾）</td>
 </tr>
 <tr>
 <td>算子融合(单算子)</td>
 <td>未融合</td>
 <td><strong>1.2×–2×</strong></td>
-<td>§3 / Figure 4 (Titan X)</td>
+<td>（TVM 论文，图 4） (Titan X)</td>
 </tr>
 <tr>
 <td>张量化(1–2 bit bit-serial 微内核)</td>
 <td>未张量化</td>
 <td>最高 <strong>1.5×</strong></td>
-<td>§4.3</td>
+<td>（TVM 论文）</td>
 </tr>
 <tr>
 <td>延迟隐藏(FPGA / ResNet)</td>
 <td>无延迟隐藏</td>
 <td>峰值利用率 <strong>70% → 88%</strong></td>
-<td>§4.4 / Figure 10</td>
+<td>（TVM 论文，图 10）</td>
 </tr>
 <tr>
 <td>ML 成本模型预测耗时</td>
 <td>真实测量</td>
 <td><strong>0.67 ms</strong>,快数千倍</td>
-<td>§5.2</td>
+<td>（TVM 论文）</td>
 </tr>
 <tr>
 <td>GPU 端到端(Titan X)</td>
 <td>MXNet v1.1 / TF v1.7 / TF XLA</td>
 <td><strong>1.6×–3.8×</strong></td>
-<td>§6.1 / Figure 14</td>
+<td>（TVM 论文，图 14）</td>
 </tr>
 <tr>
 <td>GPU 端到端(其中 DQN)</td>
 <td>cuDNN 等</td>
 <td><strong>3.8×</strong></td>
-<td>§6.1</td>
+<td>（TVM 论文）</td>
 </tr>
 <tr>
 <td>FPGA 卸载的卷积层</td>
 <td>ARM Cortex-A9</td>
 <td><strong>40×</strong></td>
-<td>§6.4 / Figure 21</td>
+<td>（TVM 论文，图 21）</td>
 </tr>
 <tr>
 <td>移动 GPU 端到端</td>
 <td>ARM Compute Library v18.03</td>
 <td><strong>1.2×–1.6×</strong></td>
-<td>§6.3 / Figure 19</td>
+<td>（TVM 论文，图 19）</td>
 </tr>
 <tr>
 <td>新增专用加速器后端</td>
 <td>—</td>
 <td>约 <strong>2k LoC Python</strong></td>
-<td>§6.4</td>
+<td>（TVM 论文）</td>
 </tr>
 <tr>
 <td>VDLA 设计理论峰值</td>
 <td>—</td>
 <td>约 <strong>102.4 GOPS/s</strong></td>
-<td>§6.4</td>
+<td>（TVM 论文）</td>
 </tr>
 </tbody></table>
-<p><strong>服务器 GPU(Titan X,§6.1)</strong>: 对比 <strong>TVM / MXNet v1.1 / TensorFlow v1.7 / TensorFlow XLA</strong>;MXNet 与 TF 的卷积都用 <strong>cuDNN v7</strong>、矩阵乘用 <strong>cuBLAS v8</strong>,depthwise 卷积因较新 cuDNN 尚不支持、两家自己写了实现,XLA 走 JIT 编译。<strong>Figure 14</strong>: 端到端在 <strong>ResNet-18 / MobileNet / LSTM LM / DQN / DCGAN</strong> 五个负载上 <strong>加速 1.6×–3.8×</strong>,收益来自<strong>图级优化 + 自动优化器生成的融合算子</strong>叠加。原文解释: DQN 拿到 <strong>3.8×</strong> 是因为它用了<strong>非常规算子(4×4 conv2d,stride=2)</strong>,cuDNN 对这些优化不好;而 ResNet 这类常规负载下 TVM <strong>自动</strong>找到了优化实现 —— <strong>常规负载拼工程,非常规负载才见编译器的价值</strong>。<strong>Figure 15</strong>(逐算子,额外加入 <strong>TensorComprehensions(TC, commit ef644ba)</strong>,TC 结果取它<strong>每算子 10 代 × 100 群体 × 2 随机种子 = 2000 次试验</strong>中的最好 kernel;图中还含一个对 3×3 conv2d 做权重预变换 Winograd 的 <strong>TVM PT</strong>): 2D 卷积虽被 cuDNN 重度优化,TVM 仍在<strong>多数层</strong>生成更好的 GPU kernel;depthwise 卷积这类新算子,<strong>TVM 与 TC 都能相对 MXNet 的手写 kernel 找到快得多的实现</strong>。论文归因于”探索大调度空间 + 有效的 ML 搜索算法”。</p>
-<p><strong>嵌入式 CPU(ARM Cortex-A53,Quad Core 1.2 GHz,§6.2)</strong>: 基线 <strong>TensorFlow Lite(commit 7558b085)<strong>。</strong>Figure 17</strong>(逐算子)/<strong>Figure 16</strong>(端到端 ResNet-18 / MobileNet / DQN)显示 TVM 生成的算子<strong>超过 TFLite 手写优化版本</strong>,论文以此说明 TVM 能<strong>快速优化新出现的张量算子(depthwise 卷积)</strong>;Figure 16 脚注注明 <strong>DCGAN 与 LSTM 未给结果,因为基线尚不支持</strong>。<strong>超低精度</strong>: 针对 <strong>2-bit 激活 + 1-bit 权重</strong>推理,TVM 实现了一个 <strong>ARM 专用 tensorization intrinsic</strong>(bit-serial 矩阵向量微内核,位运算 + popcount 归约),再用自动优化器搜调度。<strong>Figure 18</strong> 对比 <strong>Caffe2(commit 39e07f7)的单线程手写超低精度库</strong>;因基线是单线程,论文同时给出单线程 TVM 对比,并指出 <strong>C5 / C3 是 1×1 卷积、计算强度低,多线程带来的加速较小</strong>;TVM 单线程在 C5、C8、C11(1×1 卷积、stride=2)上优势尤其明显,因为基线库没为这些形状做优化。此外 TVM 还能生成基线<strong>不支持的其它精度组合</strong>。</p>
-<p><strong>嵌入式 GPU(Firefly-RK3399 + ARM Mali-T860MP4,§6.3)</strong>: 基线 <strong>ARM Compute Library v18.03</strong>。<strong>Figure 19</strong>: 在三个可用模型、<strong>float16 与 float32</strong> 两种精度下都超过基线,加速 <strong>1.2×–1.6×</strong>;同样注明 <strong>DCGAN 与 LSTM 基线尚不支持</strong>。</p>
-<p><strong>FPGA 加速器 —— VDLA(§6.4)</strong>: 论文自建<strong>通用 DL 加速器原型 VDLA(Vanilla Deep Learning Accelerator)</strong>,把此前多种加速器提案的特征提炼成极简架构,验证 TVM 对专用加速器的代码生成能力(Figure 20)。硬件: 低功耗 PYNQ 板(含 <strong>ARM Cortex-A9 双核 @667 MHz</strong> + <strong>Artix-7 FPGA</strong>),片上 <strong>16×16 矩阵向量单元 @200 MHz</strong>,每周期完成 8-bit 相乘并累加到 32-bit 寄存器,<strong>理论峰值吞吐约 102.4 GOPS/s</strong>;片上分配 <strong>32 kB 激活存储 + 32 kB 参数存储 + 32 kB 微码 buffer + 128 kB 寄存器堆</strong> —— 论文特意说明这些 buffer <strong>远不足以装下一层 ResNet</strong>,因此正好构成”有效内存复用 + 延迟隐藏”的研究案例。工程成本: 为 VDLA 写 C runtime API 驱动库,<strong>新增这个专用加速器后端只花了约 2k LoC Python</strong>。端到端(Figure 21): ResNet <strong>第一层</strong>因卷积深度太浅无法高效卸载、残差层与激活因 VDLA 不支持也留在 CPU,其余卷积层全部卸载;<strong>被卸载的卷积层获得 40× 加速</strong>(相对 Cortex-A9),但<strong>因 Amdahl 定律,整体性能被未能卸载的部分拖住</strong>。</p>
-<p><strong>其它单点数据</strong>: <strong>Figure 7</strong>(§4.2)在 Titan X 上比较矩阵乘(1024 / 2048)的”含协作取数 / 不含协作取数 / cuBLAS”,含协作取数版本最优;<strong>Figure 12</strong>(§5.2)给出 conv2d 相对 cuDNN 的加速比随试验次数(0–800)的变化曲线。</p>
+<p><strong>服务器 GPU(Titan X；来源 TVM 论文)</strong>: 对比 <strong>TVM / MXNet v1.1 / TensorFlow v1.7 / TensorFlow XLA</strong>;MXNet 与 TF 的卷积都用 <strong>cuDNN v7</strong>、矩阵乘用 <strong>cuBLAS v8</strong>,depthwise 卷积因较新 cuDNN 尚不支持、两家自己写了实现,XLA 走 JIT 编译。<strong>（TVM 论文图 14）</strong>: 端到端在 <strong>ResNet-18 / MobileNet / LSTM LM / DQN / DCGAN</strong> 五个负载上 <strong>加速 1.6×–3.8×</strong>,收益来自<strong>图级优化 + 自动优化器生成的融合算子</strong>叠加。原文解释: DQN 拿到 <strong>3.8×</strong> 是因为它用了<strong>非常规算子(4×4 conv2d,stride=2)</strong>,cuDNN 对这些优化不好;而 ResNet 这类常规负载下 TVM <strong>自动</strong>找到了优化实现 —— <strong>常规负载拼工程,非常规负载才见编译器的价值</strong>。<strong>（TVM 论文图 15）</strong>(逐算子,额外加入 <strong>TensorComprehensions(TC, commit ef644ba)</strong>,TC 结果取它<strong>每算子 10 代 × 100 群体 × 2 随机种子 = 2000 次试验</strong>中的最好 kernel;图中还含一个对 3×3 conv2d 做权重预变换 Winograd 的 <strong>TVM PT</strong>): 2D 卷积虽被 cuDNN 重度优化,TVM 仍在<strong>多数层</strong>生成更好的 GPU kernel;depthwise 卷积这类新算子,<strong>TVM 与 TC 都能相对 MXNet 的手写 kernel 找到快得多的实现</strong>。论文归因于”探索大调度空间 + 有效的 ML 搜索算法”。</p>
+<p><strong>嵌入式 CPU(ARM Cortex-A53,Quad Core 1.2 GHz；来源 TVM 论文)</strong>: 基线 <strong>TensorFlow Lite(commit 7558b085)<strong>。</strong>（TVM 论文图 17）</strong>(逐算子)/<strong>（TVM 论文图 16）</strong>(端到端 ResNet-18 / MobileNet / DQN)显示 TVM 生成的算子<strong>超过 TFLite 手写优化版本</strong>,论文以此说明 TVM 能<strong>快速优化新出现的张量算子(depthwise 卷积)</strong>;（TVM 论文图 16） 脚注注明 <strong>DCGAN 与 LSTM 未给结果,因为基线尚不支持</strong>。<strong>超低精度</strong>: 针对 <strong>2-bit 激活 + 1-bit 权重</strong>推理,TVM 实现了一个 <strong>ARM 专用 tensorization intrinsic</strong>(bit-serial 矩阵向量微内核,位运算 + popcount 归约),再用自动优化器搜调度。<strong>（TVM 论文图 18）</strong> 对比 <strong>Caffe2(commit 39e07f7)的单线程手写超低精度库</strong>;因基线是单线程,论文同时给出单线程 TVM 对比,并指出 <strong>C5 / C3 是 1×1 卷积、计算强度低,多线程带来的加速较小</strong>;TVM 单线程在 C5、C8、C11(1×1 卷积、stride=2)上优势尤其明显,因为基线库没为这些形状做优化。此外 TVM 还能生成基线<strong>不支持的其它精度组合</strong>。</p>
+<p><strong>嵌入式 GPU(Firefly-RK3399 + ARM Mali-T860MP4；来源 TVM 论文)</strong>: 基线 <strong>ARM Compute Library v18.03</strong>。<strong>（TVM 论文图 19）</strong>: 在三个可用模型、<strong>float16 与 float32</strong> 两种精度下都超过基线,加速 <strong>1.2×–1.6×</strong>;同样注明 <strong>DCGAN 与 LSTM 基线尚不支持</strong>。</p>
+<p><strong>FPGA 加速器 —— VDLA（TVM 论文）</strong>: 论文自建<strong>通用 DL 加速器原型 VDLA(Vanilla Deep Learning Accelerator)</strong>,把此前多种加速器提案的特征提炼成极简架构,验证 TVM 对专用加速器的代码生成能力（TVM 论文图 20）。硬件: 低功耗 PYNQ 板(含 <strong>ARM Cortex-A9 双核 @667 MHz</strong> + <strong>Artix-7 FPGA</strong>),片上 <strong>16×16 矩阵向量单元 @200 MHz</strong>,每周期完成 8-bit 相乘并累加到 32-bit 寄存器,<strong>理论峰值吞吐约 102.4 GOPS/s</strong>;片上分配 <strong>32 kB 激活存储 + 32 kB 参数存储 + 32 kB 微码 buffer + 128 kB 寄存器堆</strong> —— 论文特意说明这些 buffer <strong>远不足以装下一层 ResNet</strong>,因此正好构成”有效内存复用 + 延迟隐藏”的研究案例。工程成本: 为 VDLA 写 C runtime API 驱动库,<strong>新增这个专用加速器后端只花了约 2k LoC Python</strong>。端到端（TVM 论文图 21）: ResNet <strong>第一层</strong>因卷积深度太浅无法高效卸载、残差层与激活因 VDLA 不支持也留在 CPU,其余卷积层全部卸载;<strong>被卸载的卷积层获得 40× 加速</strong>(相对 Cortex-A9),但<strong>因 Amdahl 定律,整体性能被未能卸载的部分拖住</strong>。</p>
+<p><strong>其它单点数据</strong>: <strong>（TVM 论文图 7）</strong>（TVM 论文）在 Titan X 上比较矩阵乘(1024 / 2048)的”含协作取数 / 不含协作取数 / cuBLAS”,含协作取数版本最优;<strong>（TVM 论文图 12）</strong>（TVM 论文）给出 conv2d 相对 cuDNN 的加速比随试验次数(0–800)的变化曲线。</p>
 <hr>
 <h2 id="7-与后续生态的关系-本节为论文之后的演进-标注为”行业共识”"><a href="#7-与后续生态的关系-本节为论文之后的演进-标注为”行业共识”" class="headerlink" title="7. 与后续生态的关系(本节为论文之后的演进,标注为”行业共识”)"></a>7. 与后续生态的关系(本节为论文之后的演进,标注为”行业共识”)</h2><h3 id="7-1-TVM-内部的-IR-演进"><a href="#7-1-TVM-内部的-IR-演进" class="headerlink" title="7.1 TVM 内部的 IR 演进"></a>7.1 TVM 内部的 IR 演进</h3><p>论文里只有”计算图 + 张量表达式”两层,此后这套栈逐步分化:</p>
 <table>
@@ -483,7 +483,7 @@
 <td>论文时期</td>
 <td>计算图 + 图重写器</td>
 <td>张量表达式 + 调度</td>
-<td>§3 / §4 的两级</td>
+<td>（TVM 论文）（TVM 论文） 的两级</td>
 </tr>
 <tr>
 <td>之后</td>
@@ -598,7 +598,7 @@
 <p><strong>两级三层一闭环</strong> —— <strong>两级</strong>: 图级管结构(融合 / 布局 / 内存),算子级管循环(表达式 / 调度);<strong>三层</strong>: 图重写 → 调度空间 → 自动搜索;<strong>一闭环</strong>: 成本模型<strong>预测排序</strong>,真机测量<strong>回灌真值</strong>,二者往复。<br>三个”分离”: <strong>计算与调度分离、intrinsic 与调度分离、预测与测量分离</strong>。</p>
 </blockquote>
 <hr>
-<p><em>论文原文: TVM: An Automated End-to-End Optimizing Compiler for Deep Learning, OSDI 2018 (arXiv:1802.04799v3)。本文所有加速比与结构名以原文 § / Table / Figure 为准;第 7 节为论文之后的生态演进,已注明”行业共识”。</em></p>
+<p><em>论文原文: TVM: An Automated End-to-End Optimizing Compiler for Deep Learning, OSDI 2018 (arXiv:1802.04799v3)。本文所有加速比与结构名均取自论文原文(关键处标注了对应图表编号, 便于回查);第 7 节为论文之后的生态演进,已注明”行业共识”。</em></p>
 <hr>
 <h2 id="本专题其它文章"><a href="#本专题其它文章" class="headerlink" title="本专题其它文章"></a>本专题其它文章</h2><ul>
 <li><a href="/03%E9%AB%98%E6%80%A7%E8%83%BD%E8%AE%A1%E7%AE%97%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/drepper-csapp-memory.html">内存与性能：Drepper 论文 + CSAPP 第 2/5/6/9 章精讲</a> —— 访存视角的性能诊断</li>
