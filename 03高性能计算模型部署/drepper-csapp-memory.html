@@ -28,7 +28,7 @@
 <meta property="og:description" content="内存与性能: Drepper 论文 + CSAPP 第 2&#x2F;5&#x2F;6&#x2F;9 章精讲 论文: What Every Programmer Should Know About Memory, Ulrich Drepper, 2007(约 114 页)教材: Computer Systems: A Programmer’s Perspective(CSAPP)第 2&#x2F;5&#x2F;6&#x2F;9 章视角: 模型部署 &#x2F; 算子">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-09-13T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-09-14T08:04:04.940Z">
+<meta property="article:modified_time" content="2026-09-14T08:05:02.490Z">
 <meta property="article:author" content="zodiac">
 <meta property="article:tag" content="内存">
 <meta property="article:tag" content="性能优化">
@@ -137,7 +137,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E4%B8%8E%E6%80%A7%E8%83%BD-Drepper-%E8%AE%BA%E6%96%87-CSAPP-%E7%AC%AC-2-5-6-9-%E7%AB%A0%E7%B2%BE%E8%AE%B2"><span class="nav-number">1.</span> <span class="nav-text">内存与性能: Drepper 论文 + CSAPP 第 2&#x2F;5&#x2F;6&#x2F;9 章精讲</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E7%BB%93%E8%AE%BA%E5%85%88%E8%A1%8C-30-%E7%A7%92"><span class="nav-number">1.1.</span> <span class="nav-text">0. 结论先行(30 秒)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%85%A8%E6%99%AF%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE"><span class="nav-number">1.2.</span> <span class="nav-text">1. 全景思维导图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Drepper-%E9%80%90%E5%B1%82%E6%9C%BA%E5%88%B6"><span class="nav-number">1.3.</span> <span class="nav-text">2. Drepper 逐层机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-RAM-%E4%B8%8E-DRAM-%E7%89%B9%E6%80%A7%EF%BC%88CSAPP-%E7%AC%AC-2-%E7%AB%A0%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">2.1 RAM 与 DRAM 特性（CSAPP 第 2 章）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Cache-%E7%BB%93%E6%9E%84%E4%B8%8E%E4%B8%89%E7%A7%8D%E6%98%A0%E5%B0%84%EF%BC%88Drepper-%E8%AE%BA%E6%96%87%EF%BC%89"><span class="nav-number">1.3.2.</span> <span class="nav-text">2.2 Cache 结构与三种映射（Drepper 论文）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Cache-%E8%A1%8C%E3%80%81%E5%B1%80%E9%83%A8%E6%80%A7%E4%B8%8E%E4%B8%89%E7%B1%BB-miss"><span class="nav-number">1.3.3.</span> <span class="nav-text">2.3 Cache 行、局部性与三类 miss</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E5%86%99%E7%AD%96%E7%95%A5%E4%B8%8E%E4%B8%80%E8%87%B4%E6%80%A7%EF%BC%88Drepper-%E8%AE%BA%E6%96%87%EF%BC%89"><span class="nav-number">1.3.4.</span> <span class="nav-text">2.4 写策略与一致性（Drepper 论文）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-%E9%A2%84%E5%8F%96%EF%BC%88Drepper-%E8%AE%BA%E6%96%87%EF%BC%89"><span class="nav-number">1.3.5.</span> <span class="nav-text">2.5 预取（Drepper 论文）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-NUMA%EF%BC%88CSAPP-%E7%AC%AC-5-%E7%AB%A0%EF%BC%89"><span class="nav-number">1.3.6.</span> <span class="nav-text">2.6 NUMA（CSAPP 第 5 章）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98%E4%B8%8E%E5%B7%A5%E5%85%B7%EF%BC%88CSAPP-%E7%AC%AC-6-%E7%AB%A0%EF%BC%89"><span class="nav-number">1.3.7.</span> <span class="nav-text">2.7 优化实战与工具（CSAPP 第 6 章）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-CSAPP-%E7%AC%AC-2-5-6-9-%E7%AB%A0-%E6%A0%B8%E5%BF%83%E7%BB%93%E8%AE%BA-%C3%97-%E9%83%A8%E7%BD%B2%E4%BB%B7%E5%80%BC"><span class="nav-number">1.4.</span> <span class="nav-text">3. CSAPP 第 2&#x2F;5&#x2F;6&#x2F;9 章:核心结论 × 部署价值</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E7%AC%AC-2-%E7%AB%A0-%E4%BF%A1%E6%81%AF%E7%9A%84%E8%A1%A8%E7%A4%BA%E4%B8%8E%E5%A4%84%E7%90%86%E2%80%94%E2%80%94%E4%BD%8D%E6%98%AF%E6%9C%80%E4%BD%8E%E5%B1%82%E7%9A%84%E2%80%9D%E8%B4%A7%E5%B8%81%E2%80%9D"><span class="nav-number">1.4.1.</span> <span class="nav-text">3.1 第 2 章 信息的表示与处理——位是最低层的”货币”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E7%AC%AC-5-%E7%AB%A0-%E4%BC%98%E5%8C%96%E7%A8%8B%E5%BA%8F%E6%80%A7%E8%83%BD%E2%80%94%E2%80%94%E5%BB%B6%E8%BF%9F%E4%B8%8D%E6%98%AF%E5%90%9E%E5%90%90-%E5%B9%B6%E8%A1%8C%E6%89%8D%E6%9C%89%E6%84%8F%E4%B9%89"><span class="nav-number">1.4.2.</span> <span class="nav-text">3.2 第 5 章 优化程序性能——延迟不是吞吐,并行才有意义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E7%AC%AC-6-%E7%AB%A0-%E5%AD%98%E5%82%A8%E5%99%A8%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94AMAT-%E4%B8%8E%E5%B1%80%E9%83%A8%E6%80%A7"><span class="nav-number">1.4.3.</span> <span class="nav-text">3.3 第 6 章 存储器层次结构——AMAT 与局部性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-%E7%AC%AC-9-%E7%AB%A0-%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E2%80%94%E2%80%94%E5%9C%B0%E5%9D%80%E7%BF%BB%E8%AF%91%E3%80%81TLB%E3%80%81%E7%BC%BA%E9%A1%B5%E3%80%81mmap"><span class="nav-number">1.4.4.</span> <span class="nav-text">3.4 第 9 章 虚拟内存——地址翻译、TLB、缺页、mmap</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-%E5%BB%B6%E8%BF%9F%E9%87%91%E5%AD%97%E5%A1%94-%E6%8A%8A%EF%BC%88Drepper-%E8%AE%BA%E6%96%87%EF%BC%89-%E7%9A%84%E8%AE%B0%E5%BF%86%E9%94%9A%E7%82%B9%E5%8F%AF%E8%A7%86%E5%8C%96"><span class="nav-number">1.4.5.</span> <span class="nav-text">3.5 延迟金字塔(把（Drepper 论文） 的记忆锚点可视化)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E4%BB%8E%E5%86%85%E5%AD%98%E8%A7%92%E5%BA%A6%E8%AF%8A%E6%96%AD%E6%80%A7%E8%83%BD%E7%9A%84%E6%B8%85%E5%8D%95"><span class="nav-number">1.5.</span> <span class="nav-text">4. 从内存角度诊断性能的清单</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="nav-number">1.6.</span> <span class="nav-text">5. 速查表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E8%AE%B0%E5%BF%86%E5%8F%A3%E8%AF%80"><span class="nav-number">1.7.</span> <span class="nav-text">6. 记忆口诀</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E4%B8%80%E5%BC%A0%E5%9B%BE-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2%E5%B7%A5%E7%A8%8B%E5%B8%88%E8%A6%81%E6%87%82%E8%BF%99%E4%BA%9B"><span class="nav-number">1.8.</span> <span class="nav-text">7. 一张图:为什么模型部署工程师要懂这些</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E4%B8%93%E9%A2%98%E5%85%B6%E5%AE%83%E6%96%87%E7%AB%A0"><span class="nav-number">1.9.</span> <span class="nav-text">本专题其它文章</span></a></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E4%B8%8E%E6%80%A7%E8%83%BD-Drepper-%E8%AE%BA%E6%96%87-CSAPP-%E7%AC%AC-2-5-6-9-%E7%AB%A0%E7%B2%BE%E8%AE%B2"><span class="nav-number">1.</span> <span class="nav-text">内存与性能: Drepper 论文 + CSAPP 第 2&#x2F;5&#x2F;6&#x2F;9 章精讲</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E7%BB%93%E8%AE%BA%E5%85%88%E8%A1%8C-30-%E7%A7%92"><span class="nav-number">1.1.</span> <span class="nav-text">0. 结论先行(30 秒)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%85%A8%E6%99%AF%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE"><span class="nav-number">1.2.</span> <span class="nav-text">1. 全景思维导图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Drepper-%E9%80%90%E5%B1%82%E6%9C%BA%E5%88%B6"><span class="nav-number">1.3.</span> <span class="nav-text">2. Drepper 逐层机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-RAM-%E4%B8%8E-DRAM-%E7%89%B9%E6%80%A7%EF%BC%88CSAPP-%E7%AC%AC-2-%E7%AB%A0%EF%BC%89"><span class="nav-number">1.3.1.</span> <span class="nav-text">2.1 RAM 与 DRAM 特性（CSAPP 第 2 章）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Cache-%E7%BB%93%E6%9E%84%E4%B8%8E%E4%B8%89%E7%A7%8D%E6%98%A0%E5%B0%84"><span class="nav-number">1.3.2.</span> <span class="nav-text">2.2 Cache 结构与三种映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Cache-%E8%A1%8C%E3%80%81%E5%B1%80%E9%83%A8%E6%80%A7%E4%B8%8E%E4%B8%89%E7%B1%BB-miss"><span class="nav-number">1.3.3.</span> <span class="nav-text">2.3 Cache 行、局部性与三类 miss</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E5%86%99%E7%AD%96%E7%95%A5%E4%B8%8E%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">1.3.4.</span> <span class="nav-text">2.4 写策略与一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-%E9%A2%84%E5%8F%96"><span class="nav-number">1.3.5.</span> <span class="nav-text">2.5 预取</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-NUMA%EF%BC%88CSAPP-%E7%AC%AC-5-%E7%AB%A0%EF%BC%89"><span class="nav-number">1.3.6.</span> <span class="nav-text">2.6 NUMA（CSAPP 第 5 章）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98%E4%B8%8E%E5%B7%A5%E5%85%B7%EF%BC%88CSAPP-%E7%AC%AC-6-%E7%AB%A0%EF%BC%89"><span class="nav-number">1.3.7.</span> <span class="nav-text">2.7 优化实战与工具（CSAPP 第 6 章）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-CSAPP-%E7%AC%AC-2-5-6-9-%E7%AB%A0-%E6%A0%B8%E5%BF%83%E7%BB%93%E8%AE%BA-%C3%97-%E9%83%A8%E7%BD%B2%E4%BB%B7%E5%80%BC"><span class="nav-number">1.4.</span> <span class="nav-text">3. CSAPP 第 2&#x2F;5&#x2F;6&#x2F;9 章:核心结论 × 部署价值</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E7%AC%AC-2-%E7%AB%A0-%E4%BF%A1%E6%81%AF%E7%9A%84%E8%A1%A8%E7%A4%BA%E4%B8%8E%E5%A4%84%E7%90%86%E2%80%94%E2%80%94%E4%BD%8D%E6%98%AF%E6%9C%80%E4%BD%8E%E5%B1%82%E7%9A%84%E2%80%9D%E8%B4%A7%E5%B8%81%E2%80%9D"><span class="nav-number">1.4.1.</span> <span class="nav-text">3.1 第 2 章 信息的表示与处理——位是最低层的”货币”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E7%AC%AC-5-%E7%AB%A0-%E4%BC%98%E5%8C%96%E7%A8%8B%E5%BA%8F%E6%80%A7%E8%83%BD%E2%80%94%E2%80%94%E5%BB%B6%E8%BF%9F%E4%B8%8D%E6%98%AF%E5%90%9E%E5%90%90-%E5%B9%B6%E8%A1%8C%E6%89%8D%E6%9C%89%E6%84%8F%E4%B9%89"><span class="nav-number">1.4.2.</span> <span class="nav-text">3.2 第 5 章 优化程序性能——延迟不是吞吐,并行才有意义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E7%AC%AC-6-%E7%AB%A0-%E5%AD%98%E5%82%A8%E5%99%A8%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94AMAT-%E4%B8%8E%E5%B1%80%E9%83%A8%E6%80%A7"><span class="nav-number">1.4.3.</span> <span class="nav-text">3.3 第 6 章 存储器层次结构——AMAT 与局部性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-%E7%AC%AC-9-%E7%AB%A0-%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E2%80%94%E2%80%94%E5%9C%B0%E5%9D%80%E7%BF%BB%E8%AF%91%E3%80%81TLB%E3%80%81%E7%BC%BA%E9%A1%B5%E3%80%81mmap"><span class="nav-number">1.4.4.</span> <span class="nav-text">3.4 第 9 章 虚拟内存——地址翻译、TLB、缺页、mmap</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-%E5%BB%B6%E8%BF%9F%E9%87%91%E5%AD%97%E5%A1%94-%E6%8A%8A%EF%BC%88Drepper-%E8%AE%BA%E6%96%87%EF%BC%89%E7%9A%84%E8%AE%B0%E5%BF%86%E9%94%9A%E7%82%B9%E5%8F%AF%E8%A7%86%E5%8C%96"><span class="nav-number">1.4.5.</span> <span class="nav-text">3.5 延迟金字塔(把（Drepper 论文）的记忆锚点可视化)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E4%BB%8E%E5%86%85%E5%AD%98%E8%A7%92%E5%BA%A6%E8%AF%8A%E6%96%AD%E6%80%A7%E8%83%BD%E7%9A%84%E6%B8%85%E5%8D%95"><span class="nav-number">1.5.</span> <span class="nav-text">4. 从内存角度诊断性能的清单</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="nav-number">1.6.</span> <span class="nav-text">5. 速查表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E8%AE%B0%E5%BF%86%E5%8F%A3%E8%AF%80"><span class="nav-number">1.7.</span> <span class="nav-text">6. 记忆口诀</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E4%B8%80%E5%BC%A0%E5%9B%BE-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2%E5%B7%A5%E7%A8%8B%E5%B8%88%E8%A6%81%E6%87%82%E8%BF%99%E4%BA%9B"><span class="nav-number">1.8.</span> <span class="nav-text">7. 一张图:为什么模型部署工程师要懂这些</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E4%B8%93%E9%A2%98%E5%85%B6%E5%AE%83%E6%96%87%E7%AB%A0"><span class="nav-number">1.9.</span> <span class="nav-text">本专题其它文章</span></a></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -197,8 +197,8 @@
 </blockquote>
 <hr>
 <h2 id="0-结论先行-30-秒"><a href="#0-结论先行-30-秒" class="headerlink" title="0. 结论先行(30 秒)"></a>0. 结论先行(30 秒)</h2><ul>
-<li><strong>内存墙是真实的</strong>:论文引 Intel 公布的延迟数据（Drepper 论文）,寄存器 ≤1 周期、L1d ~3 周期、L2 ~14 周期、<strong>主存 ~240 周期</strong>。一次主存访问 ≈ 几百条算术指令的时间,所以”少访问内存”往往比”少做计算”回报大得多。</li>
-<li><strong>硬件缓存不能离开程序员配合</strong>(论文摘要原话)。同一条数据、两种访问顺序,论文实测矩阵乘转置后从 16,765,297,870 周期降到 3,922,373,010 周期,**加速 76.6%**（Drepper 论文）。</li>
+<li><strong>内存墙是真实的</strong>:论文引 Intel 公布的延迟数据:寄存器 ≤1 周期、L1d ~3 周期、L2 ~14 周期、<strong>主存 ~240 周期</strong>。一次主存访问 ≈ 几百条算术指令的时间,所以”少访问内存”往往比”少做计算”回报大得多。</li>
+<li><strong>硬件缓存不能离开程序员配合</strong>(论文摘要原话)。同一条数据、两种访问顺序,论文实测矩阵乘转置后从 16,765,297,870 周期降到 3,922,373,010 周期,**加速 76.6%**。</li>
 <li><strong>三件事决定了访存成本</strong>:① 单位是 <strong>cache 行(64B)</strong> 不是字节;② 缓存容量远小于工作集(cache:内存 ≈ 1:1000；来源 Drepper 论文);③ 地址翻译(TLB/页表)和 NUMA 距离开销会再叠加一层。</li>
 <li><strong>对部署/算子工程师的直接意义</strong>:张量布局(行主序/NCHW↔NHWC)、分块大小、对齐与 padding、NUMA 绑核、大页、软件预取——这些不是”玄学调参”,每一条都对应本节后面的一个具体机制。</li>
 <li><strong>CSAPP 是论文的”教材版”</strong>:同样的结论用更系统的组织讲一遍,把”是什么”补成”为什么”和”怎么算”(AMAT、地址三段划分、页表翻译)。</li>
@@ -257,9 +257,9 @@
 <blockquote>
 <p>记忆锚点:<strong>一次主存访问 ≈ 200–240 周期</strong>（Drepper 论文）。</p>
 </blockquote>
-<h3 id="2-2-Cache-结构与三种映射（Drepper-论文）"><a href="#2-2-Cache-结构与三种映射（Drepper-论文）" class="headerlink" title="2.2 Cache 结构与三种映射（Drepper 论文）"></a>2.2 Cache 结构与三种映射（Drepper 论文）</h3><p>一个缓存可用三个参数描述:$C = S \times E \times B$,其中 $S$ 为组数、$E$ 为每组行数(关联度)、$B$ 为行大小(字节)。论文以 4MB 缓存、64B 行说明:共 <strong>65,536</strong> 个缓存行。</p>
+<h3 id="2-2-Cache-结构与三种映射"><a href="#2-2-Cache-结构与三种映射" class="headerlink" title="2.2 Cache 结构与三种映射"></a>2.2 Cache 结构与三种映射</h3><p>一个缓存可用三个参数描述:$C = S \times E \times B$,其中 $S$ 为组数、$E$ 为每组行数(关联度)、$B$ 为行大小(字节)。论文以 4MB 缓存、64B 行说明:共 <strong>65,536</strong> 个缓存行。</p>
 <ul>
-<li><strong>全相联(Fully Associative)</strong>:任意行可放任意地址。需要为每行配一个比较器,4MB/64B 就要 65,536 个并发比较器,不现实;只用于<strong>极小的缓存</strong>(论文点名:某些 Intel 处理器的 TLB 是全相联,只有几十项)（Drepper 论文）。</li>
+<li><strong>全相联(Fully Associative)</strong>:任意行可放任意地址。需要为每行配一个比较器,4MB/64B 就要 65,536 个并发比较器,不现实;只用于<strong>极小的缓存</strong>(论文点名:某些 Intel 处理器的 TLB 是全相联,只有几十项)。</li>
 <li><strong>直接映射(Direct-Mapped)</strong>:每个地址只对应唯一一行,比较器只需 1 个,但地址分布不均时某些行被反复驱逐(抖动)。</li>
 <li><strong>组相联(Set-Associative)</strong>:折中方案,现代 L1/L2 主流。地址被切成<strong>标记 tag / 组索引 set / 块偏移 offset</strong> 三段,组内多路并行比对（Drepper 论文）。</li>
 </ul>
@@ -288,35 +288,35 @@
 </svg>
 
 <h3 id="2-3-Cache-行、局部性与三类-miss"><a href="#2-3-Cache-行、局部性与三类-miss" class="headerlink" title="2.3 Cache 行、局部性与三类 miss"></a>2.3 Cache 行、局部性与三类 miss</h3><ul>
-<li><strong>访问单位是 cache 行</strong>:论文以 64B 行为例,地址低 6 位被清零,只把行粒度搬进 L1d（Drepper 论文）。所以”随机访问 1 个字节”的代价和”访问一整行”相同——利用率低就是纯浪费。</li>
-<li><strong>局部性</strong>:时间局部性(同地址很快复用)+ 空间局部性(邻近地址很快被用到)。论文说,正是”工作集有限但物理上不连续”这一点,才让缓存有意义（Drepper 论文）。</li>
-<li><strong>三类 miss</strong>(论文中的称呼,（Drepper 论文） 明确列出 compulsory 与 capacity;conflict miss 见（Drepper 论文） 的 aliasing 讨论):</li>
+<li><strong>访问单位是 cache 行</strong>:论文以 64B 行为例,地址低 6 位被清零,只把行粒度搬进 L1d。所以”随机访问 1 个字节”的代价和”访问一整行”相同——利用率低就是纯浪费。</li>
+<li><strong>局部性</strong>:时间局部性(同地址很快复用)+ 空间局部性(邻近地址很快被用到)。论文说,正是”工作集有限但物理上不连续”这一点,才让缓存有意义。</li>
+<li><strong>三类 miss</strong>(论文中的称呼,明确列出 compulsory 与 capacity;conflict miss 见论文中关于 aliasing 的讨论):</li>
 <li><strong>Compulsory(强制)</strong>:首次访问,必 miss → 靠预取掩盖;</li>
 <li><strong>Capacity(容量)</strong>:工作集 &gt; 缓存 → 靠<strong>分块(tiling)</strong>;</li>
 <li><strong>Conflict(冲突)</strong>:多个地址映射到同一组 → 靠 <strong>padding / 换布局</strong>。</li>
-<li><strong>缓存效果量级</strong>:论文的示范计算——同样 100 个数据元素各用 100 次,无缓存 2,000,000 周期,全命中 168,500 周期,**改善 91.5%**（Drepper 论文）。</li>
+<li><strong>缓存效果量级</strong>:论文的示范计算——同样 100 个数据元素各用 100 次,无缓存 2,000,000 周期,全命中 168,500 周期,**改善 91.5%**。</li>
 </ul>
-<h3 id="2-4-写策略与一致性（Drepper-论文）"><a href="#2-4-写策略与一致性（Drepper-论文）" class="headerlink" title="2.4 写策略与一致性（Drepper 论文）"></a>2.4 写策略与一致性（Drepper 论文）</h3><ul>
+<h3 id="2-4-写策略与一致性"><a href="#2-4-写策略与一致性" class="headerlink" title="2.4 写策略与一致性"></a>2.4 写策略与一致性</h3><ul>
 <li><strong>写穿透(write-through)</strong>:写缓存的同时写回主存,简单但慢。</li>
 <li><strong>写回(write-back)</strong>:只标记脏行,驱逐时才写回;现代处理器主流（Drepper 论文）。</li>
 <li>另有 <strong>写合并(write-combining)</strong>(用于显卡等设备内存,攒够一整行再写)与 <strong>不可缓存(uncacheable)</strong>(MMIO 地址,不能被缓存),由 x86 的 MTRR 配置（Drepper 论文）。</li>
-<li><strong>多核一致性</strong>:论文以 <strong>MESI</strong> 协议为例（Drepper 论文）,两条要点:<strong>脏行不会同时存在于别的缓存</strong>;<strong>干净副本可以存在于任意多个缓存</strong>。</li>
-<li><strong>伪共享(false sharing)</strong>:多个线程写同一缓存行内的不同变量时,写操作需要在各核心的 L1d 中取得独占状态,会发送大量 RFO(Read For Ownership)消息。论文实测开销为 **390%(2 线程)、734%(3 线程)、1147%(4 线程)**（Drepper 论文）。对策:<strong>每个线程的数据各自对齐到独立缓存行</strong>。</li>
-<li><strong>带宽不对称</strong>:论文实测写带宽远低于读带宽——Netburst 上读满 16 B/周期、而写只有 4 B/周期,超出 L2 后写掉到 <strong>0.5 B/周期</strong>(比读慢约 10 倍);Core 2 上读写差距甚至到 <strong>20×</strong>（Drepper 论文）。<strong>优化”写”比优化”读”更值钱。</strong></li>
+<li><strong>多核一致性</strong>:论文以 <strong>MESI</strong> 协议为例,两条要点:<strong>脏行不会同时存在于别的缓存</strong>;<strong>干净副本可以存在于任意多个缓存</strong>。</li>
+<li><strong>伪共享(false sharing)</strong>:多个线程写同一缓存行内的不同变量时,写操作需要在各核心的 L1d 中取得独占状态,会发送大量 RFO(Read For Ownership)消息。论文实测开销为 **390%(2 线程)、734%(3 线程)、1147%(4 线程)**。对策:<strong>每个线程的数据各自对齐到独立缓存行</strong>。</li>
+<li><strong>带宽不对称</strong>:论文实测写带宽远低于读带宽——Netburst 上读满 16 B/周期、而写只有 4 B/周期,超出 L2 后写掉到 <strong>0.5 B/周期</strong>(比读慢约 10 倍);Core 2 上读写差距甚至到 <strong>20×</strong>。<strong>优化”写”比优化”读”更值钱。</strong></li>
 </ul>
-<h3 id="2-5-预取（Drepper-论文）"><a href="#2-5-预取（Drepper-论文）" class="headerlink" title="2.5 预取（Drepper 论文）"></a>2.5 预取（Drepper 论文）</h3><ul>
+<h3 id="2-5-预取"><a href="#2-5-预取" class="headerlink" title="2.5 预取"></a>2.5 预取</h3><ul>
 <li><strong>硬件预取器</strong>:触发条件是”识别到 ≥2 次同模式 miss”;能识别步长(stride),现代 CPU 可跟踪约 <strong>8–16</strong> 路流（Drepper 论文）。<strong>关键限制:硬件预取不能跨页边界</strong>,因为跨页可能触发操作系统按需分页。</li>
 <li><strong>软件预取</strong>:<code>_mm_prefetch(p, hint)</code>,提示 <code>_MM_HINT_T0/T1/T2/NTA</code> 分别把行拉到 L1d / L2 / L3 / 非临时(不污染缓存)（Drepper 论文）。指针非法时 x86 通常直接忽略,不报错。</li>
-<li><strong>何时无效</strong>:随机访问的预取几乎无收益(论文的随机指针追逐实验,（Drepper 论文图 6）.7 对比)。</li>
-<li><strong>临界字优先(Critical Word First &amp; Early Restart)</strong>:论文指出主存按 64 位块连续传输、相邻块之间延迟 4+ 周期;若程序需要的字在行尾(第 8 个块),要多等约 <strong>30 周期</strong>;硬件可在程序指示后优先请求”临界字”。论文实测临界字在行尾时性能约慢 **0.7%**（Drepper 论文）。</li>
+<li><strong>何时无效</strong>:随机访问的预取几乎无收益(论文的随机指针追逐实验,.7 对比)。</li>
+<li><strong>临界字优先(Critical Word First &amp; Early Restart)</strong>:论文指出主存按 64 位块连续传输、相邻块之间延迟 4+ 周期;若程序需要的字在行尾(第 8 个块),要多等约 <strong>30 周期</strong>;硬件可在程序指示后优先请求”临界字”。论文实测临界字在行尾时性能约慢 **0.7%**。</li>
 </ul>
 <h3 id="2-6-NUMA（CSAPP-第-5-章）"><a href="#2-6-NUMA（CSAPP-第-5-章）" class="headerlink" title="2.6 NUMA（CSAPP 第 5 章）"></a>2.6 NUMA（CSAPP 第 5 章）</h3><ul>
 <li><strong>结构</strong>:内存分散在各节点,本地访问便宜、跨节点昂贵,差价用 <strong>NUMA factor</strong> 描述（Drepper 论文）。</li>
-<li><strong>远程代价(论文引 AMD 四路机器数据,（Drepper 论文）,（Drepper 论文图 5）.3)</strong>:<strong>1-hop / 2-hop 读比 0-hop 读慢约 9% / 30%</strong>;2-hop 写比 0-hop 读慢 <strong>49%</strong>,比 0-hop 写慢 32%、比 1-hop 写慢 17%。带宽测试中远程读始终慢约 **20%**。</li>
+<li><strong>远程代价(论文引 AMD 四路机器数据,,.3)</strong>:<strong>1-hop / 2-hop 读比 0-hop 读慢约 9% / 30%</strong>;2-hop 写比 0-hop 读慢 <strong>49%</strong>,比 0-hop 写慢 32%、比 1-hop 写慢 17%。带宽测试中远程读始终慢约 **20%**。</li>
 <li><strong>对策</strong>:绑核 + 绑内存(线程与它读写的内存分配到同一节点)、<strong>first-touch</strong> 策略(由第一个触碰页的线程决定物理位置)。Linux 提供 <code>/proc/PID/numa_maps</code> 与 libNUMA 接口观察/控制（Drepper 论文）。</li>
 </ul>
 <h3 id="2-7-优化实战与工具（CSAPP-第-6-章）"><a href="#2-7-优化实战与工具（CSAPP-第-6-章）" class="headerlink" title="2.7 优化实战与工具（CSAPP 第 6 章）"></a>2.7 优化实战与工具（CSAPP 第 6 章）</h3><ul>
-<li><strong>矩阵转置</strong>（Drepper 论文）:把 <code>mul2</code> 逐列访问改成先转置再顺序访问,消除每列上千次非顺序访问。（Drepper 论文表 6）.2:</li>
+<li><strong>矩阵转置</strong>：把 <code>mul2</code> 逐列访问改成先转置再顺序访问,消除每列上千次非顺序访问。（Drepper 论文表 6）.2:</li>
 </ul>
 <table>
 <thead>
@@ -347,13 +347,13 @@
 <td>9.47%</td>
 </tr>
 </tbody></table>
-<p>论文同时给出:<strong>分块解决容量 miss</strong>,且缓存行大小可编译期硬编码(<code>getconf LEVEL1_DCACHE_LINESIZE</code>,分块边 $S_M = \text{CLS}/\text{sizeof(double)}$);最终从 <strong>318 MFLOPS 提升到 3.35 GFLOPS</strong>（Drepper 论文）。</p>
+<p>论文同时给出:<strong>分块解决容量 miss</strong>,且缓存行大小可编译期硬编码(<code>getconf LEVEL1_DCACHE_LINESIZE</code>,分块边 $S_M = \text{CLS}/\text{sizeof(double)}$);最终从 <strong>318 MFLOPS 提升到 3.35 GFLOPS</strong>。</p>
 <ul>
 <li><strong>分块 = 现代 GPU GEMM 的祖先</strong>:CPU 上靠硬件缓存隐式分块,GPU 上靠程序员显式管理 shared memory 分块,思想一致。</li>
 <li><strong>工具</strong>（CSAPP 第 7 章）:<code>oprofile</code> 做硬件计数器采样(看 CPI、cache miss 事件);<code>valgrind</code> 的 cache 模拟器验证 cache 行为;页错误优化(大页/预分配/madvise)（Drepper 论文）。</li>
 </ul>
 <hr>
-<h2 id="3-CSAPP-第-2-5-6-9-章-核心结论-×-部署价值"><a href="#3-CSAPP-第-2-5-6-9-章-核心结论-×-部署价值" class="headerlink" title="3. CSAPP 第 2/5/6/9 章:核心结论 × 部署价值"></a>3. CSAPP 第 2/5/6/9 章:核心结论 × 部署价值</h2><p>CSAPP 把论文里”是什么”补成”为什么”和”怎么算”。四章各自一句话:<strong>（Drepper 论文） 看位,（Drepper 论文） 看优化,（Drepper 论文） 看缓存,（Drepper 论文） 看虚拟内存。</strong></p>
+<h2 id="3-CSAPP-第-2-5-6-9-章-核心结论-×-部署价值"><a href="#3-CSAPP-第-2-5-6-9-章-核心结论-×-部署价值" class="headerlink" title="3. CSAPP 第 2/5/6/9 章:核心结论 × 部署价值"></a>3. CSAPP 第 2/5/6/9 章:核心结论 × 部署价值</h2><p>CSAPP 把论文里”是什么”补成”为什么”和”怎么算”。四章各自一句话:<strong>看位,看优化,看缓存,看虚拟内存。</strong></p>
 <h3 id="3-1-第-2-章-信息的表示与处理——位是最低层的”货币”"><a href="#3-1-第-2-章-信息的表示与处理——位是最低层的”货币”" class="headerlink" title="3.1 第 2 章 信息的表示与处理——位是最低层的”货币”"></a>3.1 第 2 章 信息的表示与处理——位是最低层的”货币”</h3><ul>
 <li><strong>核心结论</strong>:整数用<strong>补码</strong>表示,溢出按模回绕;浮点用 <strong>IEEE 754</strong>(符号 + 阶码 + 尾数),半精度 5 位阶码 / 10 位尾数,单精度 8/23,双精度 11/52;小端机(x86-64)按低位字节在前的顺序存字节。</li>
 <li><strong>与部署的关系</strong>:<code>dtype</code> 归一化(FP32/FP16/BF16/FP8/INT8)的底层就是这一章。FP16 尾数只有 10 位,机器精度 $\approx 2^{-11} \approx 4.9\times10^{-4}$;累加器用 FP32 能显著减小误差——这是 GEMM 累加精度的来源。低比特量化的”位模式”理解也在这里。<strong>跨端读写二进制张量时的小端假设,也是这一章的坑。</strong></li>
@@ -371,21 +371,21 @@
 </ul>
 <p>$$<br>\text{AMAT} = T_{\text{hit}} + \text{miss_rate} \times T_{\text{miss_penalty}}<br>$$</p>
 <ul>
-<li><strong>地址三段划分</strong>:<code>[tag | set index | block offset]</code>(与论文（Drepper 论文） 一致),由 <code>offset</code> 定位行内字节、<code>set</code> 选组、<code>tag</code> 判命中。</li>
-<li><strong>写策略</strong>:write-through / write-back × write-allocate / no-write-allocate(论文（Drepper 论文） 是同一套术语)。</li>
+<li><strong>地址三段划分</strong>:<code>[tag | set index | block offset]</code>(与论文 一致),由 <code>offset</code> 定位行内字节、<code>set</code> 选组、<code>tag</code> 判命中。</li>
+<li><strong>写策略</strong>:write-through / write-back × write-allocate / no-write-allocate(论文 是同一套术语)。</li>
 <li><strong>局部性</strong>:时间局部性 + 空间局部性,是”缓存友好代码”的全部原则来源(步长 1 的遍历 &gt; 跨步遍历 &gt; 随机遍历)。</li>
 <li><strong>与部署的关系</strong>:AMAT 告诉你两件事——<strong>提高命中时间性价比有限,降低 miss rate / miss penalty 才是主战场</strong>。张量布局(NCHW↔NHWC)、算子融合减少中间张量往返、分块大小匹配 cache/共享内存,都是在压 miss rate。</li>
 </ul>
 <h3 id="3-4-第-9-章-虚拟内存——地址翻译、TLB、缺页、mmap"><a href="#3-4-第-9-章-虚拟内存——地址翻译、TLB、缺页、mmap" class="headerlink" title="3.4 第 9 章 虚拟内存——地址翻译、TLB、缺页、mmap"></a>3.4 第 9 章 虚拟内存——地址翻译、TLB、缺页、mmap</h3><ul>
 <li><strong>核心结论</strong>:</li>
 <li>虚拟内存是”把 DRAM 当磁盘缓存”的一层抽象,提供独立地址空间、保护、简化加载。</li>
-<li><strong>地址翻译</strong>:多级页表(x86-64 常见四级),<strong>页大小 4KB</strong>;论文指出在 4KB 页、每级 512 项时,4 个目录即可覆盖 2MB,1GB 连续内存需要 512 个一级目录（Drepper 论文）。大页 <strong>2MB / 1GB</strong> 减少页表级数与翻译次数。</li>
-<li><strong>TLB</strong>:页表项的缓存。论文点名 Core 2 有 <strong>128 个 ITLB + 256 个 DTLB</strong> 条目（Drepper 论文）;普通页下 TLB 只能覆盖很小的范围,<strong>大工作集易 TLB thrashing</strong>。</li>
+<li><strong>地址翻译</strong>:多级页表(x86-64 常见四级),<strong>页大小 4KB</strong>;论文指出在 4KB 页、每级 512 项时,4 个目录即可覆盖 2MB,1GB 连续内存需要 512 个一级目录。大页 <strong>2MB / 1GB</strong> 减少页表级数与翻译次数。</li>
+<li><strong>TLB</strong>:页表项的缓存。论文点名 Core 2 有 <strong>128 个 ITLB + 256 个 DTLB</strong> 条目;普通页下 TLB 只能覆盖很小的范围,<strong>大工作集易 TLB thrashing</strong>。</li>
 <li><strong>缺页(page fault)</strong>:按需调页,代价巨大(比 TLB miss 高几个数量级；来源 Drepper 论文);<code>mmap</code> + <strong>写时复制(COW)</strong> 是延迟复制的经典手段。</li>
-<li><strong>页表遍历成本</strong>:论文计算最坏情况下每次地址翻译要 4 次(四级)串行内存访问,若只能用 L1d 缓存目录项,至少 <strong>12 周期</strong>且无法并行（Drepper 论文）。这正是 TLB 存在的理由。</li>
+<li><strong>页表遍历成本</strong>:论文计算最坏情况下每次地址翻译要 4 次(四级)串行内存访问,若只能用 L1d 缓存目录项,至少 <strong>12 周期</strong>且无法并行。这正是 TLB 存在的理由。</li>
 <li><strong>与部署的关系</strong>:大页是”减少翻译开销 + 保证物理连续”的双赢,但需要在系统启动时预留(<code>hugetlbfs</code>),因为 2MB 大页要求 <strong>512 个连续 4KB 页</strong>,运行久了碎片化后很难凑齐（Drepper 论文）。显存分配、UVA 统一寻址、GPU 页表也遵循同一逻辑。</li>
 </ul>
-<h3 id="3-5-延迟金字塔-把（Drepper-论文）-的记忆锚点可视化"><a href="#3-5-延迟金字塔-把（Drepper-论文）-的记忆锚点可视化" class="headerlink" title="3.5 延迟金字塔(把（Drepper 论文） 的记忆锚点可视化)"></a>3.5 延迟金字塔(把（Drepper 论文） 的记忆锚点可视化)</h3><svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" font-size="13">
+<h3 id="3-5-延迟金字塔-把（Drepper-论文）的记忆锚点可视化"><a href="#3-5-延迟金字塔-把（Drepper-论文）的记忆锚点可视化" class="headerlink" title="3.5 延迟金字塔(把（Drepper 论文）的记忆锚点可视化)"></a>3.5 延迟金字塔(把（Drepper 论文）的记忆锚点可视化)</h3><svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" font-size="13">
  <rect x="0" y="0" width="720" height="300" fill="#fbfcfe" stroke="#ccd"></rect>
  <text x="20" y="26" font-size="14" font-weight="bold">延迟金字塔(周期数，取自 Drepper 论文引 Intel 数据)</text>
  <!-- bars: widths proportional to log -->
@@ -403,7 +403,7 @@
 <ol>
 <li><strong>是内存瓶颈还是计算瓶颈?</strong> 先算计算强度(FLOP/字节),对照机器 roofline;若落在带宽侧,以下才有意义。</li>
 <li><strong>访问单位用满了吗?</strong> 是否按 cache 行(64B)粒度使用?有没有”跨步/逐列/随机”访问（Drepper 论文）?</li>
-<li><strong>命中率还是延迟?</strong> 用 <code>perf</code>/硬件计数器看 L1D 替换、DTLB miss、L2 行流入等事件（Drepper 论文）;CPI 突然从 ~1 跳到 ~3 或 &gt;20,通常是对应层缓存放不下的信号（Drepper 论文）。</li>
+<li><strong>命中率还是延迟?</strong> 用 <code>perf</code>/硬件计数器看 L1D 替换、DTLB miss、L2 行流入等事件（Drepper 论文）;CPI 突然从 ~1 跳到 ~3 或 &gt;20,通常是对应层缓存放不下的信号。</li>
 <li><strong>工作集 vs 缓存</strong>:数据集是否超过末级缓存?超过就用<strong>分块</strong>,块大小对齐缓存行（Drepper 论文）。</li>
 <li><strong>TLB 是否被打爆?</strong> 大工作集 + 4KB 页 → 考虑大页(2MB)（Drepper 论文）。</li>
 <li><strong>NUMA 亲和性</strong>:线程与内存是否在同节点?用 <code>numactl</code> 绑核绑内存,或检查 <code>/proc/PID/numa_maps</code>（Drepper 论文）。</li>
